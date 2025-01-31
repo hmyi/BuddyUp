@@ -40,7 +40,6 @@ function App() {
     console.error('Auth Error:', error);
     setIsSignedIn(false);
     if (error?.error === 'user_cancelled') {
-      alert('Please complete the login process');
     }
   };
 
