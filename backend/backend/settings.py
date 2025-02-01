@@ -176,5 +176,10 @@ LOGOUT_REDIRECT_URL = "/"
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
 
-FACEBOOK_APP_ID = '508668852260570'
-FACEBOOK_APP_SECRET = '301d8a87bca79fbf62cab84b48e8550a'
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+FACEBOOK_APP_ID = os.getenv('FACEBOOK_APP_ID')
+FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET')
