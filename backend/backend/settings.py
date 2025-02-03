@@ -58,13 +58,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "users",
-    "api",
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.facebook",
-    "rest_framework",
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -139,8 +137,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'users.User'
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -151,8 +147,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
-USE_L10N = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -167,7 +161,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend"
+    "allauth.accounts.auth_backends.AuthenticationBackend"
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -175,6 +169,3 @@ LOGOUT_REDIRECT_URL = "/"
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
-
-FACEBOOK_APP_ID = '508668852260570'
-FACEBOOK_APP_SECRET = '301d8a87bca79fbf62cab84b48e8550a'
