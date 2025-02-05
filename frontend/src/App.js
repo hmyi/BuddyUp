@@ -11,10 +11,6 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CardActions from "@mui/material/CardActions";
 import { Grid2 } from '@mui/material';
-import { Avatar, Popover, Menu, MenuItem, IconButton } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 function App() {
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
@@ -58,7 +54,7 @@ function App() {
       <Header isSignedIn={isSignedIn} userProfile={userProfile} handleLogout={handleLogout}
               handleSuccess={handleSuccess} handleFailure={handleFailure}/>
       <Routes>
-        <Route path={"/home"} element={
+        <Route path={"/"} element={
           <div>
             <h1 style={{marginLeft: "150px"}}>Events near Waterloo</h1>
             <Grid2 container spacing={3} sx={{marginX: "150px"}}>
