@@ -26,7 +26,7 @@ function Header({ isSignedIn, userProfile, handleLogout, handleSuccess, handleFa
     return (
         <header className="header">
             <div className="header-left">
-                <span className="logo" onClick={() => navigate("/home")} style={{ cursor: "pointer" }}>BuddyUp</span>
+                <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>BuddyUp</span>
             </div>
 
             <div className="search-bar">
