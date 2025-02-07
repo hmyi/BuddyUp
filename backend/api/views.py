@@ -31,7 +31,7 @@ def facebook_login(request):
     facebook_user_id = debug_data.get('data', {}).get('user_id')
     
     # 3. Use Facebook Graph API to get user information
-    user_info_url = f"https://graph.facebook.com/{facebook_user_id}?fields=id,name,email&access_token={access_token}"
+    user_info_url = f"https://graph.facebook.com/{facebook_user_id}?fields=id,first_name,last_name,name,email,picture.type(large)&access_token={access_token}"
     user_info_response = requests.get(user_info_url)
     if user_info_response.status_code != 200:
         return Response({'error': 'Cannot get Facebook user information'}, status=400)
@@ -39,10 +39,21 @@ def facebook_login(request):
     user_info = user_info_response.json()
     email = user_info.get('email')
     name = user_info.get('name')
+    first_name = user_info.get('first_name')
+    last_name = user_info.get('last_name')
+    avatar_url = user_info.get("picture", {}).get("data", {}).get("url")
     
     # 4. Look up or create user
     try:
         user = User.objects.get(facebook_id=facebook_user_id)
+        if email:
+            user.email = user.email if user.email else email
+        if name:
+            user.username = user.username if user.username else name
+        if first_name:
+            user.first_name = user.first_name if user.first_name else first_name
+        if last_name:
+            user.last_name = user.last_name if user.last_name else last_name
     except User.DoesNotExist:
         user = None
         if email:
@@ -60,6 +71,8 @@ def facebook_login(request):
                 username=username,
                 email=email,
                 facebook_id=facebook_user_id,
+                first_name = first_name,
+                last_name = last_name,
             )
             user.set_unusable_password()
             user.save()
@@ -68,6 +81,10 @@ def facebook_login(request):
     payload = {
         'user_id': user.id,
         'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'avatar_url': avatar_url if avatar_url else None,
         'exp': datetime.now(timezone.utc) + timedelta(days=1),
         'iat': datetime.now(timezone.utc),
     }
