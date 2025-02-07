@@ -22,10 +22,14 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import CardActions from "@mui/material/CardActions";
+<<<<<<< HEAD
 
 const FACEBOOK_APP_ID = "508668852260570";
 const GOOGLE_CLIENT_ID =
   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
+=======
+import { Grid2 } from '@mui/material';
+>>>>>>> 0dd940e67ea7daa3150ddd6291a690ce1b276ac7
 
 function App() {
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
@@ -78,8 +82,33 @@ function App() {
     setAnchorEl(null);
   };
 
+<<<<<<< HEAD
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
+=======
+  return (
+      <>
+      <Header isSignedIn={isSignedIn} userProfile={userProfile} handleLogout={handleLogout}
+              handleSuccess={handleSuccess} handleFailure={handleFailure}/>
+      <Routes>
+        <Route path={"/"} element={
+          <div>
+            <h1 style={{marginLeft: "150px"}}>Events near Waterloo</h1>
+            <Grid2 container spacing={3} sx={{marginX: "150px"}}>
+              {data.map((item, index) => (
+                  <Grid2 item xs={12} sm={6} md={4} key={index}>
+                    <BasicCard/>
+                  </Grid2>
+              ))}
+            </Grid2>
+          </div>
+        }/>
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+      </>
+  );
+}
+>>>>>>> 0dd940e67ea7daa3150ddd6291a690ce1b276ac7
 
   function BasicCard() {
     const [flag, setFlag] = useState(0);
