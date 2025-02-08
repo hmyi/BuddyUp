@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 import { GoogleOAuthProvider,  GoogleLogin } from "@react-oauth/google";
 import FacebookLogin, { FacebookLoginClient } from "@greatsumini/react-facebook-login";
@@ -96,6 +96,7 @@ function App() {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleFacebookSuccess = (response) => {
     console.log("Facebook Auth Success:", response);
@@ -134,6 +135,7 @@ function App() {
     setIsSignedIn(false);
     setUserProfile(null);
     setAnchorEl(null);
+    navigate("/");
   };
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
