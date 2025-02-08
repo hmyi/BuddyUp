@@ -3,6 +3,7 @@ import jwt
 from datetime import datetime, timezone, timedelta
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from users.models import User
@@ -77,20 +78,19 @@ def facebook_login(request):
             user.set_unusable_password()
             user.save()
     
-    # 5. Use PyJWT to generate JWT
-    payload = {
-        'user_id': user.id,
-        'username': user.username,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email,
-        'avatar_url': avatar_url if avatar_url else None,
-        'exp': datetime.now(timezone.utc) + timedelta(days=1),
-        'iat': datetime.now(timezone.utc),
-    }
-    token_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    # 5. Use SimpleJWT to generate JWT
+    refresh = RefreshToken.for_user(user)
+    refresh['username'] = user.username
+    refresh['first_name'] = user.first_name
+    refresh['last_name'] = user.last_name
+    refresh['email'] = user.email
+    if avatar_url:
+        refresh['avatar_url'] = avatar_url
     
-    if isinstance(token_jwt, bytes):
-        token_jwt = token_jwt.decode('utf-8')
-    
-    return Response({'token': token_jwt})
+    access_token = str(refresh.access_token)
+    refresh_token = str(refresh)
+
+    return Response({
+        "access": access_token,
+        "refresh": refresh_token
+    })
