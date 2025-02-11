@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
-import Profile from "./Profile";
-import Header from "./Header";
+import Profile from "./components/Profile";
+import Header from "./components/Header";
 import "./App.css";
 import {
   Dialog,
@@ -23,11 +24,11 @@ import Grid2 from "@mui/material/Grid2";
 
 import { Routes, Route } from "react-router-dom";
 
-import { GoogleOAuthProvider,  GoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin, { FacebookLoginClient } from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = "508668852260570";
-const GOOGLE_CLIENT_ID =   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
 
 function BasicCard() {
   const [flag, setFlag] = useState(0);
@@ -88,25 +89,50 @@ function BasicCard() {
 }
 
 function App() {
+  const [jwtData, setJwtData] = useState(null);
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
 
+
   const handleFacebookSuccess = (response) => {
+
     console.log("Facebook Auth Success:", response);
+
     setIsSignedIn(true);
-    FacebookLoginClient.getProfile(
-      (profile) => {
-        console.log("Facebook User Profile:", profile);
-        setUserProfile(profile);
+    const fbAccessToken = response.accessToken;
+
+    fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      { fields: "id,first_name,last_name,email,picture" }
-    );
+      body: JSON.stringify({ access_token: fbAccessToken }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("JWT Response from Backend:", data);
+        setJwtData(data);
+
+        const decodedToken = jwtDecode(data.access);
+        console.log("Decoded JWT:", decodedToken);
+        setUserProfile({
+          name: decodedToken.name,
+          email: decodedToken.email,
+        });
+      })
+      .catch((error) => {
+        console.error("Error retrieving JWT:", error);
+      });
+
     setOpenLoginDialog(false);
   };
 
