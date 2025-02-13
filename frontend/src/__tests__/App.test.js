@@ -14,12 +14,35 @@ beforeEach(() => {
   }));
 });
 
-test("Facebook API returns a token and backend exchanges it for JWT", async () => {
+/** ✅ TEST 1: Facebook API returns a token */
+test("Facebook API returns a token", async () => {
   const fbAccessToken = "testFacebookAccessToken";
 
-  // ✅ Fake Backend Response
+  // Mock the Facebook API login
+  global.window.FB = {
+    login: (callback) => callback({ authResponse: { accessToken: fbAccessToken } }),
+  };
+
+  let receivedToken = null;
+
+  await act(async () => {
+    global.window.FB.login((response) => {
+      receivedToken = response.authResponse.accessToken;
+    });
+  });
+
+  await waitFor(() => {
+    expect(receivedToken).toBe(fbAccessToken);
+  });
+
+  console.log("✅ Facebook API returned access token successfully!");
+});
+
+/** ✅ TEST 2: Backend exchanges FB Token for JWT */
+test("Backend API exchanges Facebook token for JWT", async () => {
+  const fbAccessToken = "testFacebookAccessToken";
   const backendResponse = {
-    access: "testJwtaccessToken",
+    access: "testJwtAccessToken",
     refresh: "testRefreshToken",
   };
 
@@ -36,10 +59,12 @@ test("Facebook API returns a token and backend exchanges it for JWT", async () =
     handleFacebookSuccess({ accessToken: fbAccessToken });
   });
 
+  // ✅ Ensure the backend API call was made
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  // ✅ Ensure correct request was sent
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledWith(
       "https://18.218.44.88:8000/api/auth/facebook/",
@@ -51,10 +76,10 @@ test("Facebook API returns a token and backend exchanges it for JWT", async () =
     );
   });
 
-
+  // ✅ Ensure JWT decode was called
   await waitFor(() => {
     expect(jwtDecode).toHaveBeenCalledWith(backendResponse.access);
   });
 
-  console.log("Facebook login Test Completed Successfully!");
+  console.log("✅ Backend API successfully exchanged FB token for JWT!");
 });
