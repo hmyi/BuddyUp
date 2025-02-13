@@ -2,23 +2,20 @@ import { render, waitFor, act } from "@testing-library/react";
 import { jwtDecode } from "jwt-decode";
 import App, { handleFacebookSuccess } from "../App";
 
+// ✅ Mock jwtDecode
 jest.mock("jwt-decode", () => ({
   jwtDecode: jest.fn(),
 }));
 
 beforeEach(() => {
   jwtDecode.mockClear();
-  jwtDecode.mockImplementation((token) => ({
-    username: "Farhan Hossein",
-    email: "farhan.hossein@gmail.com",
-  }));
 });
 
 /** ✅ TEST 1: Facebook API returns a token */
 test("Facebook API returns a token", async () => {
   const fbAccessToken = "testFacebookAccessToken";
 
-  // Mock the Facebook API login
+  // ✅ Mock Facebook Login API
   global.window.FB = {
     login: (callback) => callback({ authResponse: { accessToken: fbAccessToken } }),
   };
@@ -46,6 +43,7 @@ test("Backend API exchanges Facebook token for JWT", async () => {
     refresh: "testRefreshToken",
   };
 
+  // ✅ Mock Backend API (Django)
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
@@ -59,7 +57,7 @@ test("Backend API exchanges Facebook token for JWT", async () => {
     handleFacebookSuccess({ accessToken: fbAccessToken });
   });
 
-  // ✅ Ensure the backend API call was made
+  // ✅ Ensure backend API call was made
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
@@ -76,10 +74,70 @@ test("Backend API exchanges Facebook token for JWT", async () => {
     );
   });
 
-  // ✅ Ensure JWT decode was called
+  console.log("✅ Backend API successfully exchanged FB token for JWT!");
+});
+
+/** ✅ TEST 3: Verify JWT claims match Facebook user data */
+test("JWT claims from backend match Facebook user data", async () => {
+  const fbAccessToken = "testFacebookAccessToken";
+  const facebookUserData = {
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    id: "123456789",
+  };
+
+  const backendResponse = {
+    access: "testJwtAccessToken",
+    refresh: "testRefreshToken",
+  };
+
+  // ✅ Mock Facebook API
+  global.window.FB = {
+    login: (callback) =>
+      callback({
+        authResponse: { accessToken: fbAccessToken },
+      }),
+  };
+
+  // ✅ Mock Backend API
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(backendResponse),
+    })
+  );
+
+  // ✅ Mock JWT Decoding
+  jwtDecode.mockImplementation((token) => ({
+    username: facebookUserData.username,
+    email: facebookUserData.email,
+    id: facebookUserData.id,
+  }));
+
+  render(<App />);
+
+  // ✅ Simulate Facebook Login
+  await act(async () => {
+    handleFacebookSuccess({ accessToken: fbAccessToken });
+  });
+
+  // ✅ Ensure backend was called
+  await waitFor(() => {
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  // ✅ Ensure JWT Decoding was called
   await waitFor(() => {
     expect(jwtDecode).toHaveBeenCalledWith(backendResponse.access);
   });
 
-  console.log("✅ Backend API successfully exchanged FB token for JWT!");
+  // ✅ Verify JWT contains correct user data
+  await waitFor(() => {
+    const decodedToken = jwtDecode(backendResponse.access);
+    expect(decodedToken.username).toBe(facebookUserData.username);
+    expect(decodedToken.email).toBe(facebookUserData.email);
+    expect(decodedToken.id).toBe(facebookUserData.id);
+  });
+
+  console.log("✅ JWT claims match Facebook user data!");
 });

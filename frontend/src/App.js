@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 
 import Grid2 from "@mui/material/Grid";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
@@ -128,6 +128,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const navigate = useNavigate();
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
   const handleFacebookSuccess = (response) => {
@@ -202,6 +203,7 @@ function App() {
     setIsSignedIn(false);
     setUserProfile(null);
     setAnchorEl(null);
+    navigate("/");
   };
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
