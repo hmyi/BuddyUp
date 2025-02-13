@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { jwtDecode } from "jwt-decode";
-
+import jwtDecode from "jwt-decode";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
 import "./App.css";
+
 import {
   Dialog,
   DialogTitle,
@@ -20,18 +20,19 @@ import {
   Typography,
   CardActions
 } from "@mui/material";
-import Grid2 from "@mui/material/Grid2";
 
+import Grid2 from "@mui/material/Grid";
 import { Routes, Route } from "react-router-dom";
-
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import FacebookLogin, { FacebookLoginClient } from "@greatsumini/react-facebook-login";
+import FacebookLogin from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = "508668852260570";
-const GOOGLE_CLIENT_ID = "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
 
 function BasicCard() {
   const [flag, setFlag] = useState(0);
+
   return (
     <Card
       onMouseEnter={() => setFlag(1)}
@@ -89,22 +90,25 @@ function BasicCard() {
 }
 
 function App() {
-  const [jwtData, setJwtData] = useState(null);
-  const data = [1, 1, 1, 1, 1, 1, 1, 1];
-
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
-
+  const [jwtData, setJwtData] = useState(null);
+  const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
   const handleFacebookSuccess = (response) => {
+    console.log("✅ handleFacebookSuccess Called with:", response);
 
-    console.log("Facebook Auth Success:", response);
+    if (!response.authResponse || !response.authResponse.accessToken) {
+      console.error("❌ No access token received!");
+      return;
+    }
 
-    setIsSignedIn(true);
-    const fbAccessToken = response.accessToken;
+    const fbAccessToken = response.authResponse.accessToken;
+    console.log("✅ Facebook Access Token Received:", fbAccessToken);
 
+    console.log("🚀 Making API Request...");
     fetch("https://18.218.44.88:8000/api/auth/facebook/", {
       method: "POST",
       headers: {
@@ -113,25 +117,30 @@ function App() {
       body: JSON.stringify({ access_token: fbAccessToken }),
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
+        console.log("✅ API Fetch Called, Status:", res.status);
         return res.json();
       })
       .then((data) => {
-        console.log("JWT Response from Backend:", data);
-        setJwtData(data);
+        console.log("✅ API Response Data:", data);
+
+        if (!data.access) {
+          console.error("❌ API Response does not contain 'access' token:", data);
+          return;
+        }
+
+        setIsSignedIn(true);
+
+        console.log("✅ Decoding Token:", data.access);
 
         const decodedToken = jwtDecode(data.access);
-        console.log("Decoded JWT:", decodedToken);
+        console.log("✅ Decoded JWT:", decodedToken);
+
         setUserProfile({
-          name: decodedToken.name,
+          name: decodedToken.username,
           email: decodedToken.email,
         });
       })
-      .catch((error) => {
-        console.error("Error retrieving JWT:", error);
-      });
+      .catch((error) => console.error("❌ Error retrieving JWT:", error));
 
     setOpenLoginDialog(false);
   };
@@ -141,7 +150,9 @@ function App() {
     setIsSignedIn(false);
   };
 
-  // === Google ===
+
+
+
   const handleGoogleSuccess = (response) => {
     console.log("Google Auth Success:", response);
     setIsSignedIn(true);
@@ -185,7 +196,7 @@ function App() {
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
               <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
                 {data.map((item, index) => (
-                  <Grid2 item xs={12} sm={6} md={4} key={index}>
+                  <Grid2 xs={12} sm={6} md={4} key={index}>
                     <BasicCard />
                   </Grid2>
                 ))}
@@ -196,10 +207,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
-      <Dialog
-        open={openLoginDialog}
-        onClose={() => setOpenLoginDialog(false)}
-      >
+      <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>
           <FacebookLogin
@@ -210,22 +218,14 @@ function App() {
             initParams={{ version: "v19.0", xfbml: true, cookie: true }}
             loginOptions={{ scope: "public_profile,email", return_scopes: true }}
             render={({ onClick }) => (
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={onClick}
-              >
+              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
                 Sign In with Facebook
               </Button>
             )}
           />
           <br />
           <br />
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-          />
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>
@@ -234,5 +234,7 @@ function App() {
     </GoogleOAuthProvider>
   );
 }
+
+
 
 export default App;
