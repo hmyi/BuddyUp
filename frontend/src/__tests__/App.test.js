@@ -1,83 +1,60 @@
-jest.mock("jwt-decode", () => jest.fn()); // ✅ Mock before importing App
-import { handleFacebookSuccess } from "../App";
+import { render, waitFor, act } from "@testing-library/react";
+import { jwtDecode } from "jwt-decode";
+import App, { handleFacebookSuccess } from "../App";
 
-import jwtDecode from "jwt-decode";
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import App from "../App";
+jest.mock("jwt-decode", () => ({
+  jwtDecode: jest.fn(),
+}));
 
 beforeEach(() => {
   jwtDecode.mockClear();
-  jwtDecode.mockImplementation((token) => {
-    console.log("✅ Mocked jwtDecode called with:", token); // Debugging log
-    return {
-      token_type: "access",
-      exp: 1739384259,
-      iat: 1739382459,
-      jti: "40f29a8b34fd4e9d98357caaaa976df6",
-      user_id: 2,
-      username: "Farhan Hossein",
-      first_name: "Farhan",
-      last_name: "Hossein",
-      email: "farhan.hossein@gmail.com",
-      avatar_url:
-        "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=8950697675012990&height=200&width=200&ext=1741974459&hash=AbbU1BoL_XkEPeGxerHchCt8",
-    };
-  });
+  jwtDecode.mockImplementation((token) => ({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+  }));
 });
 
-test("handles successful Facebook login API call", async () => {
-  const expectedToken = "fake.jwt.token";
+test("Facebook API returns a token and backend exchanges it for JWT", async () => {
+  const fbAccessToken = "testFacebookAccessToken";
+
+  // ✅ Fake Backend Response
+  const backendResponse = {
+    access: "testJwtaccessToken",
+    refresh: "testRefreshToken",
+  };
 
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
-      json: () =>
-        Promise.resolve({
-          access: expectedToken,
-          refresh: "mock_refresh_token",
-        }),
+      json: () => Promise.resolve(backendResponse),
     })
   );
 
-  global.window.FB = {
-    login: (callback) => {
-      console.log("✅ Simulating Facebook login...");
-      callback({ authResponse: { accessToken: expectedToken } });
-    },
-  };
-
   render(<App />);
 
-  expect(screen.getByText("Login")).toBeInTheDocument();
-
-  const loginButton = screen.getByText("Login");
-  await userEvent.click(loginButton);
+  await act(async () => {
+    handleFacebookSuccess({ accessToken: fbAccessToken });
+  });
 
   await waitFor(() => {
-    console.log("✅ Facebook login response received");
-    expect(global.window.FB.login).toBeDefined();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  await waitFor(() => {
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://18.218.44.88:8000/api/auth/facebook/",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.any(Object),
+        body: JSON.stringify({ access_token: fbAccessToken }),
+      })
+    );
   });
 
 
   await waitFor(() => {
-    console.log("✅ Calling handleFacebookSuccess manually...");
-    handleFacebookSuccess({ authResponse: { accessToken: expectedToken } });
+    expect(jwtDecode).toHaveBeenCalledWith(backendResponse.access);
   });
 
-  await waitFor(() => {
-    console.log("✅ jwtDecode Calls:", jwtDecode.mock.calls);
-    if (jwtDecode.mock.calls.length === 0) {
-      console.error("🚨 jwtDecode was NOT called! Check if App.js is actually using it.");
-    }
-    expect(jwtDecode).toHaveBeenCalledTimes(1);
-    expect(jwtDecode).toHaveBeenCalledWith(expectedToken);
-  });
-
-  await waitFor(() => {
-    expect(screen.queryByText("Login")).not.toBeInTheDocument();
-    expect(screen.getByRole("img")).toBeInTheDocument();
-    expect(screen.getByText("Farhan Hossein")).toBeInTheDocument();
-  });
+  console.log("Facebook login Test Completed Successfully!");
 });

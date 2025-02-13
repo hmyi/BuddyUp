@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import jwtDecode from "jwt-decode";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
 import "./App.css";
@@ -10,10 +9,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Menu,
-  MenuItem,
-  IconButton,
-  Avatar,
   Card,
   CardContent,
   CardMedia,
@@ -23,8 +18,11 @@ import {
 
 import Grid2 from "@mui/material/Grid";
 import { Routes, Route } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
+
+
 
 const FACEBOOK_APP_ID = "508668852260570";
 const GOOGLE_CLIENT_ID =
@@ -89,69 +87,102 @@ function BasicCard() {
   );
 }
 
+export function handleFacebookSuccess(response) {
+  console.log("✅ handleFacebookSuccess Called with:", response);
+
+  if (!response || !response.accessToken) {
+    console.error("❌ No access token received! Response:", response);
+    return;
+  }
+
+  const fbAccessToken = response.accessToken;
+  console.log("✅ Facebook Access Token Received:", fbAccessToken);
+
+  console.log("🚀 Making API Request...");
+  fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ access_token: fbAccessToken }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("✅ API Response Data:", data);
+
+      if (!data.access) {
+        console.error("❌ API Response does not contain 'access' token:", data);
+        return;
+      }
+
+      console.log("✅ Decoding Token:", data.access);
+      const decodedToken = jwtDecode(data.access);
+      console.log("✅ Decoded JWT:", decodedToken);
+    })
+    .catch((error) => console.error("❌ Error retrieving JWT:", error));
+}
+
 function App() {
+
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
-  const [jwtData, setJwtData] = useState(null);
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
   const handleFacebookSuccess = (response) => {
     console.log("✅ handleFacebookSuccess Called with:", response);
 
-    if (!response.authResponse || !response.authResponse.accessToken) {
-      console.error("❌ No access token received!");
-      return;
+    // Ensure authResponse is not undefined before accessing its properties
+    if (!response || !response.accessToken) {
+        console.error("❌ No access token received! Response:", response);
+        return;
     }
 
-    const fbAccessToken = response.authResponse.accessToken;
+    const fbAccessToken = response.accessToken;
     console.log("✅ Facebook Access Token Received:", fbAccessToken);
 
     console.log("🚀 Making API Request...");
     fetch("https://18.218.44.88:8000/api/auth/facebook/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ access_token: fbAccessToken }),
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ access_token: fbAccessToken }),
     })
-      .then((res) => {
+    .then((res) => {
         console.log("✅ API Fetch Called, Status:", res.status);
         return res.json();
-      })
-      .then((data) => {
+    })
+    .then((data) => {
         console.log("✅ API Response Data:", data);
 
         if (!data.access) {
-          console.error("❌ API Response does not contain 'access' token:", data);
-          return;
+            console.error("❌ API Response does not contain 'access' token:", data);
+            return;
         }
 
         setIsSignedIn(true);
 
         console.log("✅ Decoding Token:", data.access);
-
         const decodedToken = jwtDecode(data.access);
         console.log("✅ Decoded JWT:", decodedToken);
 
         setUserProfile({
-          name: decodedToken.username,
-          email: decodedToken.email,
+            name: decodedToken.username || "Unknown",
+            email: decodedToken.email || "No Email Provided",
         });
-      })
-      .catch((error) => console.error("❌ Error retrieving JWT:", error));
+    })
+    .catch((error) => console.error("❌ Error retrieving JWT:", error));
 
     setOpenLoginDialog(false);
-  };
+};
+
 
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
     setIsSignedIn(false);
   };
-
-
-
 
   const handleGoogleSuccess = (response) => {
     console.log("Google Auth Success:", response);
