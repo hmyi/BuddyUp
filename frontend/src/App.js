@@ -22,8 +22,6 @@ import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 
-
-
 const FACEBOOK_APP_ID = "508668852260570";
 const GOOGLE_CLIENT_ID =
   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
@@ -130,6 +128,7 @@ function App() {
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const navigate = useNavigate();
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
+
 
   const handleFacebookSuccess = (response) => {
     console.log("✅ handleFacebookSuccess Called with:", response);
