@@ -2,7 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Count
+import random
 from .models import Event
 from .serializers import EventSerializer
 
@@ -130,3 +131,18 @@ def leave_event(request, pk):
 
     return Response({"message": "Successfully left the event."},
                     status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def random_events(request):
+    """
+    GET: Return up to 20 random events from the database
+    """
+    total_count = Event.objects.count()
+    if total_count <= 20:
+        events = Event.objects.all()
+    else:
+        random_ids = random.sample(range(1, total_count + 1), 20)
+        events = Event.objects.filter(pk__in=random_ids)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

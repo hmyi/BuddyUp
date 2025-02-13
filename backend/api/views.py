@@ -4,14 +4,14 @@ from datetime import datetime, timezone, timedelta
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from rest_framework import permissions
 from rest_framework.response import Response
 from users.models import User
 from django.shortcuts import render
 
 # Create your views here.
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([permissions.AllowAny])
 def facebook_login(request):
     # 1. Get Facebook access token from frontend
     access_token = request.data.get('access_token')
@@ -94,3 +94,25 @@ def facebook_login(request):
         "access": access_token,
         "refresh": refresh_token
     })
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def participants_to_usernames(request):
+    """
+    GET: Receives a list of user IDs in JSON and returns their corresponding usernames.
+    """
+    data = request.data
+    participant_ids = data.get('participants', [])
+    
+    if not isinstance(participant_ids, list):
+        return Response({"error": "'participants' should be a list of user IDs"}, status=400)
+    
+    usernames = []
+    for user_id in participant_ids:
+        try:
+            user = User.objects.get(pk=user_id)
+            usernames.append(user.username)
+        except User.DoesNotExist:
+            usernames.append(None)
+
+    return Response({"usernames": usernames}, status=200)
