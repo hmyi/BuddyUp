@@ -1,6 +1,18 @@
 import React, { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
 import Profile from "./components/Profile";
 import Header from "./components/Header";
+import EventDetails from "./components/EventDetails";
+import EventCard from "./components/EventCard";
+
+import { dummyEvents } from "./dummyData"; 
+
+
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import FacebookLogin from "@greatsumini/react-facebook-login";
+
 import "./App.css";
 
 import {
@@ -17,73 +29,11 @@ import {
 } from "@mui/material";
 
 import Grid2 from "@mui/material/Grid";
-import { Routes, Route, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = "508668852260570";
 const GOOGLE_CLIENT_ID =
   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
 
-function BasicCard() {
-  const [flag, setFlag] = useState(0);
-
-  return (
-    <Card
-      onMouseEnter={() => setFlag(1)}
-      onMouseLeave={() => setFlag(0)}
-      sx={{ maxWidth: 300, margin: "20px auto", boxShadow: 3 }}
-    >
-      <CardMedia
-        className="Card"
-        component="img"
-        height="200"
-        image="events_pics/hiking.jpg"
-        alt="hiking"
-      />
-      <CardContent>
-        <Typography
-          gutterBottom
-          variant="h5"
-          component="div"
-          sx={flag === 1 ? { textDecoration: "underline" } : {}}
-        >
-          Hiking
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={flag === 1 ? { textDecoration: "underline" } : {}}
-        >
-          description about time, location, category, created by
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Button
-          size="small"
-          sx={
-            flag === 1
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Attend
-        </Button>
-        <Button
-          size="small"
-          sx={
-            flag === 1
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Share
-        </Button>
-      </CardActions>
-    </Card>
-  );
-}
 
 export function handleFacebookSuccess(response) {
   console.log("handleFacebookSuccess Called with:", response);
@@ -127,7 +77,8 @@ function App() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const navigate = useNavigate();
-  const data = [1, 1, 1, 1, 1, 1, 1, 1];
+
+  const [events] = useState(dummyEvents);
 
 
   const handleFacebookSuccess = (response) => {
@@ -142,7 +93,7 @@ function App() {
     const fbAccessToken = response.accessToken;
     console.log("Facebook Access Token Received:", fbAccessToken);
 
-    console.log("🚀 Making API Request...");
+    console.log("Making API Request...");
     fetch("https://18.218.44.88:8000/api/auth/facebook/", {
         method: "POST",
         headers: {
@@ -220,22 +171,26 @@ function App() {
         openLoginDialog={() => setOpenLoginDialog(true)}
       />
 
-      <Routes>
+<Routes>
         <Route
           path="/"
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
               <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
-                {data.map((item, index) => (
-                  <Grid2 xs={12} sm={6} md={4} key={index}>
-                    <BasicCard />
+                {events.map((evt) => (
+                  <Grid2 xs={12} sm={6} md={4} key={evt.id}>
+                    <EventCard event={evt} />
                   </Grid2>
                 ))}
               </Grid2>
             </div>
           }
         />
+
+        {/* Add the route for viewing event details */}
+        <Route path="/events/:id" element={<EventDetails />} />
+
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
