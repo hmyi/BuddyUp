@@ -59,12 +59,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "users",
     "api",
+    "events",
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.facebook",
     "rest_framework",
+    'django_extensions',
+    'corsheaders',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -78,6 +81,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",

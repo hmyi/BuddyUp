@@ -2,13 +2,16 @@ import requests
 import jwt
 from datetime import datetime, timezone, timedelta
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import permissions
 from rest_framework.response import Response
 from users.models import User
 from django.shortcuts import render
 
 # Create your views here.
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def facebook_login(request):
     # 1. Get Facebook access token from frontend
     access_token = request.data.get('access_token')
@@ -29,7 +32,7 @@ def facebook_login(request):
     facebook_user_id = debug_data.get('data', {}).get('user_id')
     
     # 3. Use Facebook Graph API to get user information
-    user_info_url = f"https://graph.facebook.com/{facebook_user_id}?fields=id,name,email&access_token={access_token}"
+    user_info_url = f"https://graph.facebook.com/{facebook_user_id}?fields=id,first_name,last_name,name,email,picture.type(large)&access_token={access_token}"
     user_info_response = requests.get(user_info_url)
     if user_info_response.status_code != 200:
         return Response({'error': 'Cannot get Facebook user information'}, status=400)
@@ -37,10 +40,21 @@ def facebook_login(request):
     user_info = user_info_response.json()
     email = user_info.get('email')
     name = user_info.get('name')
+    first_name = user_info.get('first_name')
+    last_name = user_info.get('last_name')
+    avatar_url = user_info.get("picture", {}).get("data", {}).get("url")
     
     # 4. Look up or create user
     try:
         user = User.objects.get(facebook_id=facebook_user_id)
+        if email:
+            user.email = user.email if user.email else email
+        if name:
+            user.username = user.username if user.username else name
+        if first_name:
+            user.first_name = user.first_name if user.first_name else first_name
+        if last_name:
+            user.last_name = user.last_name if user.last_name else last_name
     except User.DoesNotExist:
         user = None
         if email:
@@ -58,20 +72,47 @@ def facebook_login(request):
                 username=username,
                 email=email,
                 facebook_id=facebook_user_id,
+                first_name = first_name,
+                last_name = last_name,
             )
             user.set_unusable_password()
             user.save()
     
-    # 5. Use PyJWT to generate JWT
-    payload = {
-        'user_id': user.id,
-        'username': user.username,
-        'exp': datetime.now(timezone.utc) + timedelta(days=1),
-        'iat': datetime.now(timezone.utc),
-    }
-    token_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    # 5. Use SimpleJWT to generate JWT
+    refresh = RefreshToken.for_user(user)
+    refresh['username'] = user.username
+    refresh['first_name'] = user.first_name
+    refresh['last_name'] = user.last_name
+    refresh['email'] = user.email
+    if avatar_url:
+        refresh['avatar_url'] = avatar_url
     
-    if isinstance(token_jwt, bytes):
-        token_jwt = token_jwt.decode('utf-8')
+    access_token = str(refresh.access_token)
+    refresh_token = str(refresh)
+
+    return Response({
+        "access": access_token,
+        "refresh": refresh_token
+    })
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def participants_to_usernames(request):
+    """
+    GET: Receives a list of user IDs in JSON and returns their corresponding usernames.
+    """
+    data = request.data
+    participant_ids = data.get('participants', [])
     
-    return Response({'token': token_jwt})
+    if not isinstance(participant_ids, list):
+        return Response({"error": "'participants' should be a list of user IDs"}, status=400)
+    
+    usernames = []
+    for user_id in participant_ids:
+        try:
+            user = User.objects.get(pk=user_id)
+            usernames.append(user.username)
+        except User.DoesNotExist:
+            usernames.append(None)
+
+    return Response({"usernames": usernames}, status=200)
