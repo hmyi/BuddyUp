@@ -30,9 +30,8 @@ import {
 
 import Grid2 from "@mui/material/Grid";
 
-const FACEBOOK_APP_ID = "508668852260570";
-const GOOGLE_CLIENT_ID =
-  "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
+const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 
 export function handleFacebookSuccess(response) {

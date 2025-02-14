@@ -50,14 +50,19 @@ function generateGoogleCalendarLink(event) {
   const endUTC = new Date(event.end_time).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   const title = encodeURIComponent(event.title || "Event");
   const details = encodeURIComponent(event.description || "No description");
-  const location = encodeURIComponent(`${event.location} ${event.city}`);
+    const location = encodeURIComponent(`${event.location} ${event.city}`);
+    
+
+
+
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
 
 function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
 
   const event = state?.event;
   if (!event) {
@@ -77,9 +82,10 @@ function EventDetails() {
   const endTime = formatDateTime(event.end_time);
 
 
-  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
-    `${event.location}, ${event.city}`
-  )}`;    
+    
+const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
+  `${event.location}, ${event.city}`
+)}`;
 
   const calendarLink = generateGoogleCalendarLink(event);
 
