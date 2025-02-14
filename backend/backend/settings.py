@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
+import sys
 
 load_dotenv()
 
@@ -126,6 +127,13 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
+# Use SQLite when running tests
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/tmp/test_db.sqlite3',  # SQLite file stored in /tmp/
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
