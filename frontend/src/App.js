@@ -86,17 +86,17 @@ function BasicCard() {
 }
 
 export function handleFacebookSuccess(response) {
-  console.log("✅ handleFacebookSuccess Called with:", response);
+  console.log("handleFacebookSuccess Called with:", response);
 
   if (!response || !response.accessToken) {
-    console.error("❌ No access token received! Response:", response);
+    console.error("No access token received! Response:", response);
     return;
   }
 
   const fbAccessToken = response.accessToken;
-  console.log("✅ Facebook Access Token Received:", fbAccessToken);
+  console.log("Facebook Access Token Received:", fbAccessToken);
 
-  console.log("🚀 Making API Request...");
+  console.log("Making API Request...");
   fetch("https://18.218.44.88:8000/api/auth/facebook/", {
     method: "POST",
     headers: {
@@ -106,16 +106,16 @@ export function handleFacebookSuccess(response) {
   })
     .then((res) => res.json())
     .then((data) => {
-      console.log("✅ API Response Data:", data);
+      console.log("API Response Data:", data);
 
       if (!data.access) {
-        console.error("❌ API Response does not contain 'access' token:", data);
+        console.error("API Response does not contain 'access' token:", data);
         return;
       }
 
-      console.log("✅ Decoding Token:", data.access);
+      console.log("Decoding Token:", data.access);
       const decodedToken = jwtDecode(data.access);
-      console.log("✅ Decoded JWT:", decodedToken);
+      console.log("Decoded JWT:", decodedToken);
     })
     .catch((error) => console.error("❌ Error retrieving JWT:", error));
 }
@@ -131,16 +131,16 @@ function App() {
 
 
   const handleFacebookSuccess = (response) => {
-    console.log("✅ handleFacebookSuccess Called with:", response);
+    console.log("HandleFacebookSuccess Called with:", response);
 
     // Ensure authResponse is not undefined before accessing its properties
     if (!response || !response.accessToken) {
-        console.error("❌ No access token received! Response:", response);
+        console.error("No access token received! Response:", response);
         return;
     }
 
     const fbAccessToken = response.accessToken;
-    console.log("✅ Facebook Access Token Received:", fbAccessToken);
+    console.log("Facebook Access Token Received:", fbAccessToken);
 
     console.log("🚀 Making API Request...");
     fetch("https://18.218.44.88:8000/api/auth/facebook/", {
@@ -151,29 +151,29 @@ function App() {
         body: JSON.stringify({ access_token: fbAccessToken }),
     })
     .then((res) => {
-        console.log("✅ API Fetch Called, Status:", res.status);
+        console.log("API Fetch Called, Status:", res.status);
         return res.json();
     })
     .then((data) => {
-        console.log("✅ API Response Data:", data);
+        console.log("API Response Data:", data);
 
         if (!data.access) {
-            console.error("❌ API Response does not contain 'access' token:", data);
+            console.error("API Response does not contain 'access' token:", data);
             return;
         }
 
         setIsSignedIn(true);
 
-        console.log("✅ Decoding Token:", data.access);
+        console.log("Decoding Token:", data.access);
         const decodedToken = jwtDecode(data.access);
-        console.log("✅ Decoded JWT:", decodedToken);
+        console.log("Decoded JWT:", decodedToken);
 
         setUserProfile({
             name: decodedToken.username || "Unknown",
             email: decodedToken.email || "No Email Provided",
         });
     })
-    .catch((error) => console.error("❌ Error retrieving JWT:", error));
+    .catch((error) => console.error("Error retrieving JWT:", error));
 
     setOpenLoginDialog(false);
 };
@@ -266,7 +266,5 @@ function App() {
     </GoogleOAuthProvider>
   );
 }
-
-
 
 export default App;
