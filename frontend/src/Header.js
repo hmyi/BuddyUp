@@ -5,6 +5,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
+import FullScreenDialog from "./Dialog";
 
 function Header({
   isSignedIn,
@@ -13,7 +14,7 @@ function Header({
   anchorEl,
   handleMenuOpen,
   handleMenuClose,
-  openLoginDialog
+  openLoginDialog,
 }) {
   const navigate = useNavigate();
 
@@ -37,6 +38,7 @@ function Header({
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
+            <FullScreenDialog />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}

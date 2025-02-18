@@ -17,17 +17,20 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  CardActions
+  CardActions,
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
 
 import { Routes, Route, useNavigate } from "react-router-dom";
 
-import { GoogleOAuthProvider,  GoogleLogin } from "@react-oauth/google";
-import FacebookLogin, { FacebookLoginClient } from "@greatsumini/react-facebook-login";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import FacebookLogin, {
+  FacebookLoginClient,
+} from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = "508668852260570";
-const GOOGLE_CLIENT_ID =   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
 
 function BasicCard() {
   const [flag, setFlag] = useState(0);
@@ -166,16 +169,23 @@ function App() {
                   </Grid2>
                 ))}
               </Grid2>
+              <footer className="footer">
+                <div className="footer-content">
+                  <span>©2025 BuudyUp</span>
+                  <span>Terms of Service</span>
+                  <span>Privacy Policy</span>
+                  <span>Cookie Settings</span>
+                  <span>Cookie Policy</span>
+                  <span>Help</span>
+                </div>
+              </footer>
             </div>
           }
         />
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
-      <Dialog
-        open={openLoginDialog}
-        onClose={() => setOpenLoginDialog(false)}
-      >
+      <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>
           <FacebookLogin
@@ -184,7 +194,10 @@ function App() {
             onFail={handleFacebookFailure}
             usePopup
             initParams={{ version: "v19.0", xfbml: true, cookie: true }}
-            loginOptions={{ scope: "public_profile,email", return_scopes: true }}
+            loginOptions={{
+              scope: "public_profile,email",
+              return_scopes: true,
+            }}
             render={({ onClick }) => (
               <Button
                 fullWidth

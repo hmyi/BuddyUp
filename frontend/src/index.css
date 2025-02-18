@@ -66,3 +66,28 @@ Grid2 {
 .Card:hover {
   opacity: 0.8;
 }
+
+.row1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10rem;
+}
+
+.row2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5rem;
+  gap: 5rem;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10rem; /* Adjust spacing between elements as needed */
+  margin-top: 5rem;
+  margin-bottom: 10rem; /* Space between rows */
+}
