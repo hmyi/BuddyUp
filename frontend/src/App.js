@@ -1,32 +1,31 @@
 import React, { useState } from "react";
-
-import Profile from "./Profile";
-import Header from "./Header";
+import Profile from "./components/Profile";
+import Header from "./components/Header";
 import "./App.css";
+
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Menu,
-  MenuItem,
-  IconButton,
-  Avatar,
   Card,
   CardContent,
   CardMedia,
   Typography,
   CardActions,
 } from "@mui/material";
-import Grid2 from "@mui/material/Grid2";
 
+import Grid2 from "@mui/material/Grid";
 import { Routes, Route, useNavigate } from "react-router-dom";
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin, {
   FacebookLoginClient,
 } from "@greatsumini/react-facebook-login";
+import { jwtDecode } from "jwt-decode";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import FacebookLogin from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = "508668852260570";
 const GOOGLE_CLIENT_ID =
@@ -34,6 +33,7 @@ const GOOGLE_CLIENT_ID =
 
 function BasicCard() {
   const [flag, setFlag] = useState(0);
+
   return (
     <Card
       onMouseEnter={() => setFlag(1)}
@@ -90,27 +90,94 @@ function BasicCard() {
   );
 }
 
-function App() {
-  const data = [1, 1, 1, 1, 1, 1, 1, 1];
+export function handleFacebookSuccess(response) {
+  console.log("handleFacebookSuccess Called with:", response);
 
+  if (!response || !response.accessToken) {
+    console.error("No access token received! Response:", response);
+    return;
+  }
+
+  const fbAccessToken = response.accessToken;
+  console.log("Facebook Access Token Received:", fbAccessToken);
+
+  console.log("Making API Request...");
+  fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ access_token: fbAccessToken }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("API Response Data:", data);
+
+      if (!data.access) {
+        console.error("API Response does not contain 'access' token:", data);
+        return;
+      }
+
+      console.log("Decoding Token:", data.access);
+      const decodedToken = jwtDecode(data.access);
+      console.log("Decoded JWT:", decodedToken);
+    })
+    .catch((error) => console.error("❌ Error retrieving JWT:", error));
+}
+
+function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const navigate = useNavigate();
+  const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
   const handleFacebookSuccess = (response) => {
-    console.log("Facebook Auth Success:", response);
-    setIsSignedIn(true);
-    FacebookLoginClient.getProfile(
-      (profile) => {
-        console.log("Facebook User Profile:", profile);
-        setUserProfile(profile);
+    console.log("HandleFacebookSuccess Called with:", response);
+
+    // Ensure authResponse is not undefined before accessing its properties
+    if (!response || !response.accessToken) {
+      console.error("No access token received! Response:", response);
+      return;
+    }
+
+    const fbAccessToken = response.accessToken;
+    console.log("Facebook Access Token Received:", fbAccessToken);
+
+    console.log("🚀 Making API Request...");
+    fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      { fields: "id,first_name,last_name,email,picture" }
-    );
+      body: JSON.stringify({ access_token: fbAccessToken }),
+    })
+      .then((res) => {
+        console.log("API Fetch Called, Status:", res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+
+        if (!data.access) {
+          console.error("API Response does not contain 'access' token:", data);
+          return;
+        }
+
+        setIsSignedIn(true);
+
+        console.log("Decoding Token:", data.access);
+        const decodedToken = jwtDecode(data.access);
+        console.log("Decoded JWT:", decodedToken);
+
+        setUserProfile({
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+        });
+      })
+      .catch((error) => console.error("Error retrieving JWT:", error));
+
     setOpenLoginDialog(false);
   };
 
@@ -119,7 +186,6 @@ function App() {
     setIsSignedIn(false);
   };
 
-  // === Google ===
   const handleGoogleSuccess = (response) => {
     console.log("Google Auth Success:", response);
     setIsSignedIn(true);
@@ -164,7 +230,7 @@ function App() {
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
               <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
                 {data.map((item, index) => (
-                  <Grid2 item xs={12} sm={6} md={4} key={index}>
+                  <Grid2 xs={12} sm={6} md={4} key={index}>
                     <BasicCard />
                   </Grid2>
                 ))}

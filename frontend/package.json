@@ -10,12 +10,15 @@
     "@mui/material": "^6.4.2",
     "@mui/x-date-pickers": "^7.26.0",
     "@react-oauth/google": "^0.12.1",
+    "aws-sdk": "^2.1692.0",
     "bootstrap": "^5.3.3",
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
+    "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.8",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.5",
     "react-router-dom": "^7.1.5",
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4"
@@ -42,6 +45,27 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.8",
+    "@babel/preset-env": "^7.26.8",
+    "@babel/preset-react": "^7.26.3",
+    "@jest/core": "^27.5.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react-router-dom": "^5.3.3",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
+    "jest-fetch-mock": "^3.0.3",
+    "jest-watch-typeahead": "^1.1.0",
+    "jest-watcher": "^27.5.1",
+    "msw": "^2.7.0"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(react-router-dom)/)"
     ]
   }
 }
