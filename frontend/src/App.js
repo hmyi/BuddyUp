@@ -19,10 +19,6 @@ import {
 import Grid2 from "@mui/material/Grid";
 import { Routes, Route, useNavigate } from "react-router-dom";
 
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import FacebookLogin, {
-  FacebookLoginClient,
-} from "@greatsumini/react-facebook-login";
 import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
@@ -130,6 +126,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
   const navigate = useNavigate();
   const data = [1, 1, 1, 1, 1, 1, 1, 1];
 
@@ -146,7 +143,7 @@ function App() {
     console.log("Facebook Access Token Received:", fbAccessToken);
 
     console.log("🚀 Making API Request...");
-    fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+    fetch("https://3.128.172.39:8000/api/auth/facebook/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -168,6 +165,8 @@ function App() {
         setIsSignedIn(true);
 
         console.log("Decoding Token:", data.access);
+        setAccessToken(data.access);
+
         const decodedToken = jwtDecode(data.access);
         console.log("Decoded JWT:", decodedToken);
 
@@ -215,6 +214,7 @@ function App() {
       <Header
         isSignedIn={isSignedIn}
         userProfile={userProfile}
+        accessToken={accessToken}
         handleLogout={handleLogout}
         anchorEl={anchorEl}
         handleMenuOpen={handleMenuOpen}
@@ -228,9 +228,9 @@ function App() {
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
-              <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
+              <Grid2 container spacing={3}>
                 {data.map((item, index) => (
-                  <Grid2 xs={12} sm={6} md={4} key={index}>
+                  <Grid2 xs={12} sm={6} md={3} key={index}>
                     <BasicCard />
                   </Grid2>
                 ))}

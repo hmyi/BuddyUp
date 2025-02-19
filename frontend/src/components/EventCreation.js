@@ -7,36 +7,32 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Slide from "@mui/material/Slide";
-
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
-
 import TextField from "@mui/material/TextField";
-
 import Slider from "@mui/material/Slider";
-
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-
 import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
+import Stack from "@mui/material/Stack";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function FullScreenDialog() {
+export default function EventCreation({ accessToken }) {
   // flow control state
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
@@ -49,7 +45,7 @@ export default function FullScreenDialog() {
   const [startTime, setStartTime] = React.useState(dayjs("2025-05-12T14:30"));
   const [endTime, setEndTime] = React.useState(dayjs("2025-05-12T15:30"));
   const [capacity, setCapacity] = React.useState(1);
-  const [eventNameDescription, setEventNameDescription] = React.useState(
+  const [eventDescription, setEventDescription] = React.useState(
     eventDescriptionFiller
   );
   const [file, setFile] = React.useState(null);
@@ -86,40 +82,52 @@ export default function FullScreenDialog() {
     setStartTime(dayjs("2025-05-12T14:30"));
     setEndTime(dayjs("2025-05-12T15:30"));
     setCapacity(1);
-    setEventNameDescription(eventDescriptionFiller);
+    setEventDescription(eventDescriptionFiller);
     setFile(null);
   }
 
-  async function fetchRandomEvent() {
-    const apiUrl = "https://3.128.172.39:8000/api/events/fetch/random/";
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error("Fetch error:", error);
-      throw error;
-    }
-  }
-
   function handleSubmit(e) {
+    dayjs.extend(utc); // Extend dayjs with UTC support
+    const utcStartTime = dayjs(startTime).utc().format();
+    const utcEndTime = dayjs(endTime).utc().format();
+
     const event = {
-      eventName: { eventName },
-      city: { city },
-      category: { category },
-      location: { location },
-      startTime: { startTime },
-      endTime: { endTime },
-      capacity: { capacity },
-      eventNameDescription: { eventNameDescription },
-      file: { file },
+      title: eventName,
+      category: category,
+      city: city,
+      location: location,
+      start_time: utcStartTime,
+      end_time: utcEndTime,
+      description: eventDescription,
+      capacity: capacity,
     };
+
+    if (!accessToken) {
+      console.error("No access token received!");
+      return;
+    }
+
+    console.log("EventCreation with acessToekn: ", accessToken);
+    console.log("🚀 Making API Request...");
+
+    fetch("https://3.128.172.39:8000/api/events/new/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`, // Add Bearer Token
+      },
+      body: JSON.stringify(event),
+    })
+      .then((res) => {
+        console.log("API Fetch Called, Status:", res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+      })
+      .catch((error) => console.error("Error:", error));
+
     handleCleanUp();
-    // console.log(event);
-    fetchRandomEvent();
     handleClose();
   }
 
@@ -167,32 +175,52 @@ export default function FullScreenDialog() {
             </Button>
           </Toolbar>
         </AppBar>
-        <HorizontalLinearAlternativeLabelStepper step={step} />
+        <Box sx={{ mt: 10 }}>
+          <HorizontalLinearAlternativeLabelStepper step={step} />
+        </Box>
         <form onSubmit={handleSubmit}>
-          <div>
+          <Box>
             {step === 0 ? (
-              <div className="row1">
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{
+                  justifyContent: "space-evenly",
+                  alignItems: "center",
+                  marginTop: "10rem",
+                }}
+              >
                 <TextField
                   sx={{ width: "20rem", margin: "auto" }}
                   label="Event Name"
                   color="primary"
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
+                  helperText="200 char max"
                 />
                 <CitySelect city={city} setCity={setCity} />
                 <CategorySelect category={category} setCategory={setCategory} />
-              </div>
+              </Stack>
             ) : (
               ""
             )}
             {step === 1 ? (
-              <div className="row2">
+              <Stack
+                direction="column"
+                spacing={10}
+                sx={{
+                  justifyContent: "space-evenly",
+                  alignItems: "center",
+                  marginTop: "5rem",
+                }}
+              >
                 <TextField
                   sx={{ width: "50rem", margin: "auto" }}
                   label="Location"
                   color="primary"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  helperText="255 char max"
                 />
 
                 <StartEndDateTimePicker
@@ -202,31 +230,46 @@ export default function FullScreenDialog() {
                   setEndTime={setEndTime}
                 />
                 <CapacitySlider capacity={capacity} setCapacity={setCapacity} />
-              </div>
+              </Stack>
             ) : (
               ""
             )}
 
             {step === 2 ? (
-              <div className="row2">
-                <div>
+              <Stack
+                direction="column"
+                spacing={10}
+                sx={{
+                  justifyContent: "space-evenly",
+                  alignItems: "center",
+                  marginTop: "5rem",
+                }}
+              >
+                <Box>
                   <h1>Describe your event</h1>
                   <TextField
                     sx={{ width: "50rem", margin: "auto" }}
                     label="Event Description"
                     multiline
-                    value={eventNameDescription}
-                    onChange={(e) => setEventNameDescription(e.target.value)}
-                    helperText="100 char max"
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
                   />
-                </div>
+                </Box>
                 <FileUpload file={file} setFile={setFile} />
-              </div>
+              </Stack>
             ) : (
               ""
             )}
-          </div>
-          <div className="button-row">
+          </Box>
+          <Stack
+            direction="row"
+            spacing={10}
+            sx={{
+              justifyContent: "space-evenly",
+              alignItems: "center",
+              marginTop: "5rem",
+            }}
+          >
             <Button
               type="button"
               variant="contained"
@@ -248,12 +291,12 @@ export default function FullScreenDialog() {
                 endIcon={<SendIcon />}
                 onClick={handleSubmit}
               >
-                Send
+                Create
               </Button>
             ) : (
               ""
             )}
-          </div>
+          </Stack>
         </form>
       </Dialog>
     </React.Fragment>
@@ -309,14 +352,13 @@ function CapacitySlider({ capacity, setCapacity }) {
         valueLabelDisplay="auto"
         marks={marks}
         value={capacity}
-        onChange={(e) => setCapacity(e.target.value)}
+        onChange={(e) => setCapacity(Number(e.target.value))}
       />
     </Box>
   );
 }
 
 function CitySelect({ city, setCity }) {
-  // state location should be at parent element and used as prop to pass down
   const citys = ["Waterloo", "kitchener", "Tonronto"];
 
   const handleChange = (event) => {
@@ -338,7 +380,6 @@ function CitySelect({ city, setCity }) {
 }
 
 function CategorySelect({ category, setCategory }) {
-  // state location should be at parent element and used as prop to pass down
   const categories = [
     "Social",
     "Entertainment",
