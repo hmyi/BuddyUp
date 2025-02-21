@@ -42,13 +42,18 @@ export default function EventCreation({ accessToken }) {
   const [city, setCity] = React.useState("Waterloo");
   const [category, setCategory] = React.useState("Social");
   const [location, setLocation] = React.useState("");
-  const [startTime, setStartTime] = React.useState(dayjs("2025-05-12T14:30"));
-  const [endTime, setEndTime] = React.useState(dayjs("2025-05-12T15:30"));
+  const [startTime, setStartTime] = React.useState(dayjs(Date.now()));
+  const [endTime, setEndTime] = React.useState(dayjs(Date.now()));
   const [capacity, setCapacity] = React.useState(1);
   const [eventDescription, setEventDescription] = React.useState(
     eventDescriptionFiller
   );
   const [file, setFile] = React.useState(null);
+
+  // event data validation state
+  const [eventNameError, setEventNameError] = React.useState("");
+  const [locationError, setLocationError] = React.useState("");
+  const [timeError, setTimeError] = React.useState("");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -61,6 +66,16 @@ export default function EventCreation({ accessToken }) {
   };
 
   function handleNext() {
+    if (step === 0 && eventName === "") {
+      setEventNameError("event name can not be empty");
+      return;
+    }
+
+    if (step === 1 && location === "") {
+      setLocationError("location can not be empty");
+      return;
+    }
+
     if (step < 2) {
       setStep((s) => s + 1);
     } else {
@@ -74,6 +89,46 @@ export default function EventCreation({ accessToken }) {
     }
   }
 
+  function handleEventNameChange(e) {
+    if (e.target.value === "") {
+      setEventNameError("event name can not be empty");
+    } else if (e.target.value > 200) {
+      setEventNameError("event name can not be longer than 200 char");
+    } else {
+      setEventNameError("");
+    }
+    setEventName(e.target.value);
+  }
+
+  function handleLocationChange(e) {
+    if (e.target.value === "") {
+      setLocationError("location can not be empty");
+    } else if (e.target.value > 255) {
+      setLocationError("event name can not be longer than 255 char");
+    } else {
+      setLocationError("");
+    }
+    setLocation(e.target.value);
+  }
+
+  function handleStartTimeChange(time) {
+    setStartTime(time);
+    if (endTime.isBefore(time)) {
+      setTimeError("start time can not be later than end time");
+      return;
+    }
+    setTimeError("");
+  }
+
+  function handleEndTimeChange(time) {
+    setEndTime(time);
+    if (startTime.isAfter(time)) {
+      setTimeError("end time can not be earlier than start time");
+      return;
+    }
+    setTimeError("");
+  }
+
   function handleCleanUp() {
     setEventName("");
     setCity("Waterloo");
@@ -84,6 +139,9 @@ export default function EventCreation({ accessToken }) {
     setCapacity(1);
     setEventDescription(eventDescriptionFiller);
     setFile(null);
+    setEventNameError("");
+    setLocationError("");
+    setTimeError("");
   }
 
   function handleSubmit(e) {
@@ -195,8 +253,9 @@ export default function EventCreation({ accessToken }) {
                   label="Event Name"
                   color="primary"
                   value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
-                  helperText="200 char max"
+                  onChange={handleEventNameChange}
+                  error={eventNameError}
+                  helperText={!eventNameError ? "200 char max" : eventNameError}
                 />
                 <CitySelect city={city} setCity={setCity} />
                 <CategorySelect category={category} setCategory={setCategory} />
@@ -219,8 +278,9 @@ export default function EventCreation({ accessToken }) {
                   label="Location"
                   color="primary"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  helperText="255 char max"
+                  error={locationError}
+                  onChange={handleLocationChange}
+                  helperText={!locationError ? "255 char max" : locationError}
                 />
 
                 <StartEndDateTimePicker
@@ -228,6 +288,9 @@ export default function EventCreation({ accessToken }) {
                   setStartTime={setStartTime}
                   endTime={endTime}
                   setEndTime={setEndTime}
+                  timeError={timeError}
+                  handleStartTimeChange={handleStartTimeChange}
+                  handleEndTimeChange={handleEndTimeChange}
                 />
                 <CapacitySlider capacity={capacity} setCapacity={setCapacity} />
               </Stack>
@@ -273,13 +336,18 @@ export default function EventCreation({ accessToken }) {
             <Button
               type="button"
               variant="contained"
-              disabled={step === 0}
+              disabled={step === 0 || timeError || locationError}
               onClick={handlePrevious}
             >
               Previous
             </Button>
             {step < 2 ? (
-              <Button type="button" variant="contained" onClick={handleNext}>
+              <Button
+                type="button"
+                variant="contained"
+                onClick={handleNext}
+                disabled={eventNameError || locationError || timeError}
+              >
                 Next
               </Button>
             ) : (
@@ -366,7 +434,7 @@ function CitySelect({ city, setCity }) {
   };
 
   return (
-    <FormControl required>
+    <FormControl>
       <InputLabel>City</InputLabel>
       <Select value={city} onChange={handleChange}>
         {citys.map((city) => (
@@ -395,7 +463,7 @@ function CategorySelect({ category, setCategory }) {
 
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
-      <FormControl required>
+      <FormControl>
         <InputLabel>category</InputLabel>
         <Select value={category} onChange={handleChange}>
           {categories.map((category) => (
@@ -414,22 +482,41 @@ function StartEndDateTimePicker({
   setStartTime,
   endTime,
   setEndTime,
+  timeError,
+  handleStartTimeChange,
+  handleEndTimeChange,
 }) {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DemoContainer components={["DateTimePicker", "DateTimePicker"]}>
-        <Box sx={{ display: "flex", gap: 5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 5,
+            padding: 5,
+            borderRadius: 2,
+            border: timeError ? 2 : 0,
+            borderColor: "error.main",
+          }}
+        >
           <DateTimePicker
             label="Start Time"
             value={startTime}
-            onChange={(newValue) => setStartTime(newValue)}
+            onChange={handleStartTimeChange}
           />
           <DateTimePicker
             label="End Time"
             value={endTime}
-            onChange={(newValue) => setEndTime(newValue)}
+            onChange={handleEndTimeChange}
           />
         </Box>
+        {timeError ? (
+          <Typography variant="body1" color="error">
+            {timeError}
+          </Typography>
+        ) : (
+          ""
+        )}
       </DemoContainer>
     </LocalizationProvider>
   );
