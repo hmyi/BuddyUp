@@ -80,3 +80,18 @@
   border-radius: 30px;
   font-size: 0.9rem;
 }
+
+.footer {
+  font-weight: 700;
+  /* padding: 2rem; */
+  display: flex;
+  justify-content: center; /* Centers the content horizontally */
+  align-items: center; /* Centers the content vertically */
+  height: 100px;
+  background-color: #76c7ad;
+}
+
+.footer-content {
+  display: flex;
+  gap: 16px; /* Adjust as needed */
+}
