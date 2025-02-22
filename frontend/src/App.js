@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
+import MyEvents from "./components/MyEvents";
 import "./App.css";
 
 import {
@@ -173,6 +174,9 @@ function App() {
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
+          picture:{
+            data:{url:decodedToken.avatar_url}
+          }
         });
       })
       .catch((error) => console.error("Error retrieving JWT:", error));
@@ -249,6 +253,7 @@ function App() {
           }
         />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents />} />
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
