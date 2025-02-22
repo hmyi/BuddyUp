@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import Profile from "./Profile";
 import Header from "./Header";
+import MyEvents from "./MyEvents"
 import "./App.css";
 import {
   Dialog,
@@ -159,7 +160,7 @@ function App() {
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
-              <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
+              <Grid2 container spacing={3} sx={{ display:"flex", justifyContent: "center", flexWrap: "wrap", marginX: "auto" }}>
                 {data.map((item, index) => (
                   <Grid2 item xs={12} sm={6} md={4} key={index}>
                     <BasicCard />
@@ -170,6 +171,7 @@ function App() {
           }
         />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents />} />
       </Routes>
 
       <Dialog
