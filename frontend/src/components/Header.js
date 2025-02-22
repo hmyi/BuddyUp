@@ -6,15 +6,17 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EventIcon from '@mui/icons-material/Event';
 import { useNavigate } from "react-router-dom";
+import EventCreation from "./EventCreation";
 
 function Header({
   isSignedIn,
   userProfile,
+  accessToken,
   handleLogout,
   anchorEl,
   handleMenuOpen,
   handleMenuClose,
-  openLoginDialog
+  openLoginDialog,
 }) {
   const navigate = useNavigate();
 
@@ -38,6 +40,7 @@ function Header({
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
+            <EventCreation accessToken={accessToken} />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}
