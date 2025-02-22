@@ -436,7 +436,7 @@ function CitySelect({ city, setCity }) {
   return (
     <FormControl>
       <InputLabel>City</InputLabel>
-      <Select value={city} onChange={handleChange}>
+      <Select label="City" value={city} onChange={handleChange}>
         {citys.map((city) => (
           <MenuItem key={city} value={city}>
             {city}
@@ -465,7 +465,7 @@ function CategorySelect({ category, setCategory }) {
     <Box sx={{ minWidth: 100, margin: "auto" }}>
       <FormControl>
         <InputLabel>category</InputLabel>
-        <Select value={category} onChange={handleChange}>
+        <Select label="category" value={category} onChange={handleChange}>
           {categories.map((category) => (
             <MenuItem key={category} value={category}>
               {category}
