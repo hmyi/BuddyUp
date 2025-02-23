@@ -455,6 +455,7 @@ function CategorySelect({ category, setCategory }) {
     "Food ",
     "Outdoor",
     "Gaming ",
+    "Carpool",
   ];
 
   const handleChange = (event) => {
