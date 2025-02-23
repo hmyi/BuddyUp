@@ -22,7 +22,7 @@ function Profile() {
                         alt="User Profile"
                         style={{ width: "100%", height: "250px", objectFit: "cover" }}
                     />
-                    <Typography variant="h5" sx={{ mt: 2 }}>{userProfile?.first_name} {userProfile?.last_name}</Typography>
+                    <Typography variant="h5" sx={{ mt: 2 }}>{userProfile?.name} </Typography>
                     <Typography variant="body2" color="text.secondary">
                          {userProfile?.location || "Waterloo, ON"}
                     </Typography>

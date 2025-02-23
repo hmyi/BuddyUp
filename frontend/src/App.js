@@ -4,10 +4,11 @@ import { jwtDecode } from "jwt-decode";
 
 import Profile from "./components/Profile";
 import Header from "./components/Header";
+import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import EventCard from "./components/EventCard";
 
-import { dummyEvents } from "./dummyData"; 
+import { dummyEvents } from "./dummyData";
 
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -29,12 +30,6 @@ import {
 } from "@mui/material";
 
 import Grid2 from "@mui/material/Grid";
-
-import { Routes, Route, useNavigate } from "react-router-dom";
-
-import { jwtDecode } from "jwt-decode";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "@greatsumini/react-facebook-login";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -129,6 +124,9 @@ function App() {
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
+          picture:{
+            data:{url:decodedToken.avatar_url}
+          }
         });
       })
       .catch((error) => console.error("Error retrieving JWT:", error));
@@ -178,17 +176,17 @@ function App() {
         openLoginDialog={() => setOpenLoginDialog(true)}
       />
 
-<Routes>
+      <Routes>
         <Route
           path="/"
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
 
-              <Grid2 container spacing={3}>
-                {data.map((item, index) => (
-                  <Grid2 xs={12} sm={6} md={3} key={index}>
-                    <BasicCard />
+              <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
+                {events.map((evt) => (
+                    <Grid2 xs={12} sm={6} md={4} key={evt.id}>
+                      <EventCard event={evt} />
 
                   </Grid2>
                 ))}
@@ -211,6 +209,7 @@ function App() {
         <Route path="/events/:id" element={<EventDetails />} />
 
         <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
