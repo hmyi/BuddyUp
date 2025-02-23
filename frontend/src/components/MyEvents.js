@@ -54,6 +54,7 @@ function MyEvents({accessToken}) {
             } else {
                 filteredEvents = [...attendingEvents, ...hostingEvents].filter(event => event.status === "expire");
             }
+            filteredEvents.sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
             setEvents(filteredEvents);
         } catch (error) {
             console.error("Error fetching events: ", error);
