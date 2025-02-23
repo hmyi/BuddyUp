@@ -31,12 +31,6 @@ import {
 
 import Grid2 from "@mui/material/Grid";
 
-import { Routes, Route, useNavigate } from "react-router-dom";
-
-import { jwtDecode } from "jwt-decode";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "@greatsumini/react-facebook-login";
-
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
@@ -189,10 +183,10 @@ function App() {
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
 
-              <Grid2 container spacing={3}>
-                {data.map((item, index) => (
-                  <Grid2 xs={12} sm={6} md={3} key={index}>
-                    <BasicCard />
+              <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
+                {events.map((evt) => (
+                    <Grid2 xs={12} sm={6} md={4} key={evt.id}>
+                      <EventCard event={evt} />
 
                   </Grid2>
                 ))}
