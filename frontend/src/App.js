@@ -253,7 +253,7 @@ function App() {
           }
         />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/myEvents" element={<MyEvents />} />
+        <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
