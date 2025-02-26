@@ -40,21 +40,23 @@ def facebook_login(request):
     user_info = user_info_response.json()
     email = user_info.get('email')
     name = user_info.get('name')
-    first_name = user_info.get('first_name')
-    last_name = user_info.get('last_name')
+    first_name = user_info.get('first_name', '')  # Default empty string
+    last_name = user_info.get('last_name', '')    # Default empty string
     avatar_url = user_info.get("picture", {}).get("data", {}).get("url")
     
     # 4. Look up or create user
     try:
         user = User.objects.get(facebook_id=facebook_user_id)
-        if email:
-            user.email = user.email if user.email else email
-        if name:
-            user.username = user.username if user.username else name
-        if first_name:
-            user.first_name = user.first_name if user.first_name else first_name
-        if last_name:
-            user.last_name = user.last_name if user.last_name else last_name
+        # Update user fields if they exist in the response
+        if email and not user.email:
+            user.email = email
+        if name and not user.username:
+            user.username = name
+        if first_name and not user.first_name:
+            user.first_name = first_name
+        if last_name and not user.last_name:
+            user.last_name = last_name
+        user.save()
     except User.DoesNotExist:
         user = None
         if email:
@@ -68,12 +70,13 @@ def facebook_login(request):
         # If user not found, create a new user
         if not user:
             username = name if name else f"fb_{facebook_user_id}"
+            # Ensure first_name and last_name are never null
             user = User.objects.create(
                 username=username,
-                email=email,
+                email=email if email else f"{facebook_user_id}@facebook.user",  # Ensure email is never null
                 facebook_id=facebook_user_id,
-                first_name = first_name,
-                last_name = last_name,
+                first_name=first_name if first_name else "Facebook",
+                last_name=last_name if last_name else "User",
             )
             user.set_unusable_password()
             user.save()
@@ -99,13 +102,19 @@ def facebook_login(request):
 @permission_classes([permissions.IsAuthenticated])
 def participants_to_usernames(request):
     """
-    GET: Receives a list of user IDs in JSON and returns their corresponding usernames.
+    GET: Receives a list of user IDs in query params and returns their corresponding usernames.
     """
-    data = request.data
-    participant_ids = data.get('participants', [])
+    # Fix: Get data from query params instead of request.data for GET request
+    participant_ids_param = request.GET.get('participants', '')
     
-    if not isinstance(participant_ids, list):
-        return Response({"error": "'participants' should be a list of user IDs"}, status=400)
+    # Parse comma-separated IDs
+    if not participant_ids_param:
+        return Response({"error": "'participants' should not be empty"}, status=400)
+    
+    participant_ids = [int(id_str) for id_str in participant_ids_param.split(',') if id_str]
+    
+    if not participant_ids:
+        return Response({"error": "'participants' should not be empty"}, status=400)
     
     usernames = []
     for user_id in participant_ids:
