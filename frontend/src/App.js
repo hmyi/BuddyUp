@@ -1,113 +1,136 @@
 import React, { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
-import Profile from "./Profile";
-import Header from "./Header";
+import Profile from "./components/Profile";
+import Header from "./components/Header";
+import MyEvents from "./components/MyEvents";
+import EventDetails from "./components/EventDetails";
+import EventCard from "./components/EventCard";
+
+import { dummyEvents } from "./dummyData";
+
+
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import FacebookLogin from "@greatsumini/react-facebook-login";
+
 import "./App.css";
+
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Menu,
-  MenuItem,
-  IconButton,
-  Avatar,
   Card,
   CardContent,
   CardMedia,
   Typography,
-  CardActions
+  CardActions,
 } from "@mui/material";
-import Grid2 from "@mui/material/Grid2";
 
-import { Routes, Route, useNavigate } from "react-router-dom";
+import Grid2 from "@mui/material/Grid";
 
-import { GoogleOAuthProvider,  GoogleLogin } from "@react-oauth/google";
-import FacebookLogin, { FacebookLoginClient } from "@greatsumini/react-facebook-login";
+const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-const FACEBOOK_APP_ID = "508668852260570";
-const GOOGLE_CLIENT_ID =   "951498977249-r9scenl51h8qtsmsc1rv3nierj7k7ohh.apps.googleusercontent.com";
 
-function BasicCard() {
-  const [flag, setFlag] = useState(0);
-  return (
-    <Card
-      onMouseEnter={() => setFlag(1)}
-      onMouseLeave={() => setFlag(0)}
-      sx={{ maxWidth: 300, margin: "20px auto", boxShadow: 3 }}
-    >
-      <CardMedia
-        className="Card"
-        component="img"
-        height="200"
-        image="events_pics/hiking.jpg"
-        alt="hiking"
-      />
-      <CardContent>
-        <Typography
-          gutterBottom
-          variant="h5"
-          component="div"
-          sx={flag === 1 ? { textDecoration: "underline" } : {}}
-        >
-          Hiking
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={flag === 1 ? { textDecoration: "underline" } : {}}
-        >
-          description about time, location, category, created by
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Button
-          size="small"
-          sx={
-            flag === 1
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Attend
-        </Button>
-        <Button
-          size="small"
-          sx={
-            flag === 1
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Share
-        </Button>
-      </CardActions>
-    </Card>
-  );
+export function handleFacebookSuccess(response) {
+  console.log("handleFacebookSuccess Called with:", response);
+
+  if (!response || !response.accessToken) {
+    console.error("No access token received! Response:", response);
+    return;
+  }
+
+  const fbAccessToken = response.accessToken;
+  console.log("Facebook Access Token Received:", fbAccessToken);
+
+  console.log("Making API Request...");
+  fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ access_token: fbAccessToken }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("API Response Data:", data);
+
+      if (!data.access) {
+        console.error("API Response does not contain 'access' token:", data);
+        return;
+      }
+
+      console.log("Decoding Token:", data.access);
+      const decodedToken = jwtDecode(data.access);
+      console.log("Decoded JWT:", decodedToken);
+    })
+    .catch((error) => console.error("❌ Error retrieving JWT:", error));
 }
 
 function App() {
-  const data = [1, 1, 1, 1, 1, 1, 1, 1];
-
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
   const navigate = useNavigate();
 
+  const [events] = useState(dummyEvents);
+
   const handleFacebookSuccess = (response) => {
-    console.log("Facebook Auth Success:", response);
-    setIsSignedIn(true);
-    FacebookLoginClient.getProfile(
-      (profile) => {
-        console.log("Facebook User Profile:", profile);
-        setUserProfile(profile);
+    console.log("HandleFacebookSuccess Called with:", response);
+
+    // Ensure authResponse is not undefined before accessing its properties
+    if (!response || !response.accessToken) {
+      console.error("No access token received! Response:", response);
+      return;
+    }
+
+    const fbAccessToken = response.accessToken;
+    console.log("Facebook Access Token Received:", fbAccessToken);
+
+    console.log("🚀 Making API Request...");
+    fetch("https://3.128.172.39:8000/api/auth/facebook/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      { fields: "id,first_name,last_name,email,picture" }
-    );
+      body: JSON.stringify({ access_token: fbAccessToken }),
+
+    })
+      .then((res) => {
+        console.log("API Fetch Called, Status:", res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+
+        if (!data.access) {
+          console.error("API Response does not contain 'access' token:", data);
+          return;
+        }
+
+        setIsSignedIn(true);
+
+        console.log("Decoding Token:", data.access);
+        setAccessToken(data.access);
+
+        const decodedToken = jwtDecode(data.access);
+        console.log("Decoded JWT:", decodedToken);
+
+        setUserProfile({
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          picture:{
+            data:{url:decodedToken.avatar_url}
+          }
+        });
+      })
+      .catch((error) => console.error("Error retrieving JWT:", error));
+
     setOpenLoginDialog(false);
   };
 
@@ -116,7 +139,6 @@ function App() {
     setIsSignedIn(false);
   };
 
-  // === Google ===
   const handleGoogleSuccess = (response) => {
     console.log("Google Auth Success:", response);
     setIsSignedIn(true);
@@ -146,6 +168,7 @@ function App() {
       <Header
         isSignedIn={isSignedIn}
         userProfile={userProfile}
+        accessToken={accessToken}
         handleLogout={handleLogout}
         anchorEl={anchorEl}
         handleMenuOpen={handleMenuOpen}
@@ -159,23 +182,37 @@ function App() {
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
+
               <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
-                {data.map((item, index) => (
-                  <Grid2 item xs={12} sm={6} md={4} key={index}>
-                    <BasicCard />
+                {events.map((evt) => (
+                    <Grid2 xs={12} sm={6} md={4} key={evt.id}>
+                      <EventCard event={evt} />
+
                   </Grid2>
                 ))}
               </Grid2>
+              <footer className="footer">
+                <div className="footer-content">
+                  <span>©2025 BuudyUp</span>
+                  <span>Terms of Service</span>
+                  <span>Privacy Policy</span>
+                  <span>Cookie Settings</span>
+                  <span>Cookie Policy</span>
+                  <span>Help</span>
+                </div>
+              </footer>
             </div>
           }
         />
+
+        {/* Add the route for viewing event details */}
+        <Route path="/events/:id" element={<EventDetails />} />
+
         <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
       </Routes>
 
-      <Dialog
-        open={openLoginDialog}
-        onClose={() => setOpenLoginDialog(false)}
-      >
+      <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>
           <FacebookLogin
@@ -184,7 +221,10 @@ function App() {
             onFail={handleFacebookFailure}
             usePopup
             initParams={{ version: "v19.0", xfbml: true, cookie: true }}
-            loginOptions={{ scope: "public_profile,email", return_scopes: true }}
+            loginOptions={{
+              scope: "public_profile,email",
+              return_scopes: true,
+            }}
             render={({ onClick }) => (
               <Button
                 fullWidth

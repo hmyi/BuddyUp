@@ -128,11 +128,12 @@ DATABASES = {
     }
 }
 
-# Use SQLite when running tests
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/tmp/test_db.sqlite3',  # SQLite file stored in /tmp/
+if "pytest" in sys.modules or "test" in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/tmp/test_db.sqlite3',  # SQLite file stored in /tmp/
+        }
     }
 
 # Password validation
