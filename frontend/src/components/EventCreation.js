@@ -129,6 +129,18 @@ export default function EventCreation({ accessToken }) {
     setTimeError("");
   }
 
+  function handleCapacityChange(value) {
+    if (value < 0) {
+      setCapacity(0);
+      return;
+    }
+    if (value > 100) {
+      setCapacity(100);
+      return;
+    }
+    setCapacity(value);
+  }
+
   function handleCleanUp() {
     setEventName("");
     setCity("Waterloo");
@@ -292,7 +304,10 @@ export default function EventCreation({ accessToken }) {
                   handleStartTimeChange={handleStartTimeChange}
                   handleEndTimeChange={handleEndTimeChange}
                 />
-                <CapacitySlider capacity={capacity} setCapacity={setCapacity} />
+                <CapacitySlider
+                  capacity={capacity}
+                  handleCapacityChange={handleCapacityChange}
+                />
               </Stack>
             ) : (
               ""
@@ -391,7 +406,7 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
   );
 }
 
-function CapacitySlider({ capacity, setCapacity }) {
+function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
     {
       value: 10,
@@ -410,17 +425,29 @@ function CapacitySlider({ capacity, setCapacity }) {
   return (
     <Box
       sx={{
-        width: 500,
+        width: 800,
         margin: "auto",
+        display: "flex",
+        gap: 5,
       }}
     >
-      <Typography gutterBottom>Capacity</Typography>
+      <TextField
+        label="Capacity"
+        type="number"
+        value={capacity}
+        onChange={(e) => handleCapacityChange(Number(e.target.value))}
+        slotProps={{
+          inputLabel: {
+            shrink: true,
+          },
+        }}
+      />
       <Slider
         aria-label="Default"
         valueLabelDisplay="auto"
         marks={marks}
         value={capacity}
-        onChange={(e) => setCapacity(Number(e.target.value))}
+        onChange={(e) => handleCapacityChange(Number(e.target.value))}
       />
     </Box>
   );
