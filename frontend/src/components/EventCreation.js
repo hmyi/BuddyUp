@@ -92,7 +92,7 @@ export default function EventCreation({ accessToken }) {
   function handleEventNameChange(e) {
     if (e.target.value === "") {
       setEventNameError("event name can not be empty");
-    } else if (e.target.value > 200) {
+    } else if (e.target.value.length > 200) {
       setEventNameError("event name can not be longer than 200 char");
     } else {
       setEventNameError("");
@@ -103,7 +103,7 @@ export default function EventCreation({ accessToken }) {
   function handleLocationChange(e) {
     if (e.target.value === "") {
       setLocationError("location can not be empty");
-    } else if (e.target.value > 255) {
+    } else if (e.target.value.length > 255) {
       setLocationError("event name can not be longer than 255 char");
     } else {
       setLocationError("");
@@ -494,7 +494,7 @@ function StartEndDateTimePicker({
           sx={{
             display: "flex",
             gap: 5,
-            padding: 5,
+            padding: 3,
             borderRadius: 2,
             border: timeError ? 2 : 0,
             borderColor: "error.main",
