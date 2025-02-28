@@ -2,7 +2,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
+from django.db import models
 from django.db.models import Count
+from django.db.models import Q
 from django.utils import timezone
 import random
 import numpy as np
@@ -210,3 +212,70 @@ def search_events(request):
 
         serializer = EventSerializer(sorted_events, many=True)
         return Response(serializer.data, status=200)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def filter_events(request):
+    """
+    GET:
+      - key=city&name=Waterloo
+      - key=category&name=Food
+      - key=city&name=Waterloo&key=category&name=Outdoor&page=0
+
+      - The key and name must appear in pairs and in equal numbers; otherwise, a 400 error is thrown.
+      - For each pair (key_i, name_i), both must be satisfied (logical AND).
+      - By default, sorting is done in ascending order by start_time.
+      - Acceptable keys are category, city, status (active or full).
+      - Page is optional.
+    """
+
+    keys = request.GET.getlist('key', [])
+    names = request.GET.getlist('name', [])
+
+    if len(keys) != len(names):
+        return Response({"error": "The number of 'key' and 'name' parameters must match."},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if not keys and not names:
+        return Response({"error": "At least one pair of (key, name) is required."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    qs = Event.objects.filter(start_time__gte=timezone.now())
+
+    for k, v in zip(keys, names):
+        
+        k_lower = k.lower()
+        v_lower = v.lower()
+        
+        if k_lower == "city":
+            qs = qs.filter(city__iexact=v)
+        elif k_lower == "category":
+            qs = qs.filter(category__iexact=v)
+        elif k_lower == "status":
+            # status => active/full
+            if v_lower == "active":
+                qs = qs.filter(attendance__lt=models.F('capacity'))
+            elif v_lower == "full":
+                qs = qs.filter(attendance__gte=models.F('capacity'))
+            else:
+                return Response({"error": f"Unsupported status value: {v}. Allowed: active, full."},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": f"Unsupported key: {k}. Allowed keys: city, category."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    qs = qs.order_by('start_time')
+
+    page_param = request.GET.get('page')
+    if page_param is not None:
+        try:
+            page = int(page_param)
+        except ValueError:
+            return Response({"error": "Invalid page parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+        page_size = 20
+        start_idx = page * page_size
+        end_idx = (page + 1) * page_size
+        qs = qs[start_idx:end_idx]
+
+    serializer = EventSerializer(qs, many=True)
+    return Response(serializer.data, status=200)

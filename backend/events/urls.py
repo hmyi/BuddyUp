@@ -8,6 +8,7 @@ from .views import (
     leave_event,
     random_events,
     search_events,
+    filter_events,
 )
 
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path('<int:pk>/leave/', leave_event, name='leave_event'),
     path('fetch/random/', random_events, name='random_events'),
     path('search/', search_events, name='search_events'),
+    path('filter/', filter_events, name='filter_events'),
 ]
