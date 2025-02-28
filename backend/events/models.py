@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from django.contrib.auth import get_user_model
+from .semantic_search import text_to_vector
 
 User = get_user_model()
 
@@ -15,6 +16,9 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     capacity = models.PositiveIntegerField()
     attendance = models.PositiveIntegerField(default=0)
+    
+    vector = models.JSONField(null=True, blank=True)
+    cancelled = models.BooleanField(default=False)
 
     creator = models.ForeignKey(
         User,
@@ -33,3 +37,11 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        combined_text = f"{self.title} {self.description}".strip()
+        if combined_text:
+            self.vector = text_to_vector(combined_text)
+        else:
+            self.vector = None
+        super().save(*args, **kwargs)

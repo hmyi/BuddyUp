@@ -3,9 +3,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django.utils import timezone
 import random
+import numpy as np
 from .models import Event
 from .serializers import EventSerializer
+from .semantic_search import text_to_vector, compute_similarities
 
 
 @api_view(['GET'])
@@ -146,3 +149,64 @@ def random_events(request):
         events = Event.objects.filter(pk__in=random_ids)
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def search_events(request):
+    """
+    GET:
+      - city (necessary)
+      - query (optional)
+      - page (optional)
+    """
+    city = request.GET.get('city')
+    if not city:
+        return Response({"error": "Missing 'city' parameter"}, status=400)
+
+    query = request.GET.get('query')
+    events_qs = Event.objects.filter(city__iexact=city, start_time__gte=timezone.now())
+
+    if not query:
+        events_qs = events_qs.order_by('start_time')
+        
+        page_param = request.GET.get('page')
+        if page_param is not None:
+            try:
+                page = int(page_param)
+            except ValueError:
+                return Response({"error": "Invalid page parameter"}, status=400)
+            page_size = 20
+            start_idx = page * page_size
+            end_idx = (page + 1) * page_size
+            events_qs = events_qs[start_idx:end_idx]
+        
+        serializer = EventSerializer(events_qs, many=True)
+        return Response(serializer.data, status=200)
+    else:
+        query_vec = text_to_vector(query)
+        
+        valid_events = []
+        vectors = []
+        for e in events_qs:
+            if e.vector:
+                valid_events.append(e)
+                vectors.append(e.vector)
+
+        sims = compute_similarities(query_vec, vectors)
+        event_sims = list(zip(valid_events, sims))
+        event_sims.sort(key=lambda x: x[1], reverse=True)
+        sorted_events = [pair[0] for pair in event_sims]
+
+        page_param = request.GET.get('page')
+        if page_param is not None:
+            try:
+                page = int(page_param)
+            except ValueError:
+                return Response({"error": "Invalid page parameter"}, status=400)
+            page_size = 20
+            start_idx = page * page_size
+            end_idx = (page + 1) * page_size
+            sorted_events = sorted_events[start_idx:end_idx]
+
+        serializer = EventSerializer(sorted_events, many=True)
+        return Response(serializer.data, status=200)

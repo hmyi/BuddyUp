@@ -39,6 +39,8 @@ def facebook_login(request):
     
     user_info = user_info_response.json()
     email = user_info.get('email')
+    if not email:
+        email = "dummy@dummy.com"
     name = user_info.get('name')
     first_name = user_info.get('first_name', '')  # Default empty string
     last_name = user_info.get('last_name', '')    # Default empty string
