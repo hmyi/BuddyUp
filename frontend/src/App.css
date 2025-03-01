@@ -90,8 +90,3 @@
   height: 100px;
   background-color: #76c7ad;
 }
-
-.footer-content {
-  display: flex;
-  gap: 16px; /* Adjust as needed */
-}

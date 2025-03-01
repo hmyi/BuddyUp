@@ -1,10 +1,9 @@
 import React from "react";
 import { IconButton, Avatar, Menu, MenuItem, Button } from "@mui/material";
-
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-import EventIcon from '@mui/icons-material/Event';
+import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from "react-router-dom";
 import EventCreation from "./EventCreation";
 
@@ -16,6 +15,7 @@ function Header({
   anchorEl,
   handleMenuOpen,
   handleMenuClose,
+  setOpenSnackBar,
   openLoginDialog,
 }) {
   const navigate = useNavigate();
@@ -40,7 +40,10 @@ function Header({
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
-            <EventCreation accessToken={accessToken} />
+            <EventCreation
+              accessToken={accessToken}
+              setOpenSnackBar={setOpenSnackBar}
+            />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}
@@ -97,10 +100,14 @@ function Header({
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
-                <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })} >
-                    <EventIcon sx={{ mr: 2 }} fontSize="small" />
-                    My events
-                </MenuItem>
+              <MenuItem
+                onClick={() =>
+                  navigate("/myEvents", { state: { userProfile } })
+                }
+              >
+                <EventIcon sx={{ mr: 2 }} fontSize="small" />
+                My events
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleLogout();
