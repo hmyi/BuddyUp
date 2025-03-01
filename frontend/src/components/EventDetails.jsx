@@ -13,7 +13,7 @@ import {
   Grid,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-
+import FloatingFooter from "./FloatingFooter";
 
 // A styled Box for the map's responsive container
 const MapContainer = styled("div")(({ theme }) => ({
@@ -32,7 +32,6 @@ const MapIframe = styled("iframe")({
   border: 0,
 });
 
-
 function formatDateTime(dateString) {
   const dateObj = new Date(dateString);
   return dateObj.toLocaleString("en-US", {
@@ -46,14 +45,17 @@ function formatDateTime(dateString) {
 }
 
 function generateGoogleCalendarLink(event) {
-  const startUTC = new Date(event.start_time).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const endUTC = new Date(event.end_time).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const startUTC = new Date(event.start_time)
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
+  const endUTC = new Date(event.end_time)
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
   const title = encodeURIComponent(event.title || "Event");
   const details = encodeURIComponent(event.description || "No description");
-    const location = encodeURIComponent(`${event.location} ${event.city}`);
-    
-
-
+  const location = encodeURIComponent(`${event.location} ${event.city}`);
 
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
@@ -61,36 +63,40 @@ function generateGoogleCalendarLink(event) {
 function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
-    const navigate = useNavigate();
-    const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
-
+  const navigate = useNavigate();
+  const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
   const event = state?.event;
+  const userProfile = state?.userProfile;
+  const accessToken = state?.accessToken;
+  console.log(event);
+
   if (!event) {
     return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" color="error">
           No event data found!
         </Typography>
-        <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate("/")}>
+        <Button
+          variant="contained"
+          sx={{ mt: 2 }}
+          onClick={() => navigate("/")}
+        >
           Back to Home
         </Button>
       </Box>
     );
   }
 
-   const startTime = formatDateTime(event.start_time);
+  const startTime = formatDateTime(event.start_time);
   const endTime = formatDateTime(event.end_time);
 
-
-    
-const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
-  `${event.location}, ${event.city}`
-)}`;
+  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
+    `${event.location}, ${event.city}`
+  )}`;
 
   const calendarLink = generateGoogleCalendarLink(event);
 
   const participantAvatars = (event.participants || []).map((p) => {
-
     return {
       id: p,
       name: `User${p}`,
@@ -192,15 +198,14 @@ const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVP
           <Typography variant="body2" sx={{ mb: 2 }}>
             {event.location}, {event.city}
           </Typography>
-            <MapContainer>
+          <MapContainer>
             <MapIframe
-                loading="lazy"
-                allowFullScreen
-                title="Google Map"
-                src={googleMapSrc}
+              loading="lazy"
+              allowFullScreen
+              title="Google Map"
+              src={googleMapSrc}
             />
-            </MapContainer>
-
+          </MapContainer>
         </CardContent>
       </Card>
 
@@ -213,19 +218,33 @@ const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVP
           </Typography>
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="caption" display="block" gutterBottom align="right">
+          <Typography
+            variant="caption"
+            display="block"
+            gutterBottom
+            align="right"
+          >
             <strong>Updated:</strong>{" "}
             {new Date(event.updated_at).toLocaleString()}
           </Typography>
         </Grid>
       </Grid>
-
-      {/* Back Button */}
-      <Box sx={{ textAlign: "right", mt: 2 }}>
-        <Button variant="contained" onClick={() => navigate("/")}>
-          Back to Home
-        </Button>
-      </Box>
+      <FloatingFooter
+        accessToken={accessToken}
+        userID={userProfile?.userID}
+        hostID={event.creator}
+        eventID={event.id}
+        eventTitle={event.title}
+        eventTime={event.start_time}
+        participationList={event.participants}
+      >
+        {/* Back Button */}
+        <Box sx={{ textAlign: "right", mt: 0 }}>
+          <Button variant="contained" onClick={() => navigate("/")}>
+            Back to Home
+          </Button>
+        </Box>
+      </FloatingFooter>
     </Box>
   );
 }
