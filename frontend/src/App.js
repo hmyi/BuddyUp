@@ -4,10 +4,11 @@ import { jwtDecode } from "jwt-decode";
 
 import Profile from "./components/Profile";
 import Header from "./components/Header";
+import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import EventCard from "./components/EventCard";
 
-import { dummyEvents } from "./dummyData"; 
+import { dummyEvents } from "./dummyData";
 
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -25,7 +26,7 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  CardActions
+  CardActions,
 } from "@mui/material";
 
 import Grid2 from "@mui/material/Grid";
@@ -70,64 +71,68 @@ export function handleFacebookSuccess(response) {
 }
 
 function App() {
-
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
   const navigate = useNavigate();
 
   const [events] = useState(dummyEvents);
-
 
   const handleFacebookSuccess = (response) => {
     console.log("HandleFacebookSuccess Called with:", response);
 
     // Ensure authResponse is not undefined before accessing its properties
     if (!response || !response.accessToken) {
-        console.error("No access token received! Response:", response);
-        return;
+      console.error("No access token received! Response:", response);
+      return;
     }
 
     const fbAccessToken = response.accessToken;
     console.log("Facebook Access Token Received:", fbAccessToken);
 
-    console.log("Making API Request...");
-    fetch("https://18.218.44.88:8000/api/auth/facebook/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ access_token: fbAccessToken }),
+    console.log("🚀 Making API Request...");
+    fetch("https://3.128.172.39:8000/api/auth/facebook/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: fbAccessToken }),
+
     })
-    .then((res) => {
+      .then((res) => {
         console.log("API Fetch Called, Status:", res.status);
         return res.json();
-    })
-    .then((data) => {
+      })
+      .then((data) => {
         console.log("API Response Data:", data);
 
         if (!data.access) {
-            console.error("API Response does not contain 'access' token:", data);
-            return;
+          console.error("API Response does not contain 'access' token:", data);
+          return;
         }
 
         setIsSignedIn(true);
 
         console.log("Decoding Token:", data.access);
+        setAccessToken(data.access);
+
         const decodedToken = jwtDecode(data.access);
         console.log("Decoded JWT:", decodedToken);
 
         setUserProfile({
-            name: decodedToken.username || "Unknown",
-            email: decodedToken.email || "No Email Provided",
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          picture:{
+            data:{url:decodedToken.avatar_url}
+          }
         });
-    })
-    .catch((error) => console.error("Error retrieving JWT:", error));
+      })
+      .catch((error) => console.error("Error retrieving JWT:", error));
 
     setOpenLoginDialog(false);
-};
-
+  };
 
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
@@ -163,6 +168,7 @@ function App() {
       <Header
         isSignedIn={isSignedIn}
         userProfile={userProfile}
+        accessToken={accessToken}
         handleLogout={handleLogout}
         anchorEl={anchorEl}
         handleMenuOpen={handleMenuOpen}
@@ -170,19 +176,31 @@ function App() {
         openLoginDialog={() => setOpenLoginDialog(true)}
       />
 
-<Routes>
+      <Routes>
         <Route
           path="/"
           element={
             <div>
               <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
+
               <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
                 {events.map((evt) => (
-                  <Grid2 xs={12} sm={6} md={4} key={evt.id}>
-                    <EventCard event={evt} />
+                    <Grid2 xs={12} sm={6} md={4} key={evt.id}>
+                      <EventCard event={evt} />
+
                   </Grid2>
                 ))}
               </Grid2>
+              <footer className="footer">
+                <div className="footer-content">
+                  <span>©2025 BuudyUp</span>
+                  <span>Terms of Service</span>
+                  <span>Privacy Policy</span>
+                  <span>Cookie Settings</span>
+                  <span>Cookie Policy</span>
+                  <span>Help</span>
+                </div>
+              </footer>
             </div>
           }
         />
@@ -191,6 +209,7 @@ function App() {
         <Route path="/events/:id" element={<EventDetails />} />
 
         <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
@@ -202,16 +221,27 @@ function App() {
             onFail={handleFacebookFailure}
             usePopup
             initParams={{ version: "v19.0", xfbml: true, cookie: true }}
-            loginOptions={{ scope: "public_profile,email", return_scopes: true }}
+            loginOptions={{
+              scope: "public_profile,email",
+              return_scopes: true,
+            }}
             render={({ onClick }) => (
-              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={onClick}
+              >
                 Sign In with Facebook
               </Button>
             )}
           />
           <br />
           <br />
-          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleFailure}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>
