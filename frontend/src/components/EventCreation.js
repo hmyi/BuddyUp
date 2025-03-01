@@ -92,7 +92,7 @@ export default function EventCreation({ accessToken }) {
   function handleEventNameChange(e) {
     if (e.target.value === "") {
       setEventNameError("event name can not be empty");
-    } else if (e.target.value > 200) {
+    } else if (e.target.value.length > 200) {
       setEventNameError("event name can not be longer than 200 char");
     } else {
       setEventNameError("");
@@ -103,7 +103,7 @@ export default function EventCreation({ accessToken }) {
   function handleLocationChange(e) {
     if (e.target.value === "") {
       setLocationError("location can not be empty");
-    } else if (e.target.value > 255) {
+    } else if (e.target.value.length > 255) {
       setLocationError("event name can not be longer than 255 char");
     } else {
       setLocationError("");
@@ -127,6 +127,18 @@ export default function EventCreation({ accessToken }) {
       return;
     }
     setTimeError("");
+  }
+
+  function handleCapacityChange(value) {
+    if (value < 0) {
+      setCapacity(0);
+      return;
+    }
+    if (value > 100) {
+      setCapacity(100);
+      return;
+    }
+    setCapacity(value);
   }
 
   function handleCleanUp() {
@@ -292,7 +304,10 @@ export default function EventCreation({ accessToken }) {
                   handleStartTimeChange={handleStartTimeChange}
                   handleEndTimeChange={handleEndTimeChange}
                 />
-                <CapacitySlider capacity={capacity} setCapacity={setCapacity} />
+                <CapacitySlider
+                  capacity={capacity}
+                  handleCapacityChange={handleCapacityChange}
+                />
               </Stack>
             ) : (
               ""
@@ -391,7 +406,7 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
   );
 }
 
-function CapacitySlider({ capacity, setCapacity }) {
+function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
     {
       value: 10,
@@ -410,17 +425,29 @@ function CapacitySlider({ capacity, setCapacity }) {
   return (
     <Box
       sx={{
-        width: 500,
+        width: 800,
         margin: "auto",
+        display: "flex",
+        gap: 5,
       }}
     >
-      <Typography gutterBottom>Capacity</Typography>
+      <TextField
+        label="Capacity"
+        type="number"
+        value={capacity}
+        onChange={(e) => handleCapacityChange(Number(e.target.value))}
+        slotProps={{
+          inputLabel: {
+            shrink: true,
+          },
+        }}
+      />
       <Slider
         aria-label="Default"
         valueLabelDisplay="auto"
         marks={marks}
         value={capacity}
-        onChange={(e) => setCapacity(Number(e.target.value))}
+        onChange={(e) => handleCapacityChange(Number(e.target.value))}
       />
     </Box>
   );
@@ -494,7 +521,7 @@ function StartEndDateTimePicker({
           sx={{
             display: "flex",
             gap: 5,
-            padding: 5,
+            padding: 3,
             borderRadius: 2,
             border: timeError ? 2 : 0,
             borderColor: "error.main",
