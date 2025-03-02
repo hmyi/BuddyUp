@@ -9,62 +9,6 @@ import {
   Grid,
   Avatar,
   AvatarGroup,
-<<<<<<< Updated upstream
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
-
-// Mapping for category images
-const categoryImages = {
-  Sport: "/events_pics/sports.jpg",
-  Hiking: "/events_pics/hiking.jpg",
-  Food: "/events_pics/food.jpg",
-  // add more mappings as needed
-};
-
-// Styled components for the image and overlay
-const ImageContainer = styled(Box)(({ theme }) => ({
-  position: "relative",
-  width: "100%",
-  height: "400px", // increased height
-  marginBottom: theme.spacing(2),
-  overflow: "hidden",
-}));
-
-const StyledImage = styled("img")({
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-});
-
-const TopOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.6)",
-  color: "white",
-  padding: theme.spacing(2),
-  boxSizing: "border-box",
-}));
-
-// New TopRightOverlay for participants
-const TopRightOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  top: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.6)",
-  color: "white",
-  padding: theme.spacing(2),
-  boxSizing: "border-box",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-end",
-  gap: theme.spacing(1),
-}));
-
-// Styled components for the map embed
-const MapContainer = styled("div")(({ theme }) => ({
-=======
   Badge,
   Chip
 } from "@mui/material";
@@ -80,7 +24,6 @@ const categoryImages = {
 };
 
 const ImageContainer = styled(Box)(({ theme }) => ({
->>>>>>> Stashed changes
   position: "relative",
   width: "100%",
   height: "400px",
@@ -105,34 +48,6 @@ const TopOverlay = styled(Box)(({ theme }) => ({
   boxSizing: "border-box",
 }));
 
-<<<<<<< Updated upstream
-// Utility function for formatting date/time
-function formatDateTime(dateString) {
-  const dateObj = new Date(dateString);
-  return dateObj.toLocaleString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-// Function to generate a Google Calendar link
-function generateGoogleCalendarLink(eventData) {
-  const startUTC = new Date(eventData.start_time)
-    .toISOString()
-    .replace(/[-:]/g, "")
-    .replace(/\.\d{3}Z$/, "Z");
-  const endUTC = new Date(eventData.end_time)
-    .toISOString()
-    .replace(/[-:]/g, "")
-    .replace(/\.\d{3}Z$/, "Z");
-  const title = encodeURIComponent(eventData.title || "Event");
-  const details = encodeURIComponent(eventData.description || "No description");
-  const location = encodeURIComponent(`${eventData.location} ${eventData.city}`);
-=======
 const TopRightOverlay = styled(Box)(({ theme }) => ({
   position: "absolute",
   top: 0,
@@ -231,7 +146,6 @@ function generateGoogleCalendarLink(eventData) {
   const location = encodeURIComponent(
     `${eventData.location || "Unknown location"}, ${eventData.city || ""}`
   );
->>>>>>> Stashed changes
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
 
@@ -327,19 +241,10 @@ function EventDetails({ userProfile, accessToken }) {
   const { id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
-<<<<<<< Updated upstream
-
-  // Use event from state if available; otherwise fetch it.
-  const [eventData, setEventData] = useState(state?.event || null);
-  const [loading, setLoading] = useState(false);
-  const accessToken = localStorage.getItem("accessToken");
-
-=======
   const [eventData, setEventData] = useState(state?.event || null);
   const [loading, setLoading] = useState(false);
   const currentUserId = userProfile ? userProfile.userID : null;
 
->>>>>>> Stashed changes
   useEffect(() => {
     if (!eventData) {
       setLoading(true);
@@ -364,12 +269,8 @@ function EventDetails({ userProfile, accessToken }) {
           setLoading(false);
         });
     }
-<<<<<<< Updated upstream
-  }, [id, eventData, accessToken]);
-=======
   }, [id, accessToken]); // Remove eventData from dependencies
   
->>>>>>> Stashed changes
 
   if (loading) {
     return <Typography>Loading event details...</Typography>;
@@ -388,21 +289,11 @@ function EventDetails({ userProfile, accessToken }) {
     );
   }
 
-<<<<<<< Updated upstream
-  // Compute the image source based on eventData.category
-  const imageSrc =
-    categoryImages[eventData.category] || "/events_pics/default.jpg";
-  const startTime = formatDateTime(eventData.start_time);
-  const endTime = formatDateTime(eventData.end_time);
-
-  // Generate Google Map URL (requires a valid API key)
-=======
   const categoryKey = (eventData.category && eventData.category.toLowerCase()) || "";
   const imageSrc = categoryImages[categoryKey] || "/events_pics/default.jpg";  
   const eventDate = formatEventDate(eventData.start_time);
   const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
   const spotsAvailable = eventData.capacity - eventData.attendance;
->>>>>>> Stashed changes
   const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
   const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
     `${eventData.location}, ${eventData.city}`
@@ -413,92 +304,6 @@ function EventDetails({ userProfile, accessToken }) {
       ? eventData.participants.includes(currentUserId)
       : false;
 
-<<<<<<< Updated upstream
-  // Generate Google Calendar link
-  const calendarLink = generateGoogleCalendarLink(eventData);
-
-  // For demonstration: simulate user's attendance status (replace with real logic)
-  const userIsAttending = eventData.participants
-    ? eventData.participants.includes("currentUserId") // replace with actual user id
-    : false;
-
-  return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      {/* Image with overlays */}
-      <ImageContainer>
-        <StyledImage src={imageSrc} alt={eventData.title} />
-        <TopOverlay>
-          <Typography variant="h5">{eventData.title}</Typography>
-          <Typography variant="subtitle1">
-            {eventData.category} | {eventData.city}
-          </Typography>
-        </TopOverlay>
-        {/* Top right overlay for participants */}
-        {eventData.participants && eventData.participants.length > 0 && (
-          <TopRightOverlay>
-            <AvatarGroup sx={{ "& .MuiAvatar-root": { marginRight: "-4px" } }} max={4}>
-              {eventData.participants.map((participant, idx) => (
-                <Avatar
-                  key={idx}
-                  alt={`User ${participant}`}
-                  src={`https://via.placeholder.com/40/00798a/ffffff?text=U${participant}`}
-                />
-              ))}
-            </AvatarGroup>
-          </TopRightOverlay>
-        )}
-      </ImageContainer>
-
-      {/* Layout for Event Info and Map in two equal columns */}
-      <Grid container spacing={2} alignItems="stretch">
-        {/* Left column: event details, start/end times, join event, and add to calendar */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2, height: "100%" }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Description:
-              </Typography>
-              <Typography variant="body1" paragraph>
-                {eventData.description}
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                <strong>Start:</strong> {startTime}
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                <strong>End:</strong> {endTime}
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="primary" sx={{ mr: 2 }}>
-                  {!userIsAttending ? "Join Event" : "You're Attending"}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => window.open(calendarLink, "_blank")}
-                >
-                  Add to Google Calendar
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Right column: Google Map */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2, height: "100%" }}>
-            <MapContainer>
-              <MapIframe
-                loading="lazy"
-                allowFullScreen
-                title="Google Map"
-                src={googleMapSrc}
-              />
-            </MapContainer>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Back Button */}
-=======
   const handleShare = () => {
     if (navigator.share) {
       navigator
@@ -658,7 +463,6 @@ function EventDetails({ userProfile, accessToken }) {
           <EventMap googleMapSrc={googleMapSrc} />
         </Grid>
       </Grid>
->>>>>>> Stashed changes
       <Box sx={{ textAlign: "right", mt: 2 }}>
         <Button variant="contained" onClick={() => navigate("/")}>
           Back to Home
