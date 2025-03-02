@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// App.js
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
@@ -34,9 +35,15 @@ import Grid2 from "@mui/material/Grid";
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
+<<<<<<< Updated upstream
 
 export function handleFacebookSuccess(response) {
   console.log("handleFacebookSuccess Called with:", response);
+=======
+// Export handleFacebookSuccess at module level
+export function handleFacebookSuccess(response, { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}) {
+  console.log("HandleFacebookSuccess Called with:", response);
+>>>>>>> Stashed changes
 
   if (!response || !response.accessToken) {
     console.error("No access token received! Response:", response);
@@ -45,16 +52,19 @@ export function handleFacebookSuccess(response) {
 
   const fbAccessToken = response.accessToken;
   console.log("Facebook Access Token Received:", fbAccessToken);
+  console.log("🚀 Making API Request...");
 
-  console.log("Making API Request...");
-  fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+  fetch("https://18.226.163.235:8000/api/auth/facebook/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ access_token: fbAccessToken }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      console.log("API Fetch Called, Status:", res.status);
+      return res.json();
+    })
     .then((data) => {
       console.log("API Response Data:", data);
 
@@ -63,11 +73,26 @@ export function handleFacebookSuccess(response) {
         return;
       }
 
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setAccessToken) setAccessToken(data.access);
+      localStorage.setItem("accessToken", data.access); // Persist token
+
       console.log("Decoding Token:", data.access);
       const decodedToken = jwtDecode(data.access);
       console.log("Decoded JWT:", decodedToken);
+
+      if (setUserProfile) {
+        setUserProfile({
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          userID: decodedToken.user_id,
+          picture: { data: { url: decodedToken.avatar_url } },
+        });
+      }
     })
-    .catch((error) => console.error("❌ Error retrieving JWT:", error));
+    .catch((error) => console.error("Error retrieving JWT:", error));
+
+  if (setOpenLoginDialog) setOpenLoginDialog(false);
 }
 
 function App() {
@@ -76,6 +101,7 @@ function App() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
+<<<<<<< Updated upstream
   const navigate = useNavigate();
 
   const [events] = useState(dummyEvents);
@@ -127,12 +153,34 @@ function App() {
           picture:{
             data:{url:decodedToken.avatar_url}
           }
-        });
-      })
-      .catch((error) => console.error("Error retrieving JWT:", error));
+=======
+  const [openSnackBar, setOpenSnackBar] = useState(false);
 
-    setOpenLoginDialog(false);
-  };
+  const navigate = useNavigate();
+
+  // On app mount, read token from localStorage and update state.
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      setAccessToken(token);
+      setIsSignedIn(true);
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserProfile({
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          userID: decodedToken.user_id,
+          picture: { data: { url: decodedToken.avatar_url } },
+>>>>>>> Stashed changes
+        });
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        localStorage.removeItem("accessToken");
+        setAccessToken(null);
+        setIsSignedIn(false);
+      }
+    }
+  }, []);
 
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
@@ -142,6 +190,7 @@ function App() {
   const handleGoogleSuccess = (response) => {
     console.log("Google Auth Success:", response);
     setIsSignedIn(true);
+    // For demonstration purposes only. Replace with your own logic.
     setUserProfile({
       email: "Google User",
       picture: { data: { url: "https://via.placeholder.com/150" } },
@@ -157,6 +206,8 @@ function App() {
     setIsSignedIn(false);
     setUserProfile(null);
     setAnchorEl(null);
+    localStorage.removeItem("accessToken");
+    setAccessToken(null);
     navigate("/");
   };
 
@@ -204,12 +255,23 @@ function App() {
             </div>
           }
         />
+<<<<<<< Updated upstream
 
         {/* Add the route for viewing event details */}
         <Route path="/events/:id" element={<EventDetails />} />
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
+=======
+        <Route
+          path="/events/:id"
+          element={
+            <EventDetails userProfile={userProfile} accessToken={accessToken} />
+          }
+        />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/myEvents" element={<MyEvents accessToken={accessToken} />} />
+>>>>>>> Stashed changes
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
@@ -226,22 +288,14 @@ function App() {
               return_scopes: true,
             }}
             render={({ onClick }) => (
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={onClick}
-              >
+              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
                 Sign In with Facebook
               </Button>
             )}
           />
           <br />
           <br />
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-          />
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>
