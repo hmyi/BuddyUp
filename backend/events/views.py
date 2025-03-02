@@ -52,7 +52,7 @@ def create_event(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def event_detail(request, pk):
     """
     GET: Get detail of an event
