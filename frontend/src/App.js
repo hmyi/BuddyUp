@@ -85,28 +85,60 @@ function App() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      setAccessToken(token);
-      setIsSignedIn(true);
-      try {
-        const decodedToken = jwtDecode(token);
+  const handleFacebookSuccess = (response) => {
+    console.log("HandleFacebookSuccess Called with:", response);
+
+    // Ensure authResponse is not undefined before accessing its properties
+    if (!response || !response.accessToken) {
+      console.error("No access token received! Response:", response);
+      return;
+    }
+
+    const fbAccessToken = response.accessToken;
+    console.log("Facebook Access Token Received:", fbAccessToken);
+
+    console.log("🚀 Making API Request...");
+    fetch("https://18.226.163.235:8000/api/auth/facebook/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: fbAccessToken }),
+    })
+      .then((res) => {
+        console.log("API Fetch Called, Status:", res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+
+        if (!data.access) {
+          console.error("API Response does not contain 'access' token:", data);
+          return;
+        }
+
+        setIsSignedIn(true);
+
+        console.log("Decoding Token:", data.access);
+        setAccessToken(data.access);
+
+        const decodedToken = jwtDecode(data.access);
+        console.log("Decoded JWT:", decodedToken);
+
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
           userID: decodedToken.user_id,
-          picture: { data: { url: decodedToken.avatar_url } },
+          picture: {
+            data: { url: decodedToken.avatar_url },
+          },
         });
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        localStorage.removeItem("accessToken");
-        setAccessToken(null);
-        setIsSignedIn(false);
-      }
-    }
-  }, []);
+      })
+      .catch((error) => console.error("Error retrieving JWT:", error));
 
+    setOpenLoginDialog(false);
+  };
+  
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
     setIsSignedIn(false);

@@ -16,6 +16,7 @@ function Header({
   anchorEl,
   handleMenuOpen,
   handleMenuClose,
+  setOpenSnackBar,
   openLoginDialog,
 }) {
   const navigate = useNavigate();
@@ -40,7 +41,10 @@ function Header({
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
-            <EventCreation accessToken={accessToken} />
+            <EventCreation
+              accessToken={accessToken}
+              setOpenSnackBar={setOpenSnackBar}
+            />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}
@@ -92,15 +96,13 @@ function Header({
                 Settings
               </MenuItem>
               <MenuItem
-                onClick={() => navigate("/profile", { state: { userProfile } })}
+                onClick={() =>
+                  navigate("/myEvents", { state: { userProfile } })
+                }
               >
-                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
-                View profile
+                <EventIcon sx={{ mr: 2 }} fontSize="small" />
+                My events
               </MenuItem>
-                <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })} >
-                    <EventIcon sx={{ mr: 2 }} fontSize="small" />
-                    My events
-                </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleLogout();

@@ -10,18 +10,15 @@ import {
   Avatar,
   AvatarGroup,
   Badge,
+  CardMedia,
   Chip
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
+import FloatingFooter from "./FloatingFooter";
 
-const categoryImages = {
-  sports: "/events_pics/sports.jpg",
-  hiking: "/events_pics/hiking.jpg",
-  food: "/events_pics/food.jpg",
-};
 
 const ImageContainer = styled(Box)(({ theme }) => ({
   position: "relative",
@@ -201,14 +198,20 @@ const EventCapacityBox = ({ capacity, attendance, spotsAvailable, status, catego
   );
 };
 
-const EventActionsBox = ({ userIsAttending, handleJoinEvent, handleLeaveEvent }) => {
+const EventActionsBox = ({ handleCancelEvent, currentUserId, participants, eventHostId, userIsAttending, handleJoinEvent, handleLeaveEvent }) => {
+  console.log(currentUserId)
   return (
     <Box sx={{ mt: 2 }}>
       <Button
         variant="contained"
         color="primary"
-        onClick={userIsAttending ? handleLeaveEvent : handleJoinEvent}       >
-        {userIsAttending ? "Leave Event" : "Join Event"}
+        disabled={!currentUserId}
+        onClick={(currentUserId === eventHostId) ? handleCancelEvent : participants.includes(currentUserId) ?  handleLeaveEvent : handleJoinEvent}       >
+         {currentUserId === eventHostId
+            ? "Cancel"
+            : participants.includes(currentUserId)
+            ? "Leave"
+            : "Attend"}
       </Button>
     </Box>
   );
@@ -237,16 +240,24 @@ const EventMap = ({ googleMapSrc }) => {
   );
 };
 
-function EventDetails({ userProfile, accessToken }) {
+function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
   const [eventData, setEventData] = useState(state?.event || null);
   const [loading, setLoading] = useState(false);
-  const currentUserId = userProfile ? userProfile.userID : null;
+  const event = state?.event;
+  const userProfile = state?.userProfile;
+  const accessToken = state?.accessToken;
+  const currentUserId = userProfile?.userID;
+  const participants  = eventData?.participants;
+  const eventHostId = eventData?.creator;
+
+  console.log(event)
 
   useEffect(() => {
-    if (!eventData) {
+      console.log(accessToken);
+      console.log(eventData);
       setLoading(true);
       fetch(`https://18.226.163.235:8000/api/events/${id}/`, {
         headers: {
@@ -261,15 +272,17 @@ function EventDetails({ userProfile, accessToken }) {
           return response.json();
         })
         .then((data) => {
+          if (!data) {
           setEventData(data);
+          }
           setLoading(false);
         })
         .catch((error) => {
           console.error("Error fetching event details:", error);
           setLoading(false);
         });
-    }
-  }, [id, accessToken]); // Remove eventData from dependencies
+
+  }, [eventData, id, accessToken]); 
   
 
   if (loading) {
@@ -289,8 +302,10 @@ function EventDetails({ userProfile, accessToken }) {
     );
   }
 
+
+
+
   const categoryKey = (eventData.category && eventData.category.toLowerCase()) || "";
-  const imageSrc = categoryImages[categoryKey] || "/events_pics/default.jpg";  
   const eventDate = formatEventDate(eventData.start_time);
   const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
   const spotsAvailable = eventData.capacity - eventData.attendance;
@@ -347,6 +362,27 @@ function EventDetails({ userProfile, accessToken }) {
       });
   };
 
+
+  const handleCancelEvent = () => {
+
+    fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`, 
+      },
+    })
+      .then((res) => {
+        console.log(", Status:", res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+      })
+      .catch((error) => console.error("Error:", error));
+
+  }
+
+
   const handleLeaveEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${id}/leave/`, {
       method: "POST",
@@ -367,6 +403,7 @@ function EventDetails({ userProfile, accessToken }) {
           ...eventData,
           participants: eventData.participants.filter((p) => p !== currentUserId),
         });
+        console.log("eventData: " + eventData);
       })
       .catch((error) => {
         console.error("Error leaving event:", error);
@@ -377,7 +414,8 @@ function EventDetails({ userProfile, accessToken }) {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <ImageContainer>
-        <StyledImage src={imageSrc} alt={eventData.title} />
+        <StyledImage src={`/events_pics/${eventData.category}.jpg`} alt={eventData.title} />
+        
         <TopOverlay>
           <div>
             <Typography variant="h5">{eventData.title}</Typography>
@@ -389,7 +427,7 @@ function EventDetails({ userProfile, accessToken }) {
             {eventData.hostImage && (
               <Avatar
                 src={eventData.hostImage}
-                alt={eventData.hostName}
+                alt={eventData.creator}
                 sx={{ width: 32, height: 32, mr: 1 }}
               />
             )}
@@ -452,9 +490,13 @@ function EventDetails({ userProfile, accessToken }) {
                 location={eventData.location}
               />
               <EventActionsBox
+                currentUserId = {currentUserId}
                 userIsAttending={userIsAttending}
+                participants={participants}
+                eventHostId={eventHostId}
                 handleJoinEvent={handleJoinEvent}
                 handleLeaveEvent={handleLeaveEvent}
+                handleCancelEvent={handleCancelEvent}
               />
             </CardContent>
           </Card>

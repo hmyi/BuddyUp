@@ -32,7 +32,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function EventCreation({ accessToken }) {
+export default function EventCreation({ accessToken, setOpenSnackBar }) {
   // flow control state
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
@@ -180,7 +180,7 @@ export default function EventCreation({ accessToken }) {
     console.log("EventCreation with acessToekn: ", accessToken);
     console.log("🚀 Making API Request...");
 
-    fetch("https://3.128.172.39:8000/api/events/new/", {
+    fetch("https://18.226.163.235:8000/api/events/new/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -197,6 +197,7 @@ export default function EventCreation({ accessToken }) {
       })
       .catch((error) => console.error("Error:", error));
 
+      setOpenSnackBar(true);
     handleCleanUp();
     handleClose();
   }
