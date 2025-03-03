@@ -13,7 +13,7 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
 
 
   useEffect(() => {
-    fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=1")
+    fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

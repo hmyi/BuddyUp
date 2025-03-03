@@ -95,13 +95,19 @@ function Header({
                 Settings
               </MenuItem>
               <MenuItem
+                onClick={() => navigate("/profile", { state: { userProfile } })}
+              >
+                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
+                View profile
+              </MenuItem>
+              <MenuItem
                 onClick={() =>
                   navigate("/myEvents", { state: { userProfile } })
                 }
               >
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
-</MenuItem>
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleLogout();
