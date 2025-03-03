@@ -101,16 +101,7 @@ function Header({
               >
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
-             
-              <MenuItem
-                onClick={() =>
-                  navigate("/myEvents", { state: { userProfile } })
-                }
-              >
-                <EventIcon sx={{ mr: 2 }} fontSize="small" />
-                My events
-              </MenuItem>
-
+</MenuItem>
               <MenuItem
                 onClick={() => {
                   handleLogout();

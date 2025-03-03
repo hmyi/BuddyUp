@@ -221,6 +221,11 @@ const EventActionsBox = ({ handleCancelEvent, currentUserId, participants, event
   );
 };
 
+function formatDateTime(dateString) {
+  const dateObj = new Date(dateString);
+  return dateObj.toLocaleString("en-US", {
+})};
+
 const EventMap = ({ googleMapSrc }) => {
   return (
     <Card sx={{ p: 2, height: "100%" }}>
@@ -244,6 +249,8 @@ const EventMap = ({ googleMapSrc }) => {
   );
 };
 
+
+
 function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
@@ -257,6 +264,9 @@ function EventDetails() {
   const currentUserId = userProfile?.userID;
   const participants  = eventData?.participants;
   const eventHostId = eventData?.creator;
+  const startTime = formatDateTime(eventData.start_time);
+  const endTime = formatDateTime(eventData.end_time);
+
 
   console.log(event)
 
@@ -315,14 +325,7 @@ function EventDetails() {
 
 
 
-  const startTime = formatDateTime(event.start_time);
-  const endTime = formatDateTime(event.end_time);
-
-  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
-    `${event.location}, ${event.city}`
-  )}`;
-
-
+ 
   const categoryKey = (eventData.category && eventData.category.toLowerCase()) || "";
   const eventDate = formatEventDate(eventData.start_time);
   const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
