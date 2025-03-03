@@ -6,8 +6,10 @@ from django.db import models
 from django.db.models import Count
 from django.db.models import Q
 from django.utils import timezone
+from django.conf import settings
 import random
 import numpy as np
+import openai
 from .models import Event
 from .serializers import EventSerializer
 from .semantic_search import text_to_vector, compute_similarities
@@ -279,3 +281,28 @@ def filter_events(request):
 
     serializer = EventSerializer(qs, many=True)
     return Response(serializer.data, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def cancel_event(request, pk):
+    """
+    POST /api/events/<pk>/cancel/
+    POST /api/events/<pk>/cancel/?reverse=true
+    """
+    event = get_object_or_404(Event, pk=pk)
+
+    if event.creator != request.user:
+        return Response({"error": "No permission to cancel this event."},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    reverse_param = request.query_params.get('reverse', '').lower()
+    if reverse_param == 'true':
+        event.cancelled = False
+        event.save()
+        return Response({"message": f"Event {pk} activated."},
+                        status=status.HTTP_200_OK)
+    else:
+        event.cancelled = True
+        event.save()
+        return Response({"message": f"Event {pk} cancelled."},
+                        status=status.HTTP_200_OK)
