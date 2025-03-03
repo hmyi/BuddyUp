@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 import {
   Divider,
@@ -15,7 +16,7 @@ import {
 
 const eventTypes = ["Attending", "Hosting", "Past"];
 const defaultImages = {
-  Community: "events_pics/community.jpg",
+  Social: "events_pics/social.jpg",
   Entertainment: "events_pics/entertainment.jpg",
   Sports: "events_pics/sports.jpg",
   Food: "events_pics/food.jpg",
@@ -24,9 +25,11 @@ const defaultImages = {
   Carpool: "events_pics/carpool.jpg",
 };
 
-function MyEvents({ accessToken }) {
+function MyEvents({ userProfile, accessToken }) {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
+  const [hoveredEvent, setHoveredEvent] = useState(null);
+  const navigate = useNavigate();
   useEffect(() => {
     fetchEvents();
   }, [selectedType]);
@@ -134,7 +137,13 @@ function MyEvents({ accessToken }) {
         <Divider sx={{ mb: 2 }}></Divider>
         {events.length > 0 ? (
           events.map((event) => (
-            <Card key={event.id} sx={{ display: "flex" }}>
+            <Card onMouseEnter={() => setHoveredEvent(event.id)}
+                  onMouseLeave={() => setHoveredEvent(null)} key={event.id} sx={{ display: "flex", marginBottom: "1rem",
+              transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+              transform: hoveredEvent === event.id ? "scale(1.05)" : "scale(1)",
+              boxShadow: hoveredEvent === event.id ? 6 : 3}} onClick={() => navigate(`/events/${event.id}`, {
+              state: { event, userProfile, accessToken },
+            })} style={{ cursor: "pointer" }}>
               <CardMedia
                 component={"img"}
                 sx={{ width: 150, height: 100 }}
@@ -157,6 +166,9 @@ function MyEvents({ accessToken }) {
                 </Typography>
                 <Typography variant={"body2"}>
                   {event.attendance} attendees
+                  {event.status === "full" &&
+                      (<Typography color={"error"} component={"span"} sx={{marginLeft:"8px"}}>
+                        Event Full </Typography>)}
                 </Typography>
               </CardContent>
             </Card>
