@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Card, CardMedia, CardContent,
-  Typography, CardActions, Button
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  CardActions,
+  Button,
 } from "@mui/material";
 
 function EventCard({ userProfile, accessToken, event }) {
-
-  console.log("User Profile from EventCard: " + userProfile);
-
-  
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
@@ -33,7 +33,10 @@ function EventCard({ userProfile, accessToken, event }) {
         // flexDirection: "column",
       }}
       onClick={goToDetails}
+
       className="Card">
+
+
       <CardMedia
         component="img"
         height="200"
@@ -50,7 +53,9 @@ function EventCard({ userProfile, accessToken, event }) {
           {event.title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
+
         Time: {event.start_time} <br />
+
           Location: {event.location} <br />
         </Typography>
       </CardContent>

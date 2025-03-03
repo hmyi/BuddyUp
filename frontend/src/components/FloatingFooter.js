@@ -17,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 
 
-
 function FloatingFooter({
   accessToken,
   userID,
@@ -187,4 +186,6 @@ function SimpleDialog({ onClose, open, copied, setCopied }) {
   );
 }
 
+
 export default FloatingFooter;
+

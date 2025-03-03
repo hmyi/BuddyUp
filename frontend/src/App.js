@@ -1,36 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
 import Profile from "./components/Profile";
 import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
+
 import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
 
+
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-
 import "./App.css";
-
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  CardActions,
 } from "@mui/material";
-
-import Grid2 from "@mui/material/Grid";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
 
 export function handleFacebookSuccess(response, { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}) {
   console.log("HandleFacebookSuccess Called with:", response);
@@ -81,9 +74,11 @@ function App() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
+
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
   const navigate = useNavigate();
+
 
   const handleFacebookSuccess = (response) => {
     console.log("HandleFacebookSuccess Called with:", response);
@@ -183,8 +178,6 @@ function App() {
         setOpenSnackBar={setOpenSnackBar}
         openLoginDialog={() => setOpenLoginDialog(true)}
       />
-
-    
       <Routes>
         <Route
           path="/"

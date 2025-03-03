@@ -1,10 +1,9 @@
 import React from "react";
 import { IconButton, Avatar, Menu, MenuItem, Button } from "@mui/material";
-
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-import EventIcon from '@mui/icons-material/Event';
+import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from "react-router-dom";
 import EventCreation from "./EventCreation";
 
@@ -102,7 +101,16 @@ function Header({
               >
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
+             
+              <MenuItem
+                onClick={() =>
+                  navigate("/myEvents", { state: { userProfile } })
+                }
+              >
+                <EventIcon sx={{ mr: 2 }} fontSize="small" />
+                My events
               </MenuItem>
+
               <MenuItem
                 onClick={() => {
                   handleLogout();

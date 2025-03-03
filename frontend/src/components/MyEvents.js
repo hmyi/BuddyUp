@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import ListItemButton from "@mui/material/ListItemButton";
 
 import "../App.css";
@@ -29,6 +30,7 @@ const defaultImages = {
 function MyEvents({ accessToken }) {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
+
 
 const fetchEvents = async () => {
   try {
@@ -124,6 +126,7 @@ const fetchEvents = async () => {
           {eventTypes.map((type) => (
            <ListItemButton key={type} onClick={() => setType(type)} style={{ cursor: "pointer" }}>
 
+
               <ListItemText
                 primary={type}
                 primaryTypographyProps={{
@@ -133,7 +136,9 @@ const fetchEvents = async () => {
                   },
                 }}
               />
+
             </ListItemButton>
+
           ))}
         </List>
       </Paper>

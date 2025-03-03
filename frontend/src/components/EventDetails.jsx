@@ -14,10 +14,12 @@ import {
   Chip
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
 import FloatingFooter from "./FloatingFooter";
+
 
 
 const ImageContainer = styled(Box)(({ theme }) => ({
@@ -71,6 +73,7 @@ const MapContainer = styled("div")(({ theme }) => ({
   paddingTop: "100%", 
   marginBottom: theme.spacing(2),
 }));
+
 
 const StatsOverlay = styled(Box)(({ theme }) => ({
   position: "absolute",
@@ -137,6 +140,7 @@ function generateGoogleCalendarLink(eventData) {
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
+
 
   const title = encodeURIComponent(eventData.title || "Event");
   const details = encodeURIComponent(eventData.description || "No description");
@@ -244,6 +248,7 @@ function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
+
   const [eventData, setEventData] = useState(state?.event || null);
   const [loading, setLoading] = useState(false);
   const event = state?.event;
@@ -290,12 +295,17 @@ function EventDetails() {
   }
 
   if (!eventData) {
+
     return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" color="error">
           No event data found!
         </Typography>
-        <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate("/")}>
+        <Button
+          variant="contained"
+          sx={{ mt: 2 }}
+          onClick={() => navigate("/")}
+        >
           Back to Home
         </Button>
       </Box>
@@ -303,6 +313,14 @@ function EventDetails() {
   }
 
 
+
+
+  const startTime = formatDateTime(event.start_time);
+  const endTime = formatDateTime(event.end_time);
+
+  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgHVPlFLzDDN4bZtQViktx_K3elrWgkeI&q=${encodeURIComponent(
+    `${event.location}, ${event.city}`
+  )}`;
 
 
   const categoryKey = (eventData.category && eventData.category.toLowerCase()) || "";
@@ -334,6 +352,7 @@ function EventDetails() {
       alert("Event URL copied to clipboard");
     }
   };
+
 
   const handleJoinEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${id}/join/`, {
@@ -411,6 +430,15 @@ function EventDetails() {
       });
   };
 
+  const participantAvatars = (event.participants || []).map((p) => {
+    return {
+      id: p,
+      name: `User${p}`,
+      avatarUrl: `https://via.placeholder.com/40/00798a/ffffff?text=U${p}`,
+    };
+  });
+
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <ImageContainer>
@@ -448,6 +476,7 @@ function EventDetails() {
               </AvatarGroup>
             </Badge>
           )}
+
         </TopRightOverlay>
         <BottomOverlay>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -510,6 +539,7 @@ function EventDetails() {
           Back to Home
         </Button>
       </Box>
+
     </Box>
   );
 }

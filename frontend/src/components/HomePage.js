@@ -7,6 +7,7 @@ import Stack from "@mui/material/Stack";
 import * as React from "react";
 import { useState, useEffect } from "react";
 
+
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   const [events, setEvents] = useState([]);
 
@@ -28,6 +29,7 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   
   
   
+
 
   return (
     <div>
