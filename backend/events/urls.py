@@ -10,6 +10,7 @@ from .views import (
     search_events,
     filter_events,
     cancel_event,
+    improve_description,
 )
 
 
@@ -25,4 +26,5 @@ urlpatterns = [
     path('search/', search_events, name='search_events'),
     path('filter/', filter_events, name='filter_events'),
     path('<int:pk>/cancel/', cancel_event, name='cancel_event'),
+    path('improve/', improve_description, name='improve_description'),
 ]

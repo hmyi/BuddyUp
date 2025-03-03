@@ -306,3 +306,58 @@ def cancel_event(request, pk):
         event.save()
         return Response({"message": f"Event {pk} cancelled."},
                         status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def improve_description(request):
+    """
+    POST /api/events/improve/
+    Body JSON: {'title': 'xxx', 'description': 'xxx'}
+
+      - If description is empty, provide only title to ChatGPT
+      - If not, provide title + description
+    """
+    data = request.data
+    title = data.get('title', '').strip()
+    description = data.get('description', '').strip()
+
+    if not title:
+        return Response({"error": "Missing 'title' or title is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if description:
+        user_prompt = (
+            "I'm organizing an event. "
+            "Here is the event title and a rough description. Please rewrite the description to make it more appealing, the description should be about 3 sentences long:\n\n"
+            f"Title: {title}\n"
+            f"Description: {description}\n"
+        )
+    else:
+        user_prompt = (
+            "I'm organizing an event. "
+            "I only have an event title so far. Please propose a good description for it, the description should be about 3 sentences long:\n\n"
+            f"Title: {title}\n"
+        )
+
+    try:
+        openai.api_key = settings.OPENAI_API_KEY
+
+        response = openai.ChatCompletion.create(
+            model='gpt-4o-mini',
+            messages=[
+                {"role": "system", "content": "You are a helpful writing assistant."},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+
+        improved_text = response['choices'][0]['message']['content'].strip()
+
+        return Response({"improved_description": improved_text}, status=status.HTTP_200_OK)
+
+    except openai.error.OpenAIError as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
