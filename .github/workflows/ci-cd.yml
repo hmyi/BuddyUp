@@ -27,14 +27,13 @@ jobs:
       - name: Install Backend Dependencies
         run: |
           cd backend
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run Django Tests
         run: |
           cd backend
           python manage.py migrate
-          pytest
+          python -m pytest
 
       # FRONTEND TESTING
       - name: Set up Node.js
