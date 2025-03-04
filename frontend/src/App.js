@@ -194,7 +194,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route
           path="/myEvents"
-          element={<MyEvents accessToken={accessToken} />}
+          element={<MyEvents userProfile={userProfile} accessToken={accessToken} />}
         />
       </Routes>
 
