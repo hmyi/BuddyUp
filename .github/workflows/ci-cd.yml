@@ -14,21 +14,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: testdb
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -45,8 +30,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Django Tests
-        env:
-          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
         run: |
           cd backend
           python manage.py migrate
@@ -81,12 +64,12 @@ jobs:
       - name: Deploy Backend to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "
-          cd /home/ubuntu/buddyup/backend &&
+          cd /home/ubuntu/BuddyUp/backend &&
           git pull origin main &&
           source venv/bin/activate &&
           pip install -r requirements.txt &&
           python manage.py migrate &&
-          sudo systemctl restart gunicorn
+          sudo supervisorctl restart backend
           "
 
       # DEPLOY FRONTEND TO S3
