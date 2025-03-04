@@ -128,7 +128,7 @@ DATABASES = {
     }
 }
 
-if "pytest" in sys.modules or "test" in sys.argv:
+if "GITHUB_ACTIONS" in os.environ or "pytest" in sys.modules or "test" in sys.argv:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
