@@ -1,3 +1,4 @@
+import pytest
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -54,48 +55,55 @@ class EventSerializerTest(TestCase):
         serializer = EventSerializer(self.event)
         self.assertEqual(serializer.data['status'], 'active')
 
-# class EventAPITest(TestCase):
-#     def setUp(self):
-#         self.client = APIClient()
-#         self.user = User.objects.create_user(username='testuser3', email='test3@email.com', facebook_id='3')
-#         self.client.login(username='testuser3', email='test3@email.com', facebook_id='3')
-#         self.event = Event.objects.create(
-#             title='Test Event',
-#             category='Music',
-#             city='Test City',
-#             location='Test Location',
-#             start_time=timezone.now(),
-#             end_time=timezone.now() + timezone.timedelta(hours=2),
-#             capacity=10,
-#             creator=self.user
-#         )
+@pytest.mark.django_db
+class TestEventAPI:
+    def setup_method(self):
+        """Set up test client and create a user and event."""
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser3', email='test3@email.com', facebook_id='3')
+        self.client.force_authenticate(user=self.user)  # Authenticate user for requests
 
-#     def test_list_user_created_events(self):
-#         response = self.client.get('/events/created/')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(len(response.data), 1)
+        self.event = Event.objects.create(
+            title='Test Event',
+            category='Music',
+            city='Test City',
+            location='Test Location',
+            start_time=timezone.now(),
+            end_time=timezone.now() + timezone.timedelta(hours=2),
+            capacity=10,
+            creator=self.user
+        )
 
-#     def test_create_event(self):
-#         event_data = {
-#             'title': 'New Event',
-#             'category': 'Sports',
-#             'city': 'New City',
-#             'location': 'New Location',
-#             'start_time': timezone.now(),
-#             'end_time': timezone.now() + timezone.timedelta(hours=2),
-#             'capacity': 20,
-#         }
-#         response = self.client.post('/events/new/', event_data, format='json')
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         self.assertEqual(Event.objects.count(), 2)
+    def test_list_user_created_events(self):
+        """Test retrieving the list of events created by the user."""
+        response = self.client.get('/events/created/')
+        assert response.status_code == 200
+        assert len(response.data) == 1
 
-#     def test_join_event(self):
-#         response = self.client.post(f'/events/{self.event.id}/join/')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(self.event.participants.count(), 1)
+    def test_create_event(self):
+        """Test creating a new event."""
+        event_data = {
+            'title': 'New Event',
+            'category': 'Sports',
+            'city': 'New City',
+            'location': 'New Location',
+            'start_time': timezone.now().isoformat(),
+            'end_time': (timezone.now() + timezone.timedelta(hours=2)).isoformat(),
+            'capacity': 20,
+        }
+        response = self.client.post('/events/new/', event_data, format='json')
+        assert response.status_code == 201
+        assert Event.objects.count() == 2
 
-#     def test_leave_event(self):
-#         self.event.participants.add(self.user)
-#         response = self.client.post(f'/events/{self.event.id}/leave/')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(self.event.participants.count(), 0)
+    def test_join_event(self):
+        """Test a user joining an event."""
+        response = self.client.post(f'/events/{self.event.id}/join/')
+        assert response.status_code == 200
+        assert self.event.participants.count() == 1
+
+    def test_leave_event(self):
+        """Test a user leaving an event."""
+        self.event.participants.add(self.user)  # Add user to event before leaving
+        response = self.client.post(f'/events/{self.event.id}/leave/')
+        assert response.status_code == 200
+        assert self.event.participants.count() == 0
