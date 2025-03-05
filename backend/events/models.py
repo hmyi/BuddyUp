@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings
-
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -13,7 +13,7 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     description = models.TextField(blank=True)
-    capacity = models.PositiveIntegerField()
+    capacity = models.PositiveIntegerField(help_text="Capacity must be greater than zero")
     attendance = models.PositiveIntegerField(default=0)
 
     creator = models.ForeignKey(
@@ -30,6 +30,45 @@ class Event(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        """
+        Validate event constraints:
+        1. Capacity must be greater than zero
+        2. End time must be after start time
+        3. Start time must be in the future
+        4. Participants cannot exceed capacity
+        """
+        # Validate capacity
+        if self.capacity <= 0:
+            raise ValidationError("Event capacity must be greater than zero.")
+
+        # Validate time consistency
+        if self.end_time <= self.start_time:
+            raise ValidationError("Event end time must be after start time.")
+
+        # Validate start time is in the future
+        if self.start_time <= timezone.now():
+            raise ValidationError("Event start time must be in the future.")
+
+    def save(self, *args, **kwargs):
+        """
+        Override save to run full validation
+        """
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def add_participant(self, user):
+        """
+        Controlled method to add a participant with capacity check
+        """
+        if self.participants.count() >= self.capacity:
+            raise ValidationError(f"Event has reached its maximum capacity of {self.capacity}")
+        
+        if not self.participants.filter(pk=user.pk).exists():
+            self.participants.add(user)
+            self.attendance = self.participants.count()
+            self.save()
 
     def __str__(self):
         return self.title
