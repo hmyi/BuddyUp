@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from rest_framework.test import APITestCase
 from rest_framework import status
 from events.models import Event
@@ -94,6 +95,136 @@ class EventModelTestCase(TestCase):
             creator=self.user
         )
         self.assertEqual(str(event), "String Representation Test")
+
+    def test_event_with_zero_capacity(self):
+        """Test creating an event with zero capacity."""
+        with self.assertRaises(ValidationError):
+            Event.objects.create(
+                title="Zero Capacity Event",
+                category="Test",
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() + timezone.timedelta(days=30),
+                end_time=timezone.now() + timezone.timedelta(days=31),
+                capacity=0,
+                creator=self.user
+            )
+
+    def test_event_with_negative_capacity(self):
+        """Test creating an event with negative capacity."""
+        with self.assertRaises(ValidationError):
+            Event.objects.create(
+                title="Negative Capacity Event",
+                category="Test",
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() + timezone.timedelta(days=30),
+                end_time=timezone.now() + timezone.timedelta(days=31),
+                capacity=-5,
+                creator=self.user
+            )
+
+    def test_event_with_end_time_before_start_time(self):
+        """Test creating an event with end time before start time."""
+        with self.assertRaises(ValidationError):
+            event = Event.objects.create(
+                title="Inverted Time Event",
+                category="Test",
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() + timezone.timedelta(days=31),
+                end_time=timezone.now() + timezone.timedelta(days=30),
+                capacity=10,
+                creator=self.user
+            )
+            # Force full validation
+            event.full_clean()
+
+    def test_event_with_past_start_time(self):
+        """Test creating an event with a start time in the past."""
+        with self.assertRaises(ValidationError):
+            event = Event.objects.create(
+                title="Past Time Event",
+                category="Test",
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() - timezone.timedelta(days=1),
+                end_time=timezone.now() + timezone.timedelta(days=1),
+                capacity=10,
+                creator=self.user
+            )
+            # Force full validation
+            event.full_clean()
+
+    def test_event_maximum_length_fields(self):
+        """Test field length constraints."""
+        # Test maximum length for title, category, city, location
+        long_string = "a" * 201  # Exceeds max_length of 200
+        
+        with self.assertRaises(ValidationError):
+            Event.objects.create(
+                title=long_string,
+                category="Test",
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() + timezone.timedelta(days=30),
+                end_time=timezone.now() + timezone.timedelta(days=31),
+                capacity=10,
+                creator=self.user
+            )
+
+        long_category = "a" * 101  # Exceeds max_length of 100
+        with self.assertRaises(ValidationError):
+            Event.objects.create(
+                title="Long Category Test",
+                category=long_category,
+                city="Test City",
+                location="Test Location",
+                start_time=timezone.now() + timezone.timedelta(days=30),
+                end_time=timezone.now() + timezone.timedelta(days=31),
+                capacity=10,
+                creator=self.user
+            )
+
+    def test_event_with_extremely_long_description(self):
+        """Test creating an event with an extremely long description."""
+        # Django allows TextField to be very long, so we'll test a massive description
+        massive_description = "a" * 100000  # 100,000 character description
+        
+        event = Event.objects.create(
+            title="Massive Description Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            description=massive_description,
+            start_time=timezone.now() + timezone.timedelta(days=30),
+            end_time=timezone.now() + timezone.timedelta(days=31),
+            capacity=10,
+            creator=self.user
+        )
+        
+        self.assertEqual(len(event.description), 100000)
+
+    def test_event_multiple_similar_events(self):
+        """Test creating multiple very similar events."""
+        base_event_data = {
+            "category": "Test",
+            "city": "Test City",
+            "location": "Test Location",
+            "start_time": timezone.now() + timezone.timedelta(days=30),
+            "end_time": timezone.now() + timezone.timedelta(days=31),
+            "capacity": 10,
+            "creator": self.user
+        }
+
+        # Create multiple events with same basic details but different titles
+        events = [
+            Event.objects.create(title=f"Duplicate Event {i}", **base_event_data)
+            for i in range(5)
+        ]
+
+        self.assertEqual(len(events), 5)
+        self.assertTrue(all(event.title != events[0].title for event in events[1:]))
 
 class EventAPITestCase(APITestCase):
     def setUp(self):
