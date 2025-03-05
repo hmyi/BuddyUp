@@ -113,10 +113,21 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
 
   function handleStartTimeChange(time) {
     setStartTime(time);
+    const today = dayjs().endOf("day"); // Set to end of today to include the full day
+
+    console.log("debug:", time);
+    console.log("debug:", today);
+    console.log("debug:", time.isAfter(today));
+    if (time.isBefore(today)) {
+      setTimeError("Start time cannot be in the past");
+      return;
+    }
+
     if (endTime.isBefore(time)) {
       setTimeError("start time can not be later than end time");
       return;
     }
+
     setTimeError("");
   }
 
