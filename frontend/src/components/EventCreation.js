@@ -208,10 +208,14 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
         style={{
           backgroundColor: "#00798a",
           color: "white",
-          borderRadius: "4px",
-          margin: "10px",
+          borderRadius: '30px',
+          padding: '0.5rem 1rem',
+          textTransform: "none",
+          fontWeight: 600,
+          border: "none",
+          marginRight: "2rem"
         }}
-        variant="outlined"
+        variant="contained"
         type="button"
         onClick={handleClickOpen}
       >
