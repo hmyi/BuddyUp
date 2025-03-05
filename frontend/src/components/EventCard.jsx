@@ -33,8 +33,10 @@ function EventCard({ userProfile, accessToken, event }) {
         // flexDirection: "column",
       }}
       onClick={goToDetails}
-      className="Card"
-    >
+
+      className="Card">
+
+
       <CardMedia
         component="img"
         height="200"
@@ -51,7 +53,9 @@ function EventCard({ userProfile, accessToken, event }) {
           {event.title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Time: {event.start_time} <br />
+
+        Time: {event.start_time} <br />
+
           Location: {event.location} <br />
         </Typography>
       </CardContent>

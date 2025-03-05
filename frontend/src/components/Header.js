@@ -1,4 +1,5 @@
 import React from "react";
+import "../App.css"
 import { IconButton, Avatar, Menu, MenuItem, Button } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -125,10 +126,12 @@ function Header({
             color="primary"
             onClick={openLoginDialog}
             sx={{
-              textTransform: "none",
-              fontWeight: "bold",
-              borderRadius: "20px",
-              padding: "8px 20px",
+                backgroundColor: '#00798a',
+                color: '#fff',
+                borderRadius: '30px',
+                padding: '0.5rem 1rem',
+                textTransform: "none",
+                fontWeight: "bold",
             }}
           >
             Login

@@ -58,9 +58,10 @@ class UserModelTest(TestCase):
             user.full_clean()  # Triggers Django model validation
 
     def test_long_facebook_id(self):
-        """Test if Facebook ID field enforces max_length constraint."""
-        with self.assertRaises(DataError):
-            User.objects.create(username="testuser4", facebook_id="1" * 101)  # 101 characters
+        """Test that an error is raised when Facebook ID exceeds max_length."""
+        user = User(username="testuser4", facebook_id="1" * 101)  # 101 characters
+        with self.assertRaises(ValidationError):
+            user.clean()  # This enforces model validation
 
     def test_duplicate_username(self):
         """Test if creating a user with an existing username raises an error."""
