@@ -108,7 +108,7 @@ function generateGoogleCalendarLink(eventData) {
   // Provide defaults if missing
   const defaultStart = "2025-01-01T00:00:00Z";
   const defaultEnd = "2025-01-01T01:00:00Z";
-  const startTime = eventData.start_time || defaultStart;
+  const startTime = eventData?.start_time || defaultStart;
   const endTime = eventData.end_time || defaultEnd;
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
@@ -117,8 +117,8 @@ function generateGoogleCalendarLink(eventData) {
   if (isNaN(startDate) || isNaN(endDate)) {
     console.error(
       "Invalid start or end time",
-      eventData.start_time,
-      eventData.end_time
+      eventData?.start_time,
+      eventData?.end_time
     );
     const fallbackStartDate = new Date(defaultStart);
     const fallbackEndDate = new Date(defaultEnd);
@@ -232,7 +232,6 @@ const EventActionsBox = ({
   handleJoinEvent,
   handleLeaveEvent,
 }) => {
-  console.log(currentUserId);
   return (
     <Box sx={{ mt: 2 }}>
       <Button
@@ -298,21 +297,14 @@ function EventDetails() {
   const currentUserId = userProfile?.userID;
   const participants = eventData?.participants;
   const eventHostId = eventData?.creator;
-  const startTime = formatDateTime(eventData.start_time);
-  const endTime = formatDateTime(eventData.end_time);
-
-  console.log(event);
+  const startTime = formatDateTime(eventData?.start_time);
+  const endTime = formatDateTime(eventData?.end_time);
 
   useEffect(() => {
-    console.log(accessToken);
-    console.log(eventData);
+    // console.log("triggered");
+    // console.log(eventData);
     setLoading(true);
-    fetch(`https://18.226.163.235:8000/api/events/${id}/`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    fetch(`https://18.226.163.235:8000/api/events/${id}/`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -320,16 +312,16 @@ function EventDetails() {
         return response.json();
       })
       .then((data) => {
-        if (!data) {
+        if (data) {
           setEventData(data);
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching event details:", error);
         setLoading(false);
       });
-  }, [eventData, id, accessToken]);
+  }, [id]);
 
   if (loading) {
     return <Typography>Loading event details...</Typography>;
@@ -366,8 +358,8 @@ function EventDetails() {
   )}`;
   const calendarLink = generateGoogleCalendarLink(eventData);
   const userIsAttending =
-    eventData.participants && currentUserId
-      ? eventData.participants.includes(currentUserId)
+    eventData?.participants && currentUserId
+      ? eventData?.participants.includes(currentUserId)
       : false;
 
   const handleShare = () => {
@@ -404,7 +396,7 @@ function EventDetails() {
         alert("Successfully joined the event.");
         setEventData({
           ...eventData,
-          participants: [...(eventData.participants || []), currentUserId],
+          participants: [...(eventData?.participants || []), currentUserId],
         });
       })
       .catch((error) => {
@@ -445,7 +437,7 @@ function EventDetails() {
         alert("Successfully left the event.");
         setEventData({
           ...eventData,
-          participants: eventData.participants.filter(
+          participants: eventData?.participants.filter(
             (p) => p !== currentUserId
           ),
         });
@@ -457,13 +449,13 @@ function EventDetails() {
       });
   };
 
-  const participantAvatars = (event.participants || []).map((p) => {
-    return {
-      id: p,
-      name: `User${p}`,
-      avatarUrl: `https://via.placeholder.com/40/00798a/ffffff?text=U${p}`,
-    };
-  });
+  // const participantAvatars = (event.participants || []).map((p) => {
+  //   return {
+  //     id: p,
+  //     name: `User${p}`,
+  //     avatarUrl: `https://via.placeholder.com/40/00798a/ffffff?text=U${p}`,
+  //   };
+  // });
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -494,9 +486,9 @@ function EventDetails() {
           </Box>
         </TopOverlay>
         <TopRightOverlay>
-          {eventData.participants && eventData.participants.length > 0 && (
+          {eventData?.participants && eventData?.participants?.length > 0 && (
             <Badge
-              badgeContent={eventData.participants.length}
+              badgeContent={eventData?.participants?.length}
               color="error"
               overlap="circular"
             >
@@ -504,13 +496,14 @@ function EventDetails() {
                 sx={{ "& .MuiAvatar-root": { marginRight: "-4px" } }}
                 max={4}
               >
-                {eventData.participants.map((participant, idx) => (
-                  <Avatar
-                    key={idx}
-                    alt={`User ${participant}`}
-                    src={`https://via.placeholder.com/40/00798a/ffffff?text=U${participant}`}
-                  />
-                ))}
+                {eventData.participants &&
+                  eventData?.participants.map((participant, idx) => (
+                    <Avatar
+                      key={idx}
+                      alt={`User ${participant}`}
+                      src={`https://via.placeholder.com/40/00798a/ffffff?text=U${participant}`}
+                    />
+                  ))}
               </AvatarGroup>
             </Badge>
           )}
