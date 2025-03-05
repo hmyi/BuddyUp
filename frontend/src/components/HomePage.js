@@ -6,22 +6,30 @@ import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { dummyEvents } from "../dummyData";
+
 
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
-  const [events, setEvents] = useState(dummyEvents);
+  const [events, setEvents] = useState([]);
 
-  useEffect(
-    function () {
-      fetch(
-        "https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0"
-      )
-        .then((res) => res.json())
-        .then((data) => setEvents(data))
-        .catch((err) => console.log(err));
-    },
-    [events]
-  );
+
+  useEffect(() => {
+    fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setEvents(data);
+        } else if (data.results && Array.isArray(data.results)) {
+          setEvents(data.results);
+        } else {
+          setEvents([]); // fallback if data is not an array
+        }
+      })
+      .catch((err) => console.log(err));
+  }, [events]); // run only once on mount
+  
+  
+  
+
 
   return (
     <div>

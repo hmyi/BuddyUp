@@ -197,7 +197,9 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
       })
       .catch((error) => console.error("Error:", error));
 
-    setOpenSnackBar(true);
+
+      setOpenSnackBar(true);
+
     handleCleanUp();
     handleClose();
   }

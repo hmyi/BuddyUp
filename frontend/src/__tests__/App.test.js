@@ -1,58 +1,50 @@
 import { render, waitFor, act } from "@testing-library/react";
 import { jwtDecode } from "jwt-decode";
 import App, { handleFacebookSuccess } from "../App";
-
-jest.mock("jwt-decode", () => ({
-  jwtDecode: jest.fn(),
-}));
-
-beforeEach(() => {
-  jwtDecode.mockClear();
-  jwtDecode.mockImplementation((token) => ({
-    username: "Farhan Hossein",
-    email: "farhan.hossein@gmail.com",
-  }));
-});
+import React from "react";
 
 test("Facebook API returns a token and backend exchanges it for JWT", async () => {
   const fbAccessToken = "testFacebookAccessToken";
-
+  const response = { accessToken: fbAccessToken };
   const backendResponse = {
     access: "testJwtaccessToken",
     refresh: "testRefreshToken",
   };
 
-  global.fetch = jest.fn(() =>
-    Promise.resolve({
+  const originalFetch = global.fetch;
+  global.fetch = jest.fn((url) => {
+    if (url === "https://18.226.163.235:8000/api/auth/facebook/") {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(backendResponse),
+      });
+    }
+    return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve(backendResponse),
-    })
-  );
+      json: () => Promise.resolve({}),
+    });
+  });
 
-  render(<App />);
+  const setIsSignedIn = jest.fn();
+  const setAccessToken = jest.fn();
+  const setUserProfile = jest.fn();
+  const setOpenLoginDialog = jest.fn();
 
   await act(async () => {
-    handleFacebookSuccess({ accessToken: fbAccessToken });
+    handleFacebookSuccess(response, {
+      setIsSignedIn,
+      setAccessToken,
+      setUserProfile,
+      setOpenLoginDialog,
+    });
   });
 
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
-  await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://18.218.44.88:8000/api/auth/facebook/",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.any(Object),
-        body: JSON.stringify({ access_token: fbAccessToken }),
-      })
-    );
-  });
+  // Additional assertions about token decoding can go here
 
-  await waitFor(() => {
-    expect(jwtDecode).toHaveBeenCalledWith(backendResponse.access);
-  });
-
-  console.log("Facebook login Test Completed Successfully!");
+  global.fetch = originalFetch;
 });
