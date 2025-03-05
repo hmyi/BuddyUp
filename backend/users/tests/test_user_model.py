@@ -60,7 +60,7 @@ class UserModelTest(TestCase):
     def test_long_facebook_id(self):
         """Test that an error is raised when Facebook ID exceeds max_length."""
         user = User(username="testuser4", facebook_id="1" * 101)  # 101 characters
-        with pytest.raises(ValidationError):
+        with self.assertRaises(ValidationError):
             user.clean()  # This enforces model validation
 
     def test_duplicate_username(self):
