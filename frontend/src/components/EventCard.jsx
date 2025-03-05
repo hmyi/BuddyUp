@@ -1,32 +1,49 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Card, CardMedia, CardContent,
-  Typography, CardActions, Button
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  CardActions,
+  Button,
 } from "@mui/material";
 
-function EventCard({ event }) {
+function EventCard({ userProfile, accessToken, event }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
   const goToDetails = () => {
-    navigate(`/events/${event.id}`, { state: { event } });
+    navigate(`/events/${event.id}`, {
+      state: { event, userProfile, accessToken },
+    });
   };
 
   return (
     <Card
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      sx={{ maxWidth: 300, margin: "20px auto", boxShadow: 3, cursor: "pointer" }}
+      sx={{
+        maxWidth: 400,
+        minHeight: 400,
+        margin: "20px auto",
+        boxShadow: 3,
+        // display: "flex",
+        cursor: "pointer",
+        // flexDirection: "column",
+      }}
       onClick={goToDetails}
-    >
+
+      className="Card">
+
+
       <CardMedia
         component="img"
         height="200"
-        image="events_pics/hiking.jpg" 
+        image={`events_pics/${event.category}.jpg`}
         alt={event.title}
       />
-      <CardContent>
+      <CardContent sx={{ flexGrow: 1 }}>
         <Typography
           gutterBottom
           variant="h5"
@@ -36,9 +53,10 @@ function EventCard({ event }) {
           {event.title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
+
+        Time: {event.start_time} <br />
+
           Location: {event.location} <br />
-          Category: {event.category} <br />
-          Creator: {event.creator}
         </Typography>
       </CardContent>
       <CardActions>

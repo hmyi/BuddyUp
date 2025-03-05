@@ -1,42 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
 import Profile from "./components/Profile";
 import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
-import EventCard from "./components/EventCard";
 
-import { dummyEvents } from "./dummyData";
+import EventCard from "./components/EventCard";
+import HomePage from "./components/HomePage";
 
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-
 import "./App.css";
-
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  CardActions,
 } from "@mui/material";
-
-import Grid2 from "@mui/material/Grid";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 
-export function handleFacebookSuccess(response) {
-  console.log("handleFacebookSuccess Called with:", response);
+export function handleFacebookSuccess(response, { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}) {
+  console.log("HandleFacebookSuccess Called with:", response);
 
   if (!response || !response.accessToken) {
     console.error("No access token received! Response:", response);
@@ -45,16 +35,19 @@ export function handleFacebookSuccess(response) {
 
   const fbAccessToken = response.accessToken;
   console.log("Facebook Access Token Received:", fbAccessToken);
-
   console.log("Making API Request...");
-  fetch("https://18.218.44.88:8000/api/auth/facebook/", {
+
+  fetch("https://18.226.163.235:8000/api/auth/facebook/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ access_token: fbAccessToken }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      console.log("API Fetch Called, Status:", res.status);
+      return res.json();
+    })
     .then((data) => {
       console.log("API Response Data:", data);
 
@@ -63,22 +56,29 @@ export function handleFacebookSuccess(response) {
         return;
       }
 
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setAccessToken) setAccessToken(data.access);
+      localStorage.setItem("accessToken", data.access); // Persist token
+
       console.log("Decoding Token:", data.access);
       const decodedToken = jwtDecode(data.access);
       console.log("Decoded JWT:", decodedToken);
     })
-    .catch((error) => console.error("❌ Error retrieving JWT:", error));
-}
+    .catch((error) => console.error("Error retrieving JWT:", error));
 
+  if (setOpenLoginDialog) setOpenLoginDialog(false);
+}
 function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
+
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+
   const navigate = useNavigate();
 
-  const [events] = useState(dummyEvents);
 
   const handleFacebookSuccess = (response) => {
     console.log("HandleFacebookSuccess Called with:", response);
@@ -93,13 +93,12 @@ function App() {
     console.log("Facebook Access Token Received:", fbAccessToken);
 
     console.log("🚀 Making API Request...");
-    fetch("https://3.128.172.39:8000/api/auth/facebook/", {
+    fetch("https://18.226.163.235:8000/api/auth/facebook/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ access_token: fbAccessToken }),
-
     })
       .then((res) => {
         console.log("API Fetch Called, Status:", res.status);
@@ -124,16 +123,17 @@ function App() {
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
-          picture:{
-            data:{url:decodedToken.avatar_url}
-          }
+          userID: decodedToken.user_id,
+          picture: {
+            data: { url: decodedToken.avatar_url },
+          },
         });
       })
       .catch((error) => console.error("Error retrieving JWT:", error));
 
     setOpenLoginDialog(false);
   };
-
+  
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
     setIsSignedIn(false);
@@ -157,6 +157,8 @@ function App() {
     setIsSignedIn(false);
     setUserProfile(null);
     setAnchorEl(null);
+    localStorage.removeItem("accessToken");
+    setAccessToken(null);
     navigate("/");
   };
 
@@ -173,43 +175,27 @@ function App() {
         anchorEl={anchorEl}
         handleMenuOpen={handleMenuOpen}
         handleMenuClose={handleMenuClose}
+        setOpenSnackBar={setOpenSnackBar}
         openLoginDialog={() => setOpenLoginDialog(true)}
       />
-
       <Routes>
         <Route
           path="/"
           element={
-            <div>
-              <h1 style={{ marginLeft: "150px" }}>Events near Waterloo</h1>
-
-              <Grid2 container spacing={3} sx={{ marginX: "150px" }}>
-                {events.map((evt) => (
-                    <Grid2 xs={12} sm={6} md={4} key={evt.id}>
-                      <EventCard event={evt} />
-
-                  </Grid2>
-                ))}
-              </Grid2>
-              <footer className="footer">
-                <div className="footer-content">
-                  <span>©2025 BuudyUp</span>
-                  <span>Terms of Service</span>
-                  <span>Privacy Policy</span>
-                  <span>Cookie Settings</span>
-                  <span>Cookie Policy</span>
-                  <span>Help</span>
-                </div>
-              </footer>
-            </div>
+            <HomePage
+              userProfile={userProfile}
+              accessToken={accessToken}
+              openSnackBar={openSnackBar}
+              setOpenSnackBar={setOpenSnackBar}
+            />
           }
         />
-
-        {/* Add the route for viewing event details */}
         <Route path="/events/:id" element={<EventDetails />} />
-
         <Route path="/profile" element={<Profile />} />
-        <Route path="/myEvents" element={<MyEvents accessToken={accessToken}/>} />
+        <Route
+          path="/myEvents"
+          element={<MyEvents userProfile={userProfile} accessToken={accessToken} />}
+        />
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
@@ -226,22 +212,14 @@ function App() {
               return_scopes: true,
             }}
             render={({ onClick }) => (
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={onClick}
-              >
+              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
                 Sign In with Facebook
               </Button>
             )}
           />
           <br />
           <br />
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-          />
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>

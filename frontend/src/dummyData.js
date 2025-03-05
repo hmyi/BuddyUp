@@ -1,9 +1,8 @@
-
 export const dummyEvents = [
   {
     id: 1,
     title: "Hiking Adventure",
-    category: "Sport",
+    category: "Sports",
     city: "Waterloo",
     location: "Park Trail",
     start_time: "2025-04-01T10:00:00Z",
@@ -15,12 +14,12 @@ export const dummyEvents = [
     participants: [2, 3, 4],
     status: "active",
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z"
+    updated_at: "2025-01-01T00:00:00Z",
   },
   {
     id: 2,
     title: "Live Music Night",
-    category: "Music",
+    category: "Social",
     city: "Toronto",
     location: "Concert Hall",
     start_time: "2025-05-10T19:00:00Z",
@@ -32,12 +31,12 @@ export const dummyEvents = [
     participants: [3, 5, 7],
     status: "active",
     created_at: "2025-03-01T12:30:00Z",
-    updated_at: "2025-03-01T12:30:00Z"
+    updated_at: "2025-03-01T12:30:00Z",
   },
   {
     id: 3,
     title: "Coding Workshop",
-    category: "Tech",
+    category: "Entertainment",
     city: "Waterloo",
     location: "Innovation Hub",
     start_time: "2025-06-02T09:00:00Z",
@@ -49,12 +48,12 @@ export const dummyEvents = [
     participants: [1, 2, 8, 9],
     status: "active",
     created_at: "2025-05-15T14:00:00Z",
-    updated_at: "2025-05-15T14:00:00Z"
+    updated_at: "2025-05-15T14:00:00Z",
   },
   {
     id: 4,
     title: "Art Exhibit",
-    category: "Art",
+    category: "Social",
     city: "Kitchener",
     location: "Art Center",
     start_time: "2025-07-10T11:00:00Z",
@@ -66,12 +65,12 @@ export const dummyEvents = [
     participants: [4, 6, 10],
     status: "active",
     created_at: "2025-06-01T09:45:00Z",
-    updated_at: "2025-06-01T09:45:00Z"
+    updated_at: "2025-06-01T09:45:00Z",
   },
   {
     id: 5,
     title: "Comedy Night",
-    category: "Comedy",
+    category: "Entertainment",
     city: "Toronto",
     location: "Downtown Comedy Club",
     start_time: "2025-08-15T20:00:00Z",
@@ -83,7 +82,7 @@ export const dummyEvents = [
     participants: [5, 11, 12],
     status: "active",
     created_at: "2025-07-10T10:20:00Z",
-    updated_at: "2025-07-10T10:20:00Z"
+    updated_at: "2025-07-10T10:20:00Z",
   },
   {
     id: 6,
@@ -100,12 +99,12 @@ export const dummyEvents = [
     participants: [6, 7, 8, 9],
     status: "active",
     created_at: "2025-07-20T08:00:00Z",
-    updated_at: "2025-07-20T08:00:00Z"
+    updated_at: "2025-07-20T08:00:00Z",
   },
   {
     id: 7,
     title: "Startup Pitch Night",
-    category: "Business",
+    category: "Social",
     city: "Toronto",
     location: "Co-Working Space",
     start_time: "2025-10-05T18:00:00Z",
@@ -117,7 +116,7 @@ export const dummyEvents = [
     participants: [7, 12, 13],
     status: "active",
     created_at: "2025-09-10T14:00:00Z",
-    updated_at: "2025-09-10T14:00:00Z"
+    updated_at: "2025-09-10T14:00:00Z",
   },
   {
     id: 8,
@@ -134,12 +133,12 @@ export const dummyEvents = [
     participants: [2, 15],
     status: "active",
     created_at: "2025-09-15T10:30:00Z",
-    updated_at: "2025-09-15T10:30:00Z"
+    updated_at: "2025-09-15T10:30:00Z",
   },
   {
     id: 9,
     title: "Outdoor Yoga",
-    category: "Sport",
+    category: "Sports",
     city: "Cambridge",
     location: "Riverside Park",
     start_time: "2025-06-20T09:00:00Z",
@@ -151,12 +150,12 @@ export const dummyEvents = [
     participants: [8, 3],
     status: "active",
     created_at: "2025-06-05T09:00:00Z",
-    updated_at: "2025-06-05T09:00:00Z"
+    updated_at: "2025-06-05T09:00:00Z",
   },
   {
     id: 10,
     title: "Photography Walk",
-    category: "Art",
+    category: "Social",
     city: "Guelph",
     location: "Downtown Area",
     start_time: "2025-07-25T16:00:00Z",
@@ -168,12 +167,12 @@ export const dummyEvents = [
     participants: [9, 10],
     status: "active",
     created_at: "2025-06-28T11:15:00Z",
-    updated_at: "2025-06-28T11:15:00Z"
+    updated_at: "2025-06-28T11:15:00Z",
   },
   {
     id: 11,
     title: "Tech Meetup",
-    category: "Tech",
+    category: "Social",
     city: "Toronto",
     location: "Tech Hub",
     start_time: "2025-08-05T18:00:00Z",
@@ -185,7 +184,7 @@ export const dummyEvents = [
     participants: [3, 6, 8],
     status: "active",
     created_at: "2025-07-01T14:00:00Z",
-    updated_at: "2025-07-01T14:00:00Z"
+    updated_at: "2025-07-01T14:00:00Z",
   },
   {
     id: 12,
@@ -202,7 +201,7 @@ export const dummyEvents = [
     participants: [10, 11, 12],
     status: "active",
     created_at: "2025-08-15T12:00:00Z",
-    updated_at: "2025-08-15T12:00:00Z"
+    updated_at: "2025-08-15T12:00:00Z",
   },
   {
     id: 13,
@@ -219,12 +218,12 @@ export const dummyEvents = [
     participants: [11, 2, 4, 7],
     status: "active",
     created_at: "2025-06-10T20:00:00Z",
-    updated_at: "2025-06-10T20:00:00Z"
+    updated_at: "2025-06-10T20:00:00Z",
   },
   {
     id: 14,
     title: "Comedy Workshop",
-    category: "Comedy",
+    category: "Entertainment",
     city: "Toronto",
     location: "Improv Theater",
     start_time: "2025-10-01T15:00:00Z",
@@ -236,12 +235,12 @@ export const dummyEvents = [
     participants: [12, 8, 15],
     status: "active",
     created_at: "2025-09-01T10:15:00Z",
-    updated_at: "2025-09-01T10:15:00Z"
+    updated_at: "2025-09-01T10:15:00Z",
   },
   {
     id: 15,
     title: "Startup Expo",
-    category: "Business",
+    category: "Social",
     city: "Mississauga",
     location: "Convention Center",
     start_time: "2025-11-15T10:00:00Z",
@@ -253,6 +252,6 @@ export const dummyEvents = [
     participants: [13, 14, 15],
     status: "active",
     created_at: "2025-10-05T08:30:00Z",
-    updated_at: "2025-10-05T08:30:00Z"
-  }
+    updated_at: "2025-10-05T08:30:00Z",
+  },
 ];
