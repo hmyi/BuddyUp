@@ -28,6 +28,7 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
+          python -m spacy download en_core_web_sm
 
       - name: Run Django Tests
         run: |

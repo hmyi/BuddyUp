@@ -7,6 +7,10 @@ from .views import (
     join_event, 
     leave_event,
     random_events,
+    search_events,
+    filter_events,
+    cancel_event,
+    improve_description,
 )
 
 
@@ -19,4 +23,8 @@ urlpatterns = [
     path('<int:pk>/join/', join_event, name='join_event'),
     path('<int:pk>/leave/', leave_event, name='leave_event'),
     path('fetch/random/', random_events, name='random_events'),
+    path('search/', search_events, name='search_events'),
+    path('filter/', filter_events, name='filter_events'),
+    path('<int:pk>/cancel/', cancel_event, name='cancel_event'),
+    path('improve/', improve_description, name='improve_description'),
 ]
