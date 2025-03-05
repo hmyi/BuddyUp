@@ -32,6 +32,7 @@ jobs:
       - name: Run Django Tests
         run: |
           cd backend
+          export PYTHONPATH=$PWD
           python manage.py migrate
           python -m pytest
 
