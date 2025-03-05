@@ -113,10 +113,21 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
 
   function handleStartTimeChange(time) {
     setStartTime(time);
+    const today = dayjs().endOf("day"); // Set to end of today to include the full day
+
+    console.log("debug:", time);
+    console.log("debug:", today);
+    console.log("debug:", time.isAfter(today));
+    if (time.isBefore(today)) {
+      setTimeError("Start time cannot be in the past");
+      return;
+    }
+
     if (endTime.isBefore(time)) {
       setTimeError("start time can not be later than end time");
       return;
     }
+
     setTimeError("");
   }
 
@@ -197,8 +208,7 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
       })
       .catch((error) => console.error("Error:", error));
 
-
-      setOpenSnackBar(true);
+    setOpenSnackBar(true);
 
     handleCleanUp();
     handleClose();
@@ -210,12 +220,12 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
         style={{
           backgroundColor: "#00798a",
           color: "white",
-          borderRadius: '30px',
-          padding: '0.5rem 1rem',
+          borderRadius: "30px",
+          padding: "0.5rem 1rem",
           textTransform: "none",
           fontWeight: 600,
           border: "none",
-          marginRight: "2rem"
+          marginRight: "2rem",
         }}
         variant="contained"
         type="button"
@@ -468,7 +478,7 @@ function CitySelect({ city, setCity }) {
   };
 
   return (
-    <FormControl>
+    <FormControl sx={{ width: 150 }}>
       <InputLabel>City</InputLabel>
       <Select label="City" value={city} onChange={handleChange}>
         {citys.map((city) => (
@@ -498,7 +508,7 @@ function CategorySelect({ category, setCategory }) {
 
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
-      <FormControl>
+      <FormControl sx={{ width: 150 }}>
         <InputLabel>category</InputLabel>
         <Select label="category" value={category} onChange={handleChange}>
           {categories.map((category) => (

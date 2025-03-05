@@ -9,7 +9,6 @@ import EventDetails from "./components/EventDetails";
 import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
 
-
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import "./App.css";
@@ -24,8 +23,10 @@ import {
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-
-export function handleFacebookSuccess(response, { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}) {
+export function handleFacebookSuccess(
+  response,
+  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}
+) {
   console.log("HandleFacebookSuccess Called with:", response);
 
   if (!response || !response.accessToken) {
@@ -78,7 +79,6 @@ function App() {
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
   const navigate = useNavigate();
-
 
   const handleFacebookSuccess = (response) => {
     console.log("HandleFacebookSuccess Called with:", response);
@@ -133,7 +133,7 @@ function App() {
 
     setOpenLoginDialog(false);
   };
-  
+
   const handleFacebookFailure = (error) => {
     console.error("Facebook Auth Error:", error);
     setIsSignedIn(false);
@@ -194,8 +194,22 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route
           path="/myEvents"
-          element={<MyEvents userProfile={userProfile} accessToken={accessToken} />}
+          element={
+            <MyEvents userProfile={userProfile} accessToken={accessToken} />
+          }
         />
+        <Route
+          path="*"
+          element={
+            <HomePage
+              userProfile={userProfile}
+              accessToken={accessToken}
+              openSnackBar={openSnackBar}
+              setOpenSnackBar={setOpenSnackBar}
+            />
+          }
+        />{" "}
+        {/* Catch-all for unknown routes */}
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
@@ -212,14 +226,22 @@ function App() {
               return_scopes: true,
             }}
             render={({ onClick }) => (
-              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={onClick}
+              >
                 Sign In with Facebook
               </Button>
             )}
           />
           <br />
           <br />
-          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleFailure}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>
