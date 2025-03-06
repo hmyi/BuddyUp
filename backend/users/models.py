@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 class User(AbstractUser):
     # Store user facebook id
     facebook_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
 
     def clean(self):
         """Ensure Facebook ID does not exceed max_length."""

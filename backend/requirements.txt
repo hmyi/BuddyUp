@@ -27,3 +27,5 @@ openai==0.28
 spacy == 3.8.4
 sentence-transformers == 3.4.1
 scikit-learn == 1.6.1
+django-storages == 1.14.5
+boto3 == 1.37.7

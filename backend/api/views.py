@@ -6,8 +6,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.response import Response
+from rest_framework import status
+from users.serializers import ProfileImageSerializer
 from users.models import User
 from django.shortcuts import render
+from django.core.files.base import ContentFile
+import os
 
 # Create your views here.
 @api_view(['POST'])
@@ -83,21 +87,35 @@ def facebook_login(request):
             user.set_unusable_password()
             user.save()
     
-    # 5. Use SimpleJWT to generate JWT
+    # 5. If Facebook gives avatar_url，download image and save as user profile_image
+    if avatar_url and not user.profile_image:
+        try:
+            avatar_response = requests.get(avatar_url)
+            if avatar_response.status_code == 200:
+                ext = os.path.splitext(avatar_url)[-1]
+                if not ext:
+                    ext = ".jpg"
+                filename = f"{facebook_user_id}_avatar{ext}"
+                user.profile_image.save(filename, ContentFile(avatar_response.content), save=True)
+        except Exception as e:
+            print("Error fetching avatar image:", e)
+    
+    # 6. Use SimpleJWT to generate JWT
     refresh = RefreshToken.for_user(user)
     refresh['username'] = user.username
     refresh['first_name'] = user.first_name
     refresh['last_name'] = user.last_name
     refresh['email'] = user.email
-    if avatar_url:
-        refresh['avatar_url'] = avatar_url
+    
+    profile_image_url = user.profile_image.url if user.profile_image else None
     
     access_token = str(refresh.access_token)
     refresh_token = str(refresh)
 
     return Response({
         "access": access_token,
-        "refresh": refresh_token
+        "refresh": refresh_token,
+        "profile_image_url": profile_image_url
     })
 
 @api_view(['GET'])
@@ -127,3 +145,16 @@ def participants_to_usernames(request):
             usernames.append(None)
 
     return Response({"usernames": usernames}, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def upload_profile_image(request):
+    """
+    Allow authenticated user to update profile_image
+    Upload as multipart/form-data
+    """
+    serializer = ProfileImageSerializer(instance=request.user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
