@@ -17,15 +17,6 @@ import {
 } from "@mui/material";
 
 const eventTypes = ["Attending", "Hosting", "Past"];
-const defaultImages = {
-  Social: "events_pics/social.jpg",
-  Entertainment: "events_pics/entertainment.jpg",
-  Sports: "events_pics/sports.jpg",
-  Food: "events_pics/food.jpg",
-  Outdoor: "events_pics/outdoor.jpg",
-  Gaming: "events_pics/gaming.jpg",
-  Carpool: "events_pics/carpool.jpg",
-};
 
 function MyEvents({ userProfile, accessToken }) {
   const [selectedType, setType] = useState("Attending");
@@ -167,7 +158,7 @@ const fetchEvents = async () => {
               <CardMedia
                 component={"img"}
                 sx={{ width: 150, height: 100 }}
-                image={defaultImages[event.category]}
+                image={`events_pics/${event.category}.jpg`}
                 alt={event.category}
               />
               <CardContent>

@@ -125,7 +125,7 @@ function App() {
           email: decodedToken.email || "No Email Provided",
           userID: decodedToken.user_id,
           picture: {
-            data: { url: decodedToken.avatar_url },
+            data: { url: data.profile_image_url },
           },
         });
       })
