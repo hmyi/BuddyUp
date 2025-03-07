@@ -9,7 +9,7 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         read_only_fields = ('creator', 'created_at', 'updated_at', 'participants',)
-        exclude = ['vector']
+        exclude = ['vector', "event_image"]
 
     def get_status(self, obj):
         """

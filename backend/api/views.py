@@ -107,7 +107,7 @@ def facebook_login(request):
     refresh['last_name'] = user.last_name
     refresh['email'] = user.email
     
-    profile_image_url = user.profile_image.url if user.profile_image else None
+    profile_image_url = request.build_absolute_uri(user.profile_image.url) if user.profile_image else None
     
     access_token = str(refresh.access_token)
     refresh_token = str(refresh)

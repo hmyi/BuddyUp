@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .semantic_search import text_to_vector
+from storages.backends.s3boto3 import S3Boto3Storage
 
 User = get_user_model()
 
@@ -16,7 +17,7 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     capacity = models.PositiveIntegerField(help_text="Capacity must be greater than zero")
     attendance = models.PositiveIntegerField(default=0)
-    event_image = models.ImageField(upload_to='event_images/', null=True, blank=True)
+    event_image = models.ImageField(upload_to='event_images/', storage=S3Boto3Storage(), null=True, blank=True)
     
     vector = models.JSONField(null=True, blank=True)
     cancelled = models.BooleanField(default=False)
