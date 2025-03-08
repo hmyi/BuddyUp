@@ -11,6 +11,8 @@ from users.serializers import ProfileImageSerializer
 from users.models import User
 from django.shortcuts import render
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from storages.backends.s3boto3 import S3Boto3Storage
 import os
 
 # Create your views here.
@@ -153,8 +155,15 @@ def upload_profile_image(request):
     Allow authenticated user to update profile_image
     Upload as multipart/form-data
     """
-    serializer = ProfileImageSerializer(instance=request.user, data=request.data, partial=True)
+    user = request.user
+    old_image = user.profile_image
+    s3_storage = S3Boto3Storage()
+
+    serializer = ProfileImageSerializer(instance=user, data=request.data, partial=True)
     if serializer.is_valid():
+        if 'profile_image' in request.FILES and old_image:
+            s3_storage.delete(old_image.name)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
