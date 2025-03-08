@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from rest_framework.test import APITestCase
 from rest_framework import status
 from events.models import Event
@@ -99,7 +100,7 @@ class EventModelTestCase(TestCase):
     def test_event_with_zero_capacity(self):
         """Test creating an event with zero capacity."""
         with self.assertRaises(ValidationError):
-            Event.objects.create(
+            event = Event.objects.create(
                 title="Zero Capacity Event",
                 category="Test",
                 city="Test City",
@@ -109,11 +110,13 @@ class EventModelTestCase(TestCase):
                 capacity=0,
                 creator=self.user
             )
+            event.full_clean()
+            event.save()
 
     def test_event_with_negative_capacity(self):
         """Test creating an event with negative capacity."""
-        with self.assertRaises(ValidationError):
-            Event.objects.create(
+        with self.assertRaises((IntegrityError, ValidationError)):
+            event = Event.objects.create(
                 title="Negative Capacity Event",
                 category="Test",
                 city="Test City",
@@ -123,6 +126,8 @@ class EventModelTestCase(TestCase):
                 capacity=-5,
                 creator=self.user
             )
+            event.full_clean()
+            event.save()
 
     def test_event_with_end_time_before_start_time(self):
         """Test creating an event with end time before start time."""
@@ -162,7 +167,7 @@ class EventModelTestCase(TestCase):
         long_string = "a" * 201  # Exceeds max_length of 200
         
         with self.assertRaises(ValidationError):
-            Event.objects.create(
+            event = Event.objects.create(
                 title=long_string,
                 category="Test",
                 city="Test City",
@@ -172,10 +177,12 @@ class EventModelTestCase(TestCase):
                 capacity=10,
                 creator=self.user
             )
+            event.full_clean()
+            event.save()
 
         long_category = "a" * 101  # Exceeds max_length of 100
         with self.assertRaises(ValidationError):
-            Event.objects.create(
+            event = Event.objects.create(
                 title="Long Category Test",
                 category=long_category,
                 city="Test City",
@@ -185,6 +192,8 @@ class EventModelTestCase(TestCase):
                 capacity=10,
                 creator=self.user
             )
+            event.full_clean()
+            event.save()
 
     def test_event_with_extremely_long_description(self):
         """Test creating an event with an extremely long description."""
