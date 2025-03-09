@@ -7,11 +7,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
-from users.serializers import ProfileImageSerializer
+from users.serializers import UserSerializer
 from users.models import User
 from django.shortcuts import render
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.shortcuts import get_object_or_404
 from storages.backends.s3boto3 import S3Boto3Storage
 import os
 
@@ -159,7 +160,7 @@ def upload_profile_image(request):
     old_image = user.profile_image
     s3_storage = S3Boto3Storage()
 
-    serializer = ProfileImageSerializer(instance=user, data=request.data, partial=True)
+    serializer = UserSerializer(instance=user, data=request.data, partial=True)
     if serializer.is_valid():
         if 'profile_image' in request.FILES and old_image:
             s3_storage.delete(old_image.name)
@@ -167,3 +168,14 @@ def upload_profile_image(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_profile(request, pk):
+    """
+    GET: Get user profile
+    """
+    user = get_object_or_404(User, pk=pk)
+
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
