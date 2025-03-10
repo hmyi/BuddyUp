@@ -1,0 +1,57 @@
+# ------------------------------------------------------------------------------
+# Django & Python
+# ------------------------------------------------------------------------------
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments (either 'venv' or '.venv' or any custom name)
+venv/
+.venv/
+
+# Django stuff you might not want to commit
+# SQLite database (if you're using SQLite in development)
+db.sqlite3
+
+# Django logs
+*.log
+
+# Local settings (useful if you keep environment-specific settings outside your code)
+local_settings.py
+
+# If you're using django-debug-toolbar or similar,
+# you might have debug output or .env files
+.env
+.env.*
+
+# ------------------------------------------------------------------------------
+# Editor / IDE-specific
+# ------------------------------------------------------------------------------
+# VS Code
+.vscode/
+# PyCharm
+.idea/
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# ------------------------------------------------------------------------------
+# OS-specific files
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+cert.crt
+cert.key

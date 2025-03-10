@@ -1,0 +1,19 @@
+
+
+.auth-buttons {
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.auth-buttons button {
+  background-color: #00798a;
+  color: #fff;
+  margin-left: 1rem;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+}
+
+.Card:hover {
+  opacity: 0.8;
+}
