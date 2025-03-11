@@ -52,7 +52,6 @@ const fetchEvents = async () => {
       }
     );
 
-    // Ensure the responses are valid before calling .json()
     const attendingData =
       attendingResponse && typeof attendingResponse.json === "function"
         ? await attendingResponse.json()
@@ -62,7 +61,6 @@ const fetchEvents = async () => {
         ? await hostingResponse.json()
         : [];
 
-    // Adjust these lines if your API returns objects with keys (e.g., attending_events)
     const attendingEvents = Array.isArray(attendingData)
       ? attendingData
       : (attendingData.attending_events || []);

@@ -8,7 +8,7 @@ import EventDetails from "./components/EventDetails";
 
 import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
-
+import { EventProvider } from "./EventContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import "./App.css";
@@ -166,6 +166,7 @@ function App() {
   const handleMenuClose = () => setAnchorEl(null);
 
   return (
+    <EventProvider>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Header
         isSignedIn={isSignedIn}
@@ -248,6 +249,7 @@ function App() {
         </DialogActions>
       </Dialog>
     </GoogleOAuthProvider>
+    </EventProvider>
   );
 }
 
