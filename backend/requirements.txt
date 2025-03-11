@@ -29,3 +29,4 @@ sentence-transformers == 3.4.1
 scikit-learn == 1.6.1
 django-storages == 1.14.5
 boto3 == 1.37.7
+pytest-cov==6.0.0
