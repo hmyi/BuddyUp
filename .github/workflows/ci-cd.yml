@@ -88,5 +88,6 @@ jobs:
           AWS_REGION: us-east-2
         run: |
           cd frontend
+          npm install
           npm run build
           aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
