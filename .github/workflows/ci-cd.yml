@@ -35,7 +35,7 @@ jobs:
           cd backend
           export PYTHONPATH=$PWD
           python manage.py migrate
-          python -m pytest
+          python -m pytest --cov=api --cov=events --cov=users --cov-report=term-missing
 
       # FRONTEND TESTING
       - name: Set up Node.js
