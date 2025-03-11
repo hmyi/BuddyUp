@@ -80,14 +80,6 @@ jobs:
           python manage.py migrate &&
           sudo supervisorctl restart backend
 
-      # INSTALL AWS CLI
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-          aws --version
-
       # DEPLOY FRONTEND TO S3
       - name: Deploy Frontend to S3
         env:
