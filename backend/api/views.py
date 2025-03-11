@@ -179,3 +179,24 @@ def user_profile(request, pk):
 
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def update_profile_details(request):
+    """
+    POST /api/users/update/
+    Body JSON:
+    {
+      "email": "aaa@bbb.com",
+      "location": "New York",
+      "bio": "I love traveling",
+      "interests": "hiking, painting"
+    }
+    """
+    user = request.user
+    serializer = UserSerializer(instance=user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
