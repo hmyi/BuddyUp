@@ -57,7 +57,7 @@ function Header({
               }}
             >
               <Avatar
-                src={userProfile?.picture?.data?.url}
+                src={userProfile?.picture?.data?.url || `https://ui-avatars.com/api/?name=${userProfile?.name}`}
                 sx={{
                   bgcolor: "primary.main",
                   width: 40,
@@ -96,7 +96,7 @@ function Header({
                 Settings
               </MenuItem>
               <MenuItem
-                onClick={() => navigate("/profile", { state: { userProfile } })}
+                onClick={() => navigate(`/users/${userProfile?.userID}`)}
               >
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile

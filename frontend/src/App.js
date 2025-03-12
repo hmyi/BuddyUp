@@ -191,7 +191,7 @@ function App() {
           }
         />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/users/:id" element={<Profile accessToken={accessToken}/>} />
         <Route
           path="/myEvents"
           element={
