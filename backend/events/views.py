@@ -41,14 +41,15 @@ def list_user_joined_events(request):
 @permission_classes([permissions.IsAuthenticated])
 def create_event(request):
     """
-    POST: Create a new event
+    POST: Create a new event, including support for event_image upload.
+    USE multipart/form-data
     """
     data = request.data.copy()
     data['creator'] = request.user.id
-    serializer = EventSerializer(data=data)
+    serializer = EventSerializer(data=data, context={'request': request})
     if serializer.is_valid():
         event = serializer.save(creator=request.user)
-        return Response(EventSerializer(event).data, status=status.HTTP_201_CREATED)
+        return Response(EventSerializer(event, context={'request': request}).data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -69,16 +70,15 @@ def event_detail(request, pk):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method in ['PUT', 'PATCH']:
-        # Edit is only allowed for event creator
+        # Only event creator can edit
         if event.creator != request.user:
             return Response({"error": "No permission to edit this event."},
                             status=status.HTTP_403_FORBIDDEN)
-
         partial = (request.method == 'PATCH')
-        serializer = EventSerializer(event, data=request.data, partial=partial)
+        serializer = EventSerializer(event, data=request.data, partial=partial, context={'request': request})
         if serializer.is_valid():
             updated_event = serializer.save()
-            return Response(EventSerializer(updated_event).data, status=status.HTTP_200_OK)
+            return Response(EventSerializer(updated_event, context={'request': request}).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':

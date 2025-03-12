@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .semantic_search import text_to_vector
+from storages.backends.s3boto3 import S3Boto3Storage
 
 User = get_user_model()
 
@@ -16,6 +17,7 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     capacity = models.PositiveIntegerField(help_text="Capacity must be greater than zero")
     attendance = models.PositiveIntegerField(default=0)
+    event_image = models.ImageField(upload_to='event_images/', storage=S3Boto3Storage(), null=True, blank=True)
     
     vector = models.JSONField(null=True, blank=True)
     cancelled = models.BooleanField(default=False)
@@ -55,13 +57,6 @@ class Event(models.Model):
         if self.start_time <= timezone.now():
             raise ValidationError("Event start time must be in the future.")
 
-    def save(self, *args, **kwargs):
-        """
-        Override save to run full validation
-        """
-        self.full_clean()
-        super().save(*args, **kwargs)
-
     def add_participant(self, user):
         """
         Controlled method to add a participant with capacity check
@@ -78,6 +73,7 @@ class Event(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        self.full_clean()
         combined_text = f"{self.title} {self.description}".strip()
         if combined_text:
             self.vector = text_to_vector(combined_text)
