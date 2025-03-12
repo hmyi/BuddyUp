@@ -4,12 +4,13 @@ from .models import Event
 
 class EventSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
-    event_image_url = serializers.SerializerMethodField()  # 新增字段
+    event_image = serializers.ImageField(write_only=True, required=False)
+    event_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         read_only_fields = ('creator', 'created_at', 'updated_at', 'participants',)
-        exclude = ['vector', "event_image"]
+        exclude = ['vector']
 
     def get_status(self, obj):
         """
