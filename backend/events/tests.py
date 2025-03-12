@@ -7,6 +7,10 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from events.models import Event
 from events.serializers import EventSerializer
+from django.core.files.uploadedfile import SimpleUploadedFile
+from events.forms import ProfileImageForm
+from PIL import Image
+import io
 import random
 
 User = get_user_model()
@@ -467,3 +471,41 @@ class EventAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) <= 20)
+
+class EventFormTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="testuser", email="test@example.com")
+        self.event = Event.objects.create(
+            title="Test Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            start_time=timezone.now() + timezone.timedelta(days=1),
+            end_time=timezone.now() + timezone.timedelta(days=2),
+            capacity=10,
+            creator=self.user
+        )
+
+    def test_valid_profile_image_form(self):
+        """Test ProfileImageForm with a valid image file"""
+
+        def generate_test_image():
+            """Create a small in-memory image for testing."""
+            img_io = io.BytesIO()
+            image = Image.new("RGB", (100, 100), color=(255, 0, 0))  # Red image
+            image.save(img_io, format="JPEG")
+            img_io.seek(0)  # Reset file pointer
+            return SimpleUploadedFile("test_image.jpg", img_io.read(), content_type="image/jpeg")
+
+        image = generate_test_image()
+        form = ProfileImageForm(data={}, files={"event_image": image}, instance=self.event)
+
+        print("Form errors:", form.errors)  # Debugging
+
+        self.assertTrue(form.is_valid())
+
+    def test_invalid_profile_image_form(self):
+        """Test ProfileImageForm with an invalid file type"""
+        invalid_file = SimpleUploadedFile("test.txt", b"file_content", content_type="text/plain")
+        form = ProfileImageForm(data={}, files={"event_image": invalid_file}, instance=self.event)
+        self.assertFalse(form.is_valid())
