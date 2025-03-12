@@ -62,25 +62,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+
       # DEPLOY BACKEND TO EC2
       - name: Deploy Backend to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           cd /home/ubuntu/BuddyUp/backend &&
           git pull origin main &&
           source venv/bin/activate &&
           pip install -r requirements.txt &&
           python manage.py migrate &&
           sudo supervisorctl restart backend
-          "
-
-      # INSTALL AWS CLI
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-          aws --version
 
       # DEPLOY FRONTEND TO S3
       - name: Deploy Frontend to S3
@@ -90,5 +88,7 @@ jobs:
           AWS_REGION: us-east-2
         run: |
           cd frontend
-          npm run build
+          npm install
+          npm install --save-dev @babel/plugin-proposal-private-property-in-object
+          CI=false npm run build
           aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
