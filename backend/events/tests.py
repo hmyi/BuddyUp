@@ -10,6 +10,7 @@ from events.serializers import EventSerializer
 from django.core.files.uploadedfile import SimpleUploadedFile
 from events.forms import ProfileImageForm
 from PIL import Image
+from unittest.mock import patch
 import io
 import random
 
@@ -229,6 +230,62 @@ class EventModelTestCase(TestCase):
 
         self.assertEqual(len(events), 5)
         self.assertTrue(all(event.title != events[0].title for event in events[1:]))
+
+    @patch("events.semantic_search.text_to_vector", return_value=[0.1, 0.2, 0.3])
+    def test_event_vector_is_generated_on_save(self, mock_vectorizer):
+        """Test that event vectors are generated upon saving"""
+        event = Event.objects.create(
+            title="AI Workshop",
+            category="Tech",
+            city="Waterloo",
+            location="Tech Hub",
+            start_time=timezone.now() + timezone.timedelta(days=5),
+            end_time=timezone.now() + timezone.timedelta(days=6),
+            capacity=10,
+            creator=self.user
+        )
+        event.save()
+        self.assertIsNotNone(event.vector)
+
+    def test_add_participant_raises_error_if_event_full(self):
+        """Test add_participant() prevents overbooking"""
+        event = Event.objects.create(
+            title="Limited Seats",
+            category="Networking",
+            city="New York",
+            location="Central Park",
+            start_time=timezone.now() + timezone.timedelta(days=10),
+            end_time=timezone.now() + timezone.timedelta(days=11),
+            capacity=2,  # Small capacity to test the limit
+            creator=self.user
+        )
+
+        user1 = User.objects.create(username="user1", email="user1@test.com")
+        user2 = User.objects.create(username="user2", email="user2@test.com")
+        user3 = User.objects.create(username="user3", email="user3@test.com")
+
+        event.add_participant(user1)
+        event.add_participant(user2)
+
+        with self.assertRaises(ValidationError):
+            event.add_participant(user3)  # This should raise an error
+
+    def test_event_vector_set_to_none_when_text_is_empty(self):
+        """Test that vector is set to None when title and description are both empty"""
+        event = Event(
+            title=" ",  # Space-only title (bypasses blank validation)
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            description=" ",  # Space-only description
+            start_time=timezone.now() + timezone.timedelta(days=5),
+            end_time=timezone.now() + timezone.timedelta(days=6),
+            capacity=10,
+            creator=self.user
+        )
+        
+        event.save()
+        self.assertIsNone(event.vector)  # Ensure vector is None
 
 class EventAPITestCase(APITestCase):
     def setUp(self):
@@ -499,9 +556,6 @@ class EventFormTestCase(TestCase):
 
         image = generate_test_image()
         form = ProfileImageForm(data={}, files={"event_image": image}, instance=self.event)
-
-        print("Form errors:", form.errors)  # Debugging
-
         self.assertTrue(form.is_valid())
 
     def test_invalid_profile_image_form(self):
