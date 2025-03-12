@@ -44,9 +44,7 @@ def create_event(request):
     POST: Create a new event, including support for event_image upload.
     USE multipart/form-data
     """
-    data = request.data.copy()
-    data['creator'] = request.user.id
-    serializer = EventSerializer(data=data, context={'request': request})
+    serializer = EventSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         event = serializer.save(creator=request.user)
         return Response(EventSerializer(event, context={'request': request}).data, status=status.HTTP_201_CREATED)
