@@ -11,8 +11,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from events.forms import ProfileImageForm
 from PIL import Image
 from unittest.mock import patch
+from events.semantic_search import preprocess_text, text_to_vector, compute_similarities
 import io
 import random
+import numpy as np
 
 User = get_user_model()
 
@@ -563,3 +565,45 @@ class EventFormTestCase(TestCase):
         invalid_file = SimpleUploadedFile("test.txt", b"file_content", content_type="text/plain")
         form = ProfileImageForm(data={}, files={"event_image": invalid_file}, instance=self.event)
         self.assertFalse(form.is_valid())
+
+class SemanticSearchTestCase(TestCase):
+    def test_preprocess_text_empty_string(self):
+        """Test preprocess_text with an empty string"""
+        self.assertEqual(preprocess_text(""), "")
+
+    def test_preprocess_text_stopwords_only(self):
+        """Test preprocess_text with only stopwords"""
+        self.assertEqual(preprocess_text("the and of"), "")
+
+    def test_preprocess_text_punctuation_and_case(self):
+        """Test preprocess_text handles punctuation and mixed case"""
+        self.assertEqual(preprocess_text("Hello, WORLD!"), "hello world")
+
+    def test_text_to_vector_normal_case(self):
+        """Test text_to_vector produces a valid vector"""
+        vector = text_to_vector("This is a test sentence.")
+        self.assertEqual(len(vector), 384)  # Assuming model returns 384-dim vectors
+        self.assertIsInstance(vector, list)
+
+    def test_text_to_vector_empty_string(self):
+        """Test text_to_vector with an empty string"""
+        vector = text_to_vector("")
+        self.assertEqual(len(vector), 384)  # Should still return a valid vector
+
+    def test_compute_similarities_empty_list(self):
+        """Test compute_similarities with an empty event vector list"""
+        query_vec = np.random.rand(384)  # Simulate a random query vector
+        
+        # Expect ValueError because cosine_similarity does not support empty inputs
+        with self.assertRaises(ValueError):
+            compute_similarities(query_vec, [])
+
+    def test_compute_similarities_identical_vectors(self):
+        """Test compute_similarities when all event vectors are identical"""
+        query_vec = np.random.rand(384)
+        event_vecs = [query_vec.tolist()] * 5  # 5 identical vectors
+
+        similarities = compute_similarities(query_vec, event_vecs)
+
+        # Use np.isclose to handle floating-point precision issues
+        self.assertTrue(all(np.isclose(sim, 1.0, atol=1e-6) for sim in similarities))
