@@ -531,6 +531,65 @@ class EventAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) <= 20)
+    
+    def test_get_non_existent_event_detail(self):
+        url = reverse('event_detail', kwargs={'pk': 9999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_event_by_non_creator(self):
+        self.client.force_authenticate(user=self.user2)
+        url = reverse('event_detail', kwargs={'pk': self.event.id})
+        data = {'title': 'Unauthorized Update'}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_join_event_already_full(self):
+        user3 = User.objects.create(username="user3", email="user3@test.com")
+        self.event.participants.add(self.user2, user3)
+        self.event.attendance = 10
+        self.event.save()
+        
+        self.client.force_authenticate(user=User.objects.create(username="user4", email="user4@test.com"))
+        url = reverse('join_event', kwargs={'pk': self.event.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_search_events_missing_city(self):
+        url = reverse('search_events')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_events_invalid_key(self):
+        url = reverse('filter_events') + "?key=invalid&name=value"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cancel_event_by_non_creator(self):
+        self.client.force_authenticate(user=self.user2)
+        url = reverse('cancel_event', kwargs={'pk': self.event.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cancel_event_and_reactivate(self):
+        url = reverse('cancel_event', kwargs={'pk': self.event.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        url = reverse('cancel_event', kwargs={'pk': self.event.id}) + "?reverse=true"
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_improve_description_missing_title(self):
+        url = reverse('improve_description')
+        response = self.client.post(url, data={})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_improve_description_with_title_only(self):
+        url = reverse('improve_description')
+        data = {'title': 'AI Workshop'}
+        response = self.client.post(url, data)
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_500_INTERNAL_SERVER_ERROR])
 
 class EventFormTestCase(TestCase):
     def setUp(self):
