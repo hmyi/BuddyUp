@@ -1,4 +1,3 @@
-// HomePage.js
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -19,11 +18,11 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         } else if (data.results && Array.isArray(data.results)) {
           setEvents(data.results);
         } else {
-          setEvents([]); // fallback if data is not an array
+          setEvents([]); 
         }
       })
       .catch((err) => console.log(err));
-  }, []); // run once on mount
+  }, []); 
 
   return (
     <div>

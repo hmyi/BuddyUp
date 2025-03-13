@@ -1,4 +1,3 @@
-// SearchPage.js
 import React, { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -17,10 +16,8 @@ function SearchPage({ userProfile, accessToken, openSnackBar, setOpenSnackBar })
   useEffect(() => {
     let apiUrl = "";
     if (query.trim()) {
-      // Use the search API if a search term exists.
       apiUrl = `https://18.226.163.235:8000/api/events/search/?city=${city}&query=${encodeURIComponent(query.trim())}`;
     } else {
-      // Use the filter API when no search term is provided.
       apiUrl = `https://18.226.163.235:8000/api/events/filter/?key=city&name=${city}`;
       if (category) {
         apiUrl += `&key=category&name=${category}`;
@@ -54,7 +51,6 @@ function SearchPage({ userProfile, accessToken, openSnackBar, setOpenSnackBar })
         {query.trim() ? `Search results for "${query}"` : `Events near ${city}`}
       </h1>
 
-      {/* Vertical list of full-width SearchEventCards */}
       <Box sx={{ marginX: "50px", display: "flex", flexDirection: "column", gap: 2 }}>
         {events.map((evt) => (
           <SearchEventCard key={evt.id} userProfile={userProfile} accessToken={accessToken} event={evt} />

@@ -1,4 +1,3 @@
-// SearchEventCard.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardMedia, CardContent, Typography, CardActions, Button, Box } from "@mui/material";
@@ -27,17 +26,17 @@ function SearchEventCard({ userProfile, accessToken, event }) {
         cursor: "pointer",
       }}
     >
-      {/* Left side: Event image */}
+  
       <CardMedia
         component="img"
         image={`events_pics/${event.category}.jpg`}
         alt={event.title}
         sx={{
-          width: "20%", // adjust as desired (e.g., 15% to 20%)
+          width: "20%", 
           objectFit: "cover",
         }}
       />
-      {/* Right side: Event details */}
+ 
       <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
         <CardContent sx={{ flexGrow: 1 }}>
           <Typography

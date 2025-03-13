@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Profile from "./components/Profile";
@@ -7,7 +7,6 @@ import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import SearchPage from "./components/SearchPage";
 
-import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
 import { EventProvider } from "./EventContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -213,7 +212,6 @@ function App() {
             />
           }
         />{" "}
-        {/* Catch-all for unknown routes */}
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
