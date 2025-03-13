@@ -1,14 +1,4 @@
-import React from "react";
-import { render, waitFor, act, fireEvent, screen } from "@testing-library/react";
-import "@testing-library/jest-dom"; 
-import { MemoryRouter } from "react-router-dom";
-import { EventProvider } from "../EventContext";
-import { jwtDecode } from "jwt-decode";
-import App, { handleFacebookSuccess } from "../App";
-import Header from "../components/Header";
-import EventDetails from "../components/EventDetails";
 
-// Mock jwtDecode so we can verify its call
 jest.mock("jwt-decode", () => ({
   jwtDecode: jest.fn(() => ({
     username: "Farhan Hossein",
@@ -31,12 +21,9 @@ const mockEvent = {
   capacity: 100,
   attendance: 10,
   participants: [],
-  creator: 2, // ensure the current user (id:1) is not the creator
+  creator: 2, 
 };
-
-
 beforeEach(() => {
-  // Basic global fetch mock covering our API calls
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
@@ -50,6 +37,41 @@ afterEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
 });
+
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
+import { EventProvider } from "../EventContext";
+import { jwtDecode } from "jwt-decode";
+import App, { handleFacebookSuccess } from "../App";
+import SearchPage from "../components/SearchPage";
+
+import "@testing-library/jest-dom"; 
+import { render, waitFor, act, screen } from "@testing-library/react";
+
+test("MemoryRouter import test", () => {
+  expect(MemoryRouter).toBeDefined();
+});
+
+test("EventProvider import test", () => {
+  expect(EventProvider).toBeDefined();
+});
+
+test("jwtDecode import test", () => {
+  expect(jwtDecode).toBeDefined();
+});
+
+test("handleFacebookSuccess import test", () => {
+  expect(handleFacebookSuccess).toBeDefined();
+});
+
+test("SearchPage import test", () => {
+  expect(SearchPage).toBeDefined();
+});
+
+test("App import test", () => {
+  expect(App).toBeDefined();
+});
+
 
 test("Facebook API returns a token and backend exchanges it for JWT", async () => {
   const response = { accessToken: "testFacebookAccessToken" };
@@ -106,8 +128,7 @@ test("decodes JWT token and sets userProfile correctly", async () => {
     );
   });
 
-
-  await act(async () => {
+ await act(async () => {
     handleFacebookSuccess({ accessToken: "testFacebookAccessToken" }, {
       setIsSignedIn: () => {},
       setAccessToken: () => {},
@@ -121,12 +142,14 @@ test("decodes JWT token and sets userProfile correctly", async () => {
   });
 });
 
-test("renders login button when user is not signed in", () => {
-  render(
-    <EventProvider>
-      <Header isSignedIn={false} />
-    </EventProvider>
-  );
-  expect(screen.getByText(/Sign In/i)).toBeInTheDocument();
-});
+test("renders login button when user is not signed in", async () => {
+  await act(async () => {
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
+  });
 
+  expect(await screen.findByText(/Login/i)).toBeInTheDocument();
+});

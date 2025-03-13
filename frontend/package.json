@@ -15,11 +15,13 @@
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
     "jwt-decode": "^4.0.0",
+    "npm-install-peers": "^1.2.2",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.8",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.5",
-    "react-router-dom": "^7.1.5",
+    "react-router": "^6.30.0",
+    "react-router-dom": "6.5",
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4"
   },
@@ -49,13 +51,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.8",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0-placeholder-for-preset-env.2",
     "@babel/preset-env": "^7.26.8",
     "@babel/preset-react": "^7.26.3",
     "@jest/core": "^27.5.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/react-router-dom": "^5.3.3",
     "babel-jest": "^27.5.1",
     "jest": "^27.5.1",
     "jest-fetch-mock": "^3.0.3",
@@ -64,14 +66,14 @@
     "msw": "^2.7.0"
   },
   "jest": {
-  "transform": {
-    "^.+\\.[tj]sx?$": "babel-jest"
-  },
-  "transformIgnorePatterns": [
-    "/node_modules/(?!(react-router-dom|@mui/x-date-pickers|@babel/runtime)/)"
-  ],
-  "moduleNameMapper": {
-    "\\.(css|less|scss)$": "identity-obj-proxy"
+    "transform": {
+      "^.+\\.[tj]sx?$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(react-router-dom|@mui/x-date-pickers|@babel/runtime)/)"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss)$": "identity-obj-proxy"
+    }
   }
-}
 }

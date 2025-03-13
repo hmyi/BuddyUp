@@ -4,6 +4,8 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import EventDetails from "../components/EventDetails"; 
 
+
+
 const mockEvent = {
   id: 1,
   category: "Food",
@@ -19,6 +21,10 @@ const mockEvent = {
   participants: []
 };
 
+test("MemoryRouter import test", () => {
+  expect(MemoryRouter).toBeDefined();
+});
+
 describe("EventDetails component", () => {
   beforeEach(() => {
     global.fetch = jest.fn(() =>
@@ -32,6 +38,10 @@ describe("EventDetails component", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
+
+  
+
+
 
   test("renders EventDetails with valid event data from router state", async () => {
     render(

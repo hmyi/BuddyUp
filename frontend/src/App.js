@@ -139,15 +139,34 @@ function App() {
     setIsSignedIn(false);
   };
 
-  const handleGoogleSuccess = (response) => {
-    console.log("Google Auth Success:", response);
-    setIsSignedIn(true);
-    setUserProfile({
-      email: "Google User",
-      picture: { data: { url: "https://via.placeholder.com/150" } },
-    });
-    setOpenLoginDialog(false);
-  };
+const handleGoogleSuccess = (response) => {
+  console.log("Google Auth Success:", response);
+  // Send the Google ID token to your backend for verification
+  fetch("https://18.226.163.235:8000/api/auth/google/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: response.credential }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.access) {
+        console.error("No access token received from backend", data);
+        return;
+      }
+      setIsSignedIn(true);
+      setAccessToken(data.access);
+      const decodedToken = jwtDecode(data.access);
+      setUserProfile({
+        name: decodedToken.username || "Unknown",
+        email: decodedToken.email || "No Email Provided",
+        userID: decodedToken.user_id,
+        picture: { data: { url: data.profile_image_url } },
+      });
+      setOpenLoginDialog(false);
+    })
+    .catch((error) => console.error("Error during Google login:", error));
+};
+
 
   const handleGoogleFailure = (error) => {
     console.error("Google Auth Error:", error);
