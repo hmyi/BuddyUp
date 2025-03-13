@@ -5,6 +5,7 @@ import Profile from "./components/Profile";
 import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
+import SearchPage from "./components/SearchPage";
 
 import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
@@ -192,13 +193,15 @@ function App() {
           }
         />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/search" element={<SearchPage />} />
         <Route
           path="/myEvents"
           element={
             <MyEvents userProfile={userProfile} accessToken={accessToken} />
           }
-        />
+          />
+            
         <Route
           path="*"
           element={

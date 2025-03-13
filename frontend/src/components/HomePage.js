@@ -1,25 +1,17 @@
+// HomePage.js
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid2";
-import Stack from "@mui/material/Stack";
 import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
-import FilterMenu from "./FilterMenu";
-import Header from "./Header";
-import { useEventContext } from "../EventContext";
-
+import Grid from "@mui/material/Grid2";
+import Stack from "@mui/material/Stack";
 
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
-  const { events, setEvents, city, setCity, category, setCategory } = useEventContext();
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    let apiUrl = `https://18.226.163.235:8000/api/events/filter/?key=city&name=${city}`;
-    if (category) {
-      apiUrl += `&key=category&name=${category}`;
-    }
-
-    fetch(apiUrl)
+    fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -27,26 +19,15 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         } else if (data.results && Array.isArray(data.results)) {
           setEvents(data.results);
         } else {
-          setEvents([]);
+          setEvents([]); // fallback if data is not an array
         }
       })
-      .catch((err) => console.error(err));
-  }, [city, category]);
+      .catch((err) => console.log(err));
+  }, []); // run once on mount
 
   return (
     <div>
-
-      <FilterMenu
-        city={city}
-        setCity={setCity}
-        category={category}
-        setCategory={setCategory}
-      />
-
-<h1 style={{ marginLeft: "50px", textAlign: "center" }}>
-        Events near {city}
-      </h1>
-
+      <h1 style={{ marginLeft: "50px" }}>Events near Waterloo</h1>
       <Grid container spacing={3} sx={{ marginX: "50px" }}>
         {events.map((evt) => (
           <Grid xs={12} sm={6} md={3} key={evt.id}>
@@ -58,20 +39,17 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
           </Grid>
         ))}
       </Grid>
-
       <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
         <Button variant="contained">Load more</Button>
       </Box>
-
       <CustomizedSnackbars
         openSnackBar={openSnackBar}
         setOpenSnackBar={setOpenSnackBar}
       >
         You successfully created an event!
       </CustomizedSnackbars>
-
       <footer className="footer">
-        <Stack direction="row" spacing={5} justifyContent="center">
+        <Stack direction="row" spacing={5}>
           <span>©2025 BuudyUp</span>
           <span>Terms of Service</span>
           <span>Privacy Policy</span>

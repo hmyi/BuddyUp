@@ -12,7 +12,7 @@ function FilterMenu({ city, setCity, category, setCategory }) {
     "Carpool",
   ];
 
-  const cities = ["Waterloo", "Kitchener", "Tonronto"];
+  const cities = ["Waterloo", "Kitchener", "Toronto"];
 
   return (
     <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
