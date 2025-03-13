@@ -12,6 +12,7 @@ from events.forms import ProfileImageForm
 from PIL import Image
 from unittest.mock import patch
 from events.semantic_search import preprocess_text, text_to_vector, compute_similarities
+from unittest.mock import Mock
 import io
 import random
 import numpy as np
@@ -607,3 +608,110 @@ class SemanticSearchTestCase(TestCase):
 
         # Use np.isclose to handle floating-point precision issues
         self.assertTrue(all(np.isclose(sim, 1.0, atol=1e-6) for sim in similarities))
+
+class EventSerializerTestCase(TestCase):
+    def setUp(self):
+        """Set up test data"""
+        self.user = User.objects.create(username="testuser", email="test@example.com")
+        self.future_time = timezone.now() + timezone.timedelta(days=5)
+
+        # Event 1: Active (not full, not expired)
+        self.active_event = Event.objects.create(
+            title="Active Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            start_time=self.future_time,
+            end_time=self.future_time + timezone.timedelta(days=1),
+            capacity=10,
+            attendance=5,
+            creator=self.user
+        )
+
+        # Event 2: Full (at capacity, not expired)
+        self.full_event = Event.objects.create(
+            title="Full Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            start_time=self.future_time,
+            end_time=self.future_time + timezone.timedelta(days=1),
+            capacity=5,
+            attendance=5,  # Full capacity
+            creator=self.user
+        )
+
+        # Event 3: Expired (past end_time) - Create with a future start time, then manually update to the past
+        self.expired_event = Event.objects.create(
+            title="Expired Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            start_time=timezone.now() + timezone.timedelta(days=1),  # Temporary valid start_time
+            end_time=timezone.now() + timezone.timedelta(days=2),
+            capacity=10,
+            attendance=2,
+            creator=self.user
+        )
+
+        # Manually update start_time to the past without triggering validation
+        Event.objects.filter(id=self.expired_event.id).update(
+            start_time=timezone.now() - timezone.timedelta(days=10),
+            end_time=timezone.now() - timezone.timedelta(days=5)
+        )
+
+        # Event 4: With Image
+        self.image_event = Event.objects.create(
+            title="Image Event",
+            category="Test",
+            city="Test City",
+            location="Test Location",
+            start_time=self.future_time,
+            end_time=self.future_time + timezone.timedelta(days=1),
+            capacity=10,
+            creator=self.user
+        )
+        self.image_event.event_image = SimpleUploadedFile(
+            "test.jpg", b"file_content", content_type="image/jpeg"
+        )
+        self.image_event.save()
+
+    def test_get_status_active(self):
+        """Test that get_status returns 'active' for an event that is not full or expired"""
+        serializer = EventSerializer(self.active_event)
+        self.assertEqual(serializer.get_status(self.active_event), "active")
+
+    def test_get_status_full(self):
+        """Test that get_status returns 'full' for an event that is at capacity but not expired"""
+        serializer = EventSerializer(self.full_event)
+        self.assertEqual(serializer.get_status(self.full_event), "full")
+
+    def test_get_status_expired(self):
+        """Test that get_status returns 'expire' for an event that has ended"""
+        
+        # Refresh from DB to ensure updated values are used
+        self.expired_event.refresh_from_db()
+
+        serializer = EventSerializer(self.expired_event)
+        self.assertEqual(serializer.get_status(self.expired_event), "expire")
+
+    def test_get_event_image_url_with_request(self):
+        """Test that get_event_image_url returns full URL when request is provided"""
+        mock_request = Mock()
+        mock_request.build_absolute_uri = lambda url: f"http://testserver{url}"
+
+        serializer = EventSerializer(self.image_event, context={"request": mock_request})
+        self.assertEqual(
+            serializer.get_event_image_url(self.image_event),
+            f"http://testserver{self.image_event.event_image.url}"
+        )
+
+    def test_get_event_image_url_without_request(self):
+        """Test that get_event_image_url returns relative URL when no request is provided"""
+        serializer = EventSerializer(self.image_event)
+        self.assertEqual(serializer.get_event_image_url(self.image_event), self.image_event.event_image.url)
+
+    def test_get_event_image_url_no_image(self):
+        """Test that get_event_image_url returns None when event has no image"""
+        serializer = EventSerializer(self.active_event)  # This event has no image
+        self.assertIsNone(serializer.get_event_image_url(self.active_event))
