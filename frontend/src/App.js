@@ -149,11 +149,12 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="*" element={<HomePage />} />
+        <Route path="/users/:id" element={<Profile />} />
       </Routes>
+      
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>

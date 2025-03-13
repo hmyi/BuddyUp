@@ -123,8 +123,9 @@ function Header({
                 <SettingsIcon sx={{ mr: 2 }} fontSize="small" />
                 Settings
               </MenuItem>
-              <MenuItem onClick={() => navigate("/profile", { state: { userProfile } })}>
-                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
+<MenuItem
+                onClick={() => navigate(`/users/${userProfile?.userID}`)}
+              >                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
               <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })}>
