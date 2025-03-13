@@ -1,5 +1,4 @@
-// Header.js
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import "../App.css";
 import { IconButton, Avatar, Menu, MenuItem, Button } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -9,11 +8,9 @@ import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from "react-router-dom";
 import EventCreation from "./EventCreation";
 import { useEventContext } from "../EventContext";
+import { AuthContext } from "../AuthContext";
 
 function Header({
-  isSignedIn,
-  userProfile,
-  accessToken,
   handleLogout,
   anchorEl,
   handleMenuOpen,
@@ -24,6 +21,9 @@ function Header({
   const navigate = useNavigate();
   const { city, setCity } = useEventContext();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Use auth state from AuthContext instead of props
+  const { isSignedIn, userProfile } = useContext(AuthContext);
 
   const handleSearch = () => {
     let trimmedQuery = searchQuery.trim();
@@ -45,7 +45,7 @@ function Header({
     if (foundCity) {
       setCity(foundCity);
     }
-    // If there's remaining text, navigate with it as a search query; otherwise, use filter API
+    // Navigate based on the search query
     if (trimmedQuery) {
       navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
     } else {
@@ -57,11 +57,7 @@ function Header({
   return (
     <header className="header">
       <div className="header-left">
-        <span
-          className="logo"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
-        >
+        <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           BuddyUp
         </span>
       </div>
@@ -82,10 +78,7 @@ function Header({
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
-            <EventCreation
-              accessToken={accessToken}
-              setOpenSnackBar={setOpenSnackBar}
-            />
+            <EventCreation setOpenSnackBar={setOpenSnackBar} />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}
@@ -115,14 +108,8 @@ function Header({
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
               keepMounted
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
               sx={{
                 "& .MuiPaper-root": {
                   mt: 1.5,
@@ -136,17 +123,11 @@ function Header({
                 <SettingsIcon sx={{ mr: 2 }} fontSize="small" />
                 Settings
               </MenuItem>
-              <MenuItem
-                onClick={() => navigate("/profile", { state: { userProfile } })}
-              >
+              <MenuItem onClick={() => navigate("/profile", { state: { userProfile } })}>
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
-              <MenuItem
-                onClick={() =>
-                  navigate("/myEvents", { state: { userProfile } })
-                }
-              >
+              <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })}>
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
               </MenuItem>

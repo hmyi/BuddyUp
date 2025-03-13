@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useContext } from "react";
+
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom"; 
 import { MemoryRouter } from "react-router-dom";
 import EventDetails from "../components/EventDetails"; 
+import { AuthContext } from "../AuthContext";
 
 
+function EventDetails() {
+ const { userProfile, accessToken, isSignedIn } = useContext(AuthContext);
+const currentUserId = userProfile?.userID;
+}
 
 const mockEvent = {
   id: 1,
