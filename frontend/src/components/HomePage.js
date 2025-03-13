@@ -7,10 +7,8 @@ import Stack from "@mui/material/Stack";
 import * as React from "react";
 import { useState, useEffect } from "react";
 
-
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   const [events, setEvents] = useState([]);
-
 
   useEffect(() => {
     fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0")
@@ -25,11 +23,7 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         }
       })
       .catch((err) => console.log(err));
-  }, [events]); // run only once on mount
-  
-  
-  
-
+  }, []);
 
   return (
     <div>
