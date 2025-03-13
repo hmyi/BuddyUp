@@ -18,6 +18,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
 import { AuthContext } from "../AuthContext";
 
+import jwtDecode from "jwt-decode";
+
 const ImageContainer = styled(Box)(({ theme }) => ({
   position: "relative",
   width: "100%",

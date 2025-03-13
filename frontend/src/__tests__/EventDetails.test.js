@@ -1,17 +1,3 @@
-import React, { useContext } from "react";
-
-import { render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom"; 
-import { MemoryRouter } from "react-router-dom";
-import EventDetails from "../components/EventDetails"; 
-import { AuthContext } from "../AuthContext";
-
-
-function EventDetails() {
- const { userProfile, accessToken, isSignedIn } = useContext(AuthContext);
-const currentUserId = userProfile?.userID;
-}
-
 const mockEvent = {
   id: 1,
   category: "Food",
@@ -26,6 +12,16 @@ const mockEvent = {
   attendance: 10,
   participants: []
 };
+
+
+
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom"; 
+import { MemoryRouter } from "react-router-dom";
+import EventDetails from "../components/EventDetails"; 
+import { AuthContext } from "../AuthContext";
+
 
 test("MemoryRouter import test", () => {
   expect(MemoryRouter).toBeDefined();
@@ -45,16 +41,16 @@ describe("EventDetails component", () => {
     jest.restoreAllMocks();
   });
 
-  
-
-
-
-  test("renders EventDetails with valid event data from router state", async () => {
+    test("renders EventDetails with valid event data from router state", async () => {
     render(
       <MemoryRouter
         initialEntries={[{ pathname: "/events/1", state: { event: mockEvent } }]}
       >
-        <EventDetails userProfile={{ userID: 1 }} accessToken="dummy-token" />
+                <AuthContext.Provider value={{ userProfile: { userID: 1 }, accessToken: "dummy-token", isSignedIn: true }}>
+
+          <EventDetails userProfile={{ userID: 1 }} accessToken="dummy-token" />
+                  </AuthContext.Provider>
+
       </MemoryRouter>
     );
 

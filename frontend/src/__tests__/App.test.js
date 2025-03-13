@@ -1,36 +1,46 @@
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
+import { EventProvider } from "../EventContext";
+import { jwtDecode } from "jwt-decode"
+import App, { handleFacebookSuccess } from "../App";
+import SearchPage from "../components/SearchPage";
+import "@testing-library/jest-dom"; 
+import { render, waitFor, act, screen } from "@testing-library/react";
+import { AuthProvider } from "../AuthContext";
+
+
 
 jest.mock("jwt-decode", () => ({
+  __esModule: true,
   jwtDecode: jest.fn(() => ({
     username: "Farhan Hossein",
     email: "farhan.hossein@gmail.com",
     user_id: 1,
-    avatar_url: "/avatar.png",
-  })),
+    profile_image_url: "/avatar.png" 
+  }))
 }));
 
-const mockEvent = {
-  id: 1,
-  title: "Sample Event",
-  category: "Food",
-  start_time: "2025-03-19T11:00:00Z",
-  end_time: "2025-03-19T16:00:00Z",
-  status: "active",
-  description: "Event description",
-  location: "Sample Location",
-  city: "Toronto",
-  capacity: 100,
-  attendance: 10,
-  participants: [],
-  creator: 2, 
-};
 beforeEach(() => {
-  global.fetch = jest.fn(() =>
-    Promise.resolve({
+
+  jest.restoreAllMocks();
+  
+  global.fetch = jest.fn((url) => {
+    if (url.includes("/api/auth/facebook/")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({
+          access: "testJwtaccessToken",
+          refresh: "testRefreshToken",
+        }),
+      });
+    }
+    // Fallback to default mock
+    return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({ access: "testJwtaccessToken", refresh: "testRefreshToken" }),
-    })
-  );
-  localStorage.clear();
+      json: () => Promise.resolve({}),
+    });
+  });
 });
 
 afterEach(() => {
@@ -38,15 +48,26 @@ afterEach(() => {
   localStorage.clear();
 });
 
-import React from "react";
-import { MemoryRouter } from "react-router-dom";
-import { EventProvider } from "../EventContext";
-import { jwtDecode } from "jwt-decode";
-import App, { handleFacebookSuccess } from "../App";
-import SearchPage from "../components/SearchPage";
+test("jwtDecode mock returns expected data", () => {
+  const result = jwtDecode("testJwtaccessToken");
+  expect(result).toEqual({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    avatar_url: "/avatar.png",
+  });
+});
 
-import "@testing-library/jest-dom"; 
-import { render, waitFor, act, screen } from "@testing-library/react";
+
+test("jwtDecode mock returns expected data", () => {
+  const result = jwtDecode("testJwtaccessToken");
+  expect(result).toEqual({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    avatar_url: "/avatar.png",
+  });
+});
 
 test("MemoryRouter import test", () => {
   expect(MemoryRouter).toBeDefined();
@@ -58,6 +79,8 @@ test("EventProvider import test", () => {
 
 test("jwtDecode import test", () => {
   expect(jwtDecode).toBeDefined();
+  expect(typeof jwtDecode).toBe("function");
+  expect(jwtDecode).toHaveBeenCalled();
 });
 
 test("handleFacebookSuccess import test", () => {
@@ -71,7 +94,6 @@ test("SearchPage import test", () => {
 test("App import test", () => {
   expect(App).toBeDefined();
 });
-
 
 test("Facebook API returns a token and backend exchanges it for JWT", async () => {
   const response = { accessToken: "testFacebookAccessToken" };
@@ -118,30 +140,25 @@ test("handles Facebook API failure gracefully", async () => {
 });
 
 test("decodes JWT token and sets userProfile correctly", async () => {
+  // Set mock token in localStorage
+  localStorage.setItem("accessToken", "testJwtaccessToken");
+  
   await act(async () => {
     render(
       <MemoryRouter>
-        <EventProvider>
-          <App />
-        </EventProvider>
+        <AuthProvider>
+          <EventProvider>
+            <App />
+          </EventProvider>
+        </AuthProvider>
       </MemoryRouter>
     );
-  });
-
- await act(async () => {
-    handleFacebookSuccess({ accessToken: "testFacebookAccessToken" }, {
-      setIsSignedIn: () => {},
-      setAccessToken: () => {},
-      setUserProfile: () => {},
-      setOpenLoginDialog: () => {}
-    });
   });
 
   await waitFor(() => {
     expect(jwtDecode).toHaveBeenCalledWith("testJwtaccessToken");
   });
 });
-
 test("renders login button when user is not signed in", async () => {
   await act(async () => {
     render(
