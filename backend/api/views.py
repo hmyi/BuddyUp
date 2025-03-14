@@ -15,6 +15,9 @@ from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from storages.backends.s3boto3 import S3Boto3Storage
 import os
+import uuid
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 # Create your views here.
 @api_view(['POST'])
@@ -47,7 +50,8 @@ def facebook_login(request):
     user_info = user_info_response.json()
     email = user_info.get('email')
     if not email:
-        email = "dummy@dummy.com"
+        unique_id = uuid.uuid4()
+        email = unique_id
     name = user_info.get('name')
     first_name = user_info.get('first_name', '')  # Default empty string
     last_name = user_info.get('last_name', '')    # Default empty string
@@ -119,7 +123,90 @@ def facebook_login(request):
         "access": access_token,
         "refresh": refresh_token,
         "profile_image_url": profile_image_url
-    })
+    }, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def google_login(request):
+    """
+    POST /api/auth/google/
+    Body: { "id_token": "xxx" }
+    1. Validate id_token with google.oauth2.id_token.verify_oauth2_token
+    2. Get user info
+    3. If user not found by google_id => use email
+    4. Return JWT
+    """
+
+    id_token_str = request.data.get('id_token')
+    if not id_token_str:
+        return Response({"error": "Missing Google id_token"}, status=400)
+
+    try:
+        info = id_token.verify_oauth2_token(id_token_str, google_requests.Request(), audience=settings.GOOGLE_CLIENT_ID)
+    except ValueError as e:
+        return Response({"error": "Invalid google id_token: " + str(e)}, status=400)
+
+    google_user_id = info.get('sub')
+    email = info.get('email') or uuid.uuid4()
+    name = info.get('name', '')
+    first_name = info.get('given_name', '')
+    last_name = info.get('family_name', '')
+    picture_url = info.get('picture', '')
+
+    # 2) Lookup or create user
+    try:
+        user = User.objects.get(google_id=google_user_id)
+        if not user.email and email:
+            user.email = email
+        if not user.username and name:
+            user.username = name
+        user.save()
+    except User.DoesNotExist:
+        user = None
+        try:
+            user = User.objects.get(email=email)
+            user.google_id = google_user_id
+            user.save()
+        except User.DoesNotExist:
+            user = None
+        if not user:
+            username = name if name else f"gg_{google_user_id}"
+            user = User.objects.create(
+                username=username,
+                email=email,
+                google_id=google_user_id,
+                first_name=first_name if first_name else "Google",
+                last_name=last_name if last_name else "User",
+            )
+            user.set_unusable_password()
+            user.save()
+
+    # 3) fetch avatar if needed
+    if picture_url and not user.profile_image:
+        try:
+            resp = requests.get(picture_url)
+            if resp.status_code == 200:
+                ext = os.path.splitext(picture_url)[-1] or ".jpg"
+                filename = f"{google_user_id}_avatar{ext}"
+                user.profile_image.save(filename, ContentFile(resp.content), save=True)
+        except Exception as e:
+            print("Error fetching google avatar:", e)
+
+    # 4) Generate JWT
+    refresh = RefreshToken.for_user(user)
+    refresh['username'] = user.username
+    refresh['first_name'] = user.first_name
+    refresh['last_name'] = user.last_name
+    refresh['email'] = user.email
+
+    profile_image_url = request.build_absolute_uri(user.profile_image.url) if user.profile_image else None
+
+    return Response({
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+        "profile_image_url": profile_image_url
+    }, status=200)
+
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
