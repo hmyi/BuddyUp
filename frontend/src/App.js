@@ -154,10 +154,19 @@ function AppContent() {
           <br />
           <br />
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleFailure}
-            />
+<GoogleLogin
+  onSuccess={(response) =>
+    handleGoogleSuccess(response, {
+      setIsSignedIn,
+      setAccessToken,
+      setUserProfile,
+      setOpenLoginDialog,
+      navigate,
+    })
+  }
+  onError={handleGoogleFailure}
+/>
+
           </GoogleOAuthProvider>
         </DialogContent>
         <DialogActions>
@@ -182,7 +191,10 @@ function App() {
 
 export default App;
 
-const handleGoogleSuccess = (response) => {
+const handleGoogleSuccess = (
+  response,
+  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog, navigate } = {}
+) => {
   console.log("Google Auth Success:", response);
   fetch("https://18.226.163.235:8000/api/auth/google/", {
     method: "POST",
@@ -196,11 +208,14 @@ const handleGoogleSuccess = (response) => {
         return;
       }
       localStorage.setItem("accessToken", data.access);
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setOpenLoginDialog) setOpenLoginDialog(false);
+      if (navigate) navigate("/");
     })
-    .catch((error) =>
-      console.error("Error during Google login:", error)
-    );
+    .catch((error) => console.error("Error during Google login:", error));
 };
+
+
 
 const handleGoogleFailure = (error) => {
   console.error("Google Auth Error:", error);

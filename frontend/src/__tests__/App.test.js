@@ -8,8 +8,6 @@ import "@testing-library/jest-dom";
 import { render, waitFor, act, screen } from "@testing-library/react";
 import { AuthProvider } from "../AuthContext";
 
-
-
 jest.mock("jwt-decode", () => ({
   __esModule: true,
   jwtDecode: jest.fn(() => ({
@@ -35,7 +33,6 @@ beforeEach(() => {
         }),
       });
     }
-    // Fallback to default mock
     return Promise.resolve({
       ok: true,
       json: () => Promise.resolve({}),
@@ -57,7 +54,6 @@ test("jwtDecode mock returns expected data", () => {
     avatar_url: "/avatar.png",
   });
 });
-
 
 test("jwtDecode mock returns expected data", () => {
   const result = jwtDecode("testJwtaccessToken");
@@ -140,7 +136,6 @@ test("handles Facebook API failure gracefully", async () => {
 });
 
 test("decodes JWT token and sets userProfile correctly", async () => {
-  // Set mock token in localStorage
   localStorage.setItem("accessToken", "testJwtaccessToken");
   
   await act(async () => {
