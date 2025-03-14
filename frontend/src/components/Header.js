@@ -22,7 +22,6 @@ function Header({
   const { city, setCity } = useEventContext();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Use auth state from AuthContext instead of props
   const { isSignedIn, userProfile } = useContext(AuthContext);
 
   const handleSearch = () => {
@@ -30,7 +29,6 @@ function Header({
     const recognizedCities = ["Waterloo", "Toronto", "Kitchener"];
     let foundCity = "";
 
-    // Look for a recognized city in the search string
     for (const cityName of recognizedCities) {
       const regex = new RegExp(`\\b${cityName}\\b`, "i");
       if (regex.test(trimmedQuery)) {
@@ -91,7 +89,7 @@ function Header({
               }}
             >
               <Avatar
-                src={userProfile?.picture?.data?.url || `https://ui-avatars.com/api/?name=${userProfile?.name}`}
+                src={userProfile?.picture?.data?.url}
                 sx={{
                   bgcolor: "primary.main",
                   width: 40,
@@ -123,11 +121,9 @@ function Header({
                 <SettingsIcon sx={{ mr: 2 }} fontSize="small" />
                 Settings
               </MenuItem>
-
-              <MenuItem
+<MenuItem
                 onClick={() => navigate(`/users/${userProfile?.userID}`)}
-              >
-                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
+              >                <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
               <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })}>
