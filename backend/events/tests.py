@@ -16,6 +16,7 @@ from unittest.mock import Mock
 import io
 import random
 import numpy as np
+import openai
 
 User = get_user_model()
 
@@ -684,6 +685,81 @@ class EventAPITestCase(APITestCase):
         """Test filter events with invalid page parameter"""
         url = reverse('filter_events') + "?key=city&name=Test%20City&page=invalid"
         response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_improve_description_with_title_and_description(self):
+        """Test improve_description with both title and description"""
+        url = reverse('improve_description')
+        data = {'title': 'Test Event', 'description': 'Test description'}
+        
+        # Use mock for OpenAI API call
+        with patch('openai.ChatCompletion.create') as mock_openai:
+            mock_response = {
+                'choices': [{'message': {'content': 'Improved description'}}]
+            }
+            mock_openai.return_value = mock_response
+            response = self.client.post(url, data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['improved_description'], 'Improved description')
+
+    def test_improve_description_openai_error(self):
+        """Test improve_description with OpenAI error"""
+        url = reverse('improve_description')
+        data = {'title': 'Test Event'}
+        
+        # Use mock for OpenAI API call to simulate an error
+        with patch('openai.ChatCompletion.create') as mock_openai:
+            mock_openai.side_effect = openai.error.OpenAIError("Test error")
+            response = self.client.post(url, data)
+            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def test_search_events_with_empty_vector_list(self):
+        """Test search events with query but no events have vectors"""
+        # Make sure no events have vectors
+        Event.objects.all().update(vector=None)
+        
+        url = reverse('search_events') + "?city=Test%20City&query=Test"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)  # No results should be returned
+
+    def test_filter_events_with_duplicate_keys(self):
+        """Test filter events with duplicate key values"""
+        # Create an event in a different city to test filtering
+        Event.objects.create(
+            title="NYC Event",
+            category="Test Category",
+            city="New York",
+            location="Times Square",
+            start_time=timezone.now() + timezone.timedelta(days=30),
+            end_time=timezone.now() + timezone.timedelta(days=31),
+            capacity=10,
+            creator=self.user1
+        )
+        
+        # Filter with same key multiple times (this is valid in Django)
+        url = reverse('filter_events') + "?key=city&name=Test%20City&key=city&name=New%20York"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # This should return both our Test City and New York events
+        self.assertTrue(len(response.data) >= 2)
+
+    def test_cancel_event_with_invalid_reverse_param(self):
+        """Test cancel_event with non-true reverse parameter"""
+        url = reverse('cancel_event', kwargs={'pk': self.event.id}) + "?reverse=yes"
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify the event was cancelled (not reversed)
+        self.event.refresh_from_db()
+        self.assertTrue(self.event.cancelled)
+
+    def test_improve_description_with_empty_spaces(self):
+        """Test improve_description with empty spaces in title/description"""
+        url = reverse('improve_description')
+        data = {'title': '   ', 'description': '   '}
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class EventFormTestCase(TestCase):
