@@ -10,7 +10,8 @@ import { EventProvider } from "./EventContext";
 import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-import { jwtDecode } from "jwt-decode"
+import decodeToken from "./utils/decodeToken";
+
 
 import {
   Dialog,
@@ -58,7 +59,7 @@ export const handleFacebookSuccess = (
       setIsSignedIn(true);
       setAccessToken(data.access);
       try {
-        const decodedToken = jwtDecode(data.access);
+        const decodedToken = decodeToken(data.access);
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",

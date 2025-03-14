@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import decodeToken from "./utils/decodeToken";
 
 export const AuthContext = createContext();
 
@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
       setAccessToken(storedToken);
       setIsSignedIn(true);
       try {
-        const decoded = jwtDecode(storedToken);
+        const decoded = decodeToken(accessToken);
         setUserProfile({
           userID: decoded.user_id,  
           name: decoded.username || "Unknown",
