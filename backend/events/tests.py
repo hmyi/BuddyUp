@@ -145,8 +145,6 @@ class EventModelTestCase(TestCase):
                 capacity=10,
                 creator=self.user
             )
-            # Force full validation
-            event.full_clean()
 
     def test_event_with_past_start_time(self):
         """Test creating an event with a start time in the past."""
@@ -161,8 +159,6 @@ class EventModelTestCase(TestCase):
                 capacity=10,
                 creator=self.user
             )
-            # Force full validation
-            event.full_clean()
 
     def test_event_maximum_length_fields(self):
         """Test field length constraints."""
