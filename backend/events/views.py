@@ -306,7 +306,7 @@ def cancel_event(request, pk):
                         status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def improve_description(request):
     """
