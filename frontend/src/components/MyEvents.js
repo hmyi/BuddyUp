@@ -28,17 +28,50 @@ function MyEvents({ userProfile, accessToken }) {
     fetchEvents();
   }, [selectedType]);
 
-  const fetchEvents = async () => {
-    try {
-      const attendingResponse = await fetch(
-        "https://18.226.163.235:8000/api/events/joined/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+const fetchEvents = async () => {
+  try {
+    const attendingResponse = await fetch(
+      "https://18.226.163.235:8000/api/events/joined/",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const hostingResponse = await fetch(
+      "https://18.226.163.235:8000/api/events/created",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const attendingData =
+      attendingResponse && typeof attendingResponse.json === "function"
+        ? await attendingResponse.json()
+        : [];
+    const hostingData =
+      hostingResponse && typeof hostingResponse.json === "function"
+        ? await hostingResponse.json()
+        : [];
+
+    const attendingEvents = Array.isArray(attendingData)
+      ? attendingData
+      : (attendingData.attending_events || []);
+    const hostingEvents = Array.isArray(hostingData)
+      ? hostingData
+      : (hostingData.hosting_events || []);
+
+    let filteredEvents = [];
+    if (selectedType === "Attending") {
+      filteredEvents = attendingEvents.filter(
+        (event) => event.status !== "expire"
+
       );
       const hostingResponse = await fetch(
         "https://18.226.163.235:8000/api/events/created",
