@@ -209,11 +209,6 @@ const EventCapacityBox = ({
   </Box>
 );
 
-/**
- * FIX #2: Mismatched braces for the button text.
- * Also removed the duplicate lines that showed button text. 
- * This is the simplified version that compiles.
- */
 const EventActionsBox = ({
   handleCancelEvent,
   currentUserId,
@@ -337,11 +332,6 @@ function EventDetails() {
     }
   };
 
-  /**
-   * This is the “Cancel” function that hits /cancel/.
-   * If your API truly requires “DELETE” for cancellation, 
-   * keep the appropriate one and remove the other to avoid duplication.
-   */
   const handleCancelEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/cancel/`, {
       method: "POST",
@@ -356,10 +346,7 @@ function EventDetails() {
       .catch((error) => console.error("Error:", error));
   };
 
-  /** 
-   * If you want a permanent DELETE, use this function 
-   * (and call it something like handleDeleteEvent) 
-   */
+
   const handleDeleteEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/`, {
       method: "DELETE",
