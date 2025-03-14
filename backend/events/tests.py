@@ -587,6 +587,105 @@ class EventAPITestCase(APITestCase):
         response = self.client.post(url, data)
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_500_INTERNAL_SERVER_ERROR])
 
+    def test_search_events_valid_with_city_only(self):
+        """Test search events with only city parameter"""
+        url = reverse('search_events') + "?city=Test%20City"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(isinstance(response.data, list))
+
+    def test_search_events_with_city_and_query(self):
+        """Test search events with city and query parameters"""
+        # Ensure we have at least one event with a vector
+        self.event.vector = [0.1] * 384
+        self.event.save()
+        
+        url = reverse('search_events') + "?city=Test%20City&query=Test"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(isinstance(response.data, list))
+
+    def test_search_events_with_city_query_and_page(self):
+        """Test search events with city, query, and page parameters"""
+        # Ensure we have at least one event with a vector
+        self.event.vector = [0.1] * 384
+        self.event.save()
+        
+        url = reverse('search_events') + "?city=Test%20City&query=Test&page=0"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_search_events_with_invalid_page(self):
+        """Test search events with invalid page parameter"""
+        url = reverse('search_events') + "?city=Test%20City&page=invalid"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_search_events_with_city_and_page(self):
+        """Test search events with city and page parameters"""
+        url = reverse('search_events') + "?city=Test%20City&page=0"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_city_only(self):
+        """Test filter events with city only"""
+        url = reverse('filter_events') + "?key=city&name=Test%20City"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_category_only(self):
+        """Test filter events with category only"""
+        url = reverse('filter_events') + "?key=category&name=Test%20Category"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_status_active(self):
+        """Test filter events with status=active"""
+        url = reverse('filter_events') + "?key=status&name=active"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_status_full(self):
+        """Test filter events with status=full"""
+        # Make sure there's a full event
+        event = Event.objects.get(id=self.event.id)
+        event.attendance = event.capacity
+        event.save()
+        
+        url = reverse('filter_events') + "?key=status&name=full"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_invalid_status(self):
+        """Test filter events with invalid status"""
+        url = reverse('filter_events') + "?key=status&name=invalid"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_events_multiple_filters(self):
+        """Test filter events with multiple filters"""
+        url = reverse('filter_events') + "?key=city&name=Test%20City&key=category&name=Test%20Category"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_no_parameters(self):
+        """Test filter events with no parameters"""
+        url = reverse('filter_events')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_events_with_page(self):
+        """Test filter events with page parameter"""
+        url = reverse('filter_events') + "?key=city&name=Test%20City&page=0"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filter_events_with_invalid_page(self):
+        """Test filter events with invalid page parameter"""
+        url = reverse('filter_events') + "?key=city&name=Test%20City&page=invalid"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 class EventFormTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser", email="test@example.com")
