@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
 import ListItemButton from "@mui/material/ListItemButton";
 import { useNavigate } from "react-router-dom";
@@ -18,9 +19,10 @@ import {
 
 const eventTypes = ["Attending", "Hosting", "Past"];
 
-function MyEvents({ userProfile, accessToken }) {
+function MyEvents({ userProfile }) {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
+  const { accessToken } = useContext(AuthContext);
 
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const navigate = useNavigate();

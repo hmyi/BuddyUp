@@ -1,12 +1,14 @@
-import React,{ useEffect, useState } from "react";
+import React,{ useEffect, useState, useContext} from "react";
 import { useParams } from "react-router-dom";
 import "../App.css";
 import { Divider, Chip, Box, Typography, Paper } from "@mui/material";
+import { AuthContext } from "../AuthContext";
 
-function Profile({ accessToken }) {
+function Profile() {
     const {id} = useParams();
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { accessToken } = useContext(AuthContext);
 
     const fetchUserProfile = async () => {
         try {
@@ -47,9 +49,6 @@ function Profile({ accessToken }) {
     }
 
     const {_, username, email, profile_image, location, bio, interests = [],} = userProfile;
-
-
-
 
     return (
         <div>
