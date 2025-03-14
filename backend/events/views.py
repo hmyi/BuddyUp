@@ -166,7 +166,7 @@ def search_events(request):
         return Response({"error": "Missing 'city' parameter"}, status=400)
 
     query = request.GET.get('query')
-    events_qs = Event.objects.filter(city__iexact=city, start_time__gte=timezone.now())
+    events_qs = Event.objects.filter(city__iexact=city, start_time__gte=timezone.now(), cancelled=False)
 
     if not query:
         events_qs = events_qs.order_by('start_time')
@@ -239,7 +239,7 @@ def filter_events(request):
         return Response({"error": "At least one pair of (key, name) is required."},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    qs = Event.objects.filter(start_time__gte=timezone.now())
+    qs = Event.objects.filter(start_time__gte=timezone.now(), cancelled=False)
 
     for k, v in zip(keys, names):
         
