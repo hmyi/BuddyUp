@@ -144,18 +144,37 @@ const EventCapacityBox = ({ capacity, attendance, spotsAvailable, status, catego
       <Chip label={(category || "unknown").toUpperCase()} color={(category || "").toLowerCase() === "sports" ? "success" : "default"} sx={{ mr: 1 }} />
       <Chip label={(location || "unknown").toUpperCase()} color={"default"} />
     </Box>
-  </Box>
-);
 
-const EventActionsBox = ({ handleCancelEvent, currentUserId, participants, eventHostId, userIsAttending, handleJoinEvent, handleLeaveEvent }) => (
-  <Box sx={{ mt: 2 }}>
-    <Button
-      variant="contained"
-      color="primary"
-      disabled={!currentUserId}
-      onClick={
-        currentUserId === eventHostId
-          ? handleCancelEvent
+  );
+};
+
+const EventActionsBox = ({
+  handleCancelEvent,
+  currentUserId,
+  participants,
+  eventHostId,
+  userIsAttending,
+  handleJoinEvent,
+  handleLeaveEvent,
+  status,
+  cancelled,
+}) => {
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Button
+        variant="contained"
+        color="primary"
+        disabled={!currentUserId || status === "full" || cancelled}
+        onClick={
+          currentUserId === eventHostId
+            ? handleCancelEvent
+            : participants.includes(currentUserId)
+            ? handleLeaveEvent
+            : handleJoinEvent
+        }
+      >
+        {currentUserId === eventHostId
+          ? "Cancel"
           : participants.includes(currentUserId)
           ? handleLeaveEvent
           : handleJoinEvent
@@ -281,6 +300,35 @@ function EventDetails() {
       });
   };
 
+
+  const handleDeleteEvent = () => {
+    fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((res) => {
+        console.log("Status:", res);
+        navigate("/");
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
+  const handleCancelEvent = () => {
+    fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/cancel/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((res) => {
+        console.log("Cancel event, Status:", res.status);
+        navigate("/");
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
   const handleLeaveEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${id}/leave/`, {
       method: "POST",
@@ -323,7 +371,15 @@ function EventDetails() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <ImageContainer>
-        <StyledImage src={`/events_pics/${eventData.category}.jpg`} alt={eventData.title} />
+
+        <StyledImage
+          src={
+            eventData.event_image_url ??
+            `/events_pics/${eventData.category}.jpg`
+          }
+          alt={eventData.title}
+        />
+
         <TopOverlay>
           <div>
             <Typography variant="h5">{eventData.title}</Typography>
@@ -400,6 +456,8 @@ function EventDetails() {
                 handleJoinEvent={handleJoinEvent}
                 handleLeaveEvent={handleLeaveEvent}
                 handleCancelEvent={handleCancelEvent}
+                status={eventData.status}
+                cancelled={eventData.cancelled}
               />
             </CardContent>
           </Card>

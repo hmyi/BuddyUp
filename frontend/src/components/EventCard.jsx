@@ -7,6 +7,9 @@ import {
   Typography,
   CardActions,
   Button,
+  Chip,
+  Box,
+  Stack,
 } from "@mui/material";
 
 function EventCard({ userProfile, accessToken, event }) {
@@ -33,14 +36,12 @@ function EventCard({ userProfile, accessToken, event }) {
         // flexDirection: "column",
       }}
       onClick={goToDetails}
-
-      className="Card">
-
-
+      className="Card"
+    >
       <CardMedia
         component="img"
         height="200"
-        image={`events_pics/${event.category}.jpg`}
+        image={event.event_image_url ?? `events_pics/${event.category}.jpg`}
         alt={event.title}
       />
       <CardContent sx={{ flexGrow: 1 }}>
@@ -53,33 +54,49 @@ function EventCard({ userProfile, accessToken, event }) {
           {event.title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-
-        Time: {event.start_time} <br />
-
+          Time: {event.start_time} <br />
           Location: {event.location} <br />
         </Typography>
       </CardContent>
       <CardActions>
-        <Button
-          size="small"
-          sx={
-            hovered
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Attend
-        </Button>
-        <Button
-          size="small"
-          sx={
-            hovered
-              ? { border: "1px solid", background: "#00798a", color: "white" }
-              : {}
-          }
-        >
-          Share
-        </Button>
+        <Stack direction="row" spacing={20}>
+          <Box>
+            <Button
+              size="small"
+              sx={
+                hovered
+                  ? {
+                      border: "1px solid",
+                      background: "#00798a",
+                      color: "white",
+                    }
+                  : {}
+              }
+            >
+              Attend
+            </Button>
+            <Button
+              size="small"
+              sx={
+                hovered
+                  ? {
+                      border: "1px solid",
+                      background: "#00798a",
+                      color: "white",
+                    }
+                  : {}
+              }
+            >
+              Share
+            </Button>
+          </Box>
+          <Box>
+            {event.status === "full" && <Chip label="full" color="error" />}
+            {event.status !== "full" && (
+              <Chip label="available" color="success" />
+            )}
+          </Box>
+        </Stack>
       </CardActions>
     </Card>
   );

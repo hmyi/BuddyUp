@@ -115,6 +115,7 @@ function AppContent() {
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="*" element={<HomePage />} />
         <Route path="/users/:id" element={<Profile />} />
+
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
