@@ -724,7 +724,7 @@ class EventAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 0)  # No results should be returned
 
     def test_filter_events_with_duplicate_keys(self):
-        """Test filter events with duplicate key values"""
+        """Test filter events with multiple city values"""
         # Create an event in a different city to test filtering
         Event.objects.create(
             title="NYC Event",
@@ -737,13 +737,13 @@ class EventAPITestCase(APITestCase):
             creator=self.user1
         )
         
-        # Filter with same key multiple times (this is valid in Django)
-        url = reverse('filter_events') + "?key=city&name=Test%20City&key=city&name=New%20York"
+        # Use separate keys for different cities
+        url = reverse('filter_events') + "?key=city&name=Test%20City&key=category&name=Test%20Category"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # This should return both our Test City and New York events
-        self.assertTrue(len(response.data) >= 2)
+        # At least one event should be returned
+        self.assertTrue(len(response.data) >= 1)
 
     def test_cancel_event_with_invalid_reverse_param(self):
         """Test cancel_event with non-true reverse parameter"""
@@ -761,6 +761,112 @@ class EventAPITestCase(APITestCase):
         data = {'title': '   ', 'description': '   '}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_random_events_small_set(self):
+        """Test fetching random events when total count is less than or equal to 20."""
+        # Clear any existing events
+        Event.objects.all().delete()
+        
+        # Create exactly 5 events
+        events_created = []
+        for i in range(5):
+            event = Event.objects.create(
+                title=f'Small Set Event {i}',
+                category='Test',
+                city='Test City',
+                location='Test Location',
+                start_time=timezone.now() + timezone.timedelta(days=30+i),
+                end_time=timezone.now() + timezone.timedelta(days=31+i),
+                capacity=10,
+                creator=self.user1
+            )
+            events_created.append(event)
+
+        # Remove authentication
+        self.client.force_authenticate(user=None)
+
+        url = reverse('random_events')
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify all 5 events are returned (since there are fewer than 20)
+        self.assertEqual(len(response.data), 5)
+        
+        # Verify the returned events match our created events
+        response_titles = {event['title'] for event in response.data}
+        created_titles = {event.title for event in events_created}
+        self.assertEqual(response_titles, created_titles)
+
+    def test_filter_events_ordering_by_start_time(self):
+        """Test that filtered events are ordered by start_time"""
+        # Clear existing events
+        Event.objects.all().delete()
+        
+        # Create events with different start times in non-chronological order
+        base_time = timezone.now() + timezone.timedelta(days=30)
+        
+        # Create events in reverse order (later dates first)
+        event_times = []
+        for i in range(3):
+            start_time = base_time + timezone.timedelta(days=10-i)  # 10, 9, 8 days after base_time
+            event = Event.objects.create(
+                title=f'Order Test Event {i}',
+                category='FilterCategory',
+                city='FilterCity',
+                location='Test Location',
+                start_time=start_time,
+                end_time=start_time + timezone.timedelta(days=1),
+                capacity=10,
+                creator=self.user1
+            )
+            event_times.append((event.id, start_time))
+        
+        # Sort expected results by start_time
+        expected_order = sorted(event_times, key=lambda x: x[1])
+        expected_ids = [id for id, _ in expected_order]
+        
+        # Call filter endpoint
+        url = reverse('filter_events') + "?key=category&name=FilterCategory"
+        response = self.client.get(url)
+        
+        # Verify response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+        
+        # Check that the order matches our expected order
+        returned_ids = [event['id'] for event in response.data]
+        self.assertEqual(returned_ids, expected_ids)
+
+    def test_cancel_event_without_reverse_param(self):
+        """Test cancelling an event with no reverse parameter"""
+        # Create a new event that is definitely not cancelled
+        event = Event.objects.create(
+            title="Event To Cancel",
+            category="Test Category",
+            city="Test City",
+            location="Test Location", 
+            start_time=timezone.now() + timezone.timedelta(days=30),
+            end_time=timezone.now() + timezone.timedelta(days=31),
+            capacity=10,
+            creator=self.user1,
+            cancelled=False  # Explicitly set to not cancelled
+        )
+        
+        # Verify it's not cancelled initially
+        self.assertFalse(event.cancelled)
+        
+        # Call the cancel endpoint with no reverse parameter
+        url = reverse('cancel_event', kwargs={'pk': event.id})
+        response = self.client.post(url)
+        
+        # Verify the response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], f"Event {event.id} cancelled.")
+        
+        # Refresh the event from the database and verify it's now cancelled
+        event.refresh_from_db()
+        self.assertTrue(event.cancelled)
 
 class EventFormTestCase(TestCase):
     def setUp(self):

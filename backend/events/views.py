@@ -195,6 +195,11 @@ def search_events(request):
             if e.vector:
                 valid_events.append(e)
                 vectors.append(e.vector)
+        
+        # Handle the case where no events have vectors
+        if not valid_events:
+            serializer = EventSerializer([], many=True)
+            return Response(serializer.data, status=200)
 
         sims = compute_similarities(query_vec, vectors)
         event_sims = list(zip(valid_events, sims))
