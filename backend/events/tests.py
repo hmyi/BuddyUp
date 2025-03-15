@@ -287,7 +287,7 @@ class EventModelTestCase(TestCase):
         event.save()
         self.assertIsNone(event.vector)  # Ensure vector is None
 
-class EventAPITestCase(APITestCase):
+class EventViewTestCase(APITestCase):
     def setUp(self):
         # Create users
         self.user1 = User.objects.create(username="eventcreator", email="creator@test.com")
@@ -867,6 +867,37 @@ class EventAPITestCase(APITestCase):
         # Refresh the event from the database and verify it's now cancelled
         event.refresh_from_db()
         self.assertTrue(event.cancelled)
+
+    def test_create_event_with_invalid_date_formats(self):
+        """Test event creation with invalid date formats, triggering a specific validation error."""
+        url = reverse('create_event')
+        data = {
+            'title': 'Date Format Test Event',
+            'category': 'Technology',
+            'city': 'San Francisco',
+            'location': 'Conference Center',
+            'start_time': 'not-a-date',  # Invalid format
+            'end_time': '2025-13-45',    # Invalid date
+            'capacity': 20
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('start_time', response.data)  # Ensure the error field is in the response
+
+    def test_filter_events_mismatched_keys_and_names(self):
+        """Test filter events with mismatched key and name parameters."""
+        url = reverse('filter_events') + "?key=city&key=category&name=Test%20City"  # Mismatched count
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+        self.assertIn("number of 'key' and 'name'", response.data["error"])
+
+    def test_filter_events_empty_params(self):
+        """Test filter events with empty key and name parameters."""
+        url = reverse('filter_events') + "?key=&name="
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
 
 class EventFormTestCase(TestCase):
     def setUp(self):
