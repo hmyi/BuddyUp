@@ -233,13 +233,15 @@ const EventActionsBox = ({
   userIsAttending,
   handleJoinEvent,
   handleLeaveEvent,
+  status,
+  cancelled,
 }) => {
   return (
     <Box sx={{ mt: 2 }}>
       <Button
         variant="contained"
         color="primary"
-        disabled={!currentUserId}
+        disabled={!currentUserId || status === "full" || cancelled}
         onClick={
           currentUserId === eventHostId
             ? handleCancelEvent
@@ -495,7 +497,7 @@ function EventDetails() {
       });
   };
 
-  const handleCancelEvent = () => {
+  const handleDeleteEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/`, {
       method: "DELETE",
       headers: {
@@ -504,6 +506,20 @@ function EventDetails() {
     })
       .then((res) => {
         console.log("Status:", res);
+        navigate("/");
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
+  const handleCancelEvent = () => {
+    fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/cancel/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((res) => {
+        console.log("Cancel event, Status:", res.status);
         navigate("/");
       })
       .catch((error) => console.error("Error:", error));
@@ -551,7 +567,10 @@ function EventDetails() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <ImageContainer>
         <StyledImage
-          src={`/events_pics/${eventData.category}.jpg`}
+          src={
+            eventData.event_image_url ??
+            `/events_pics/${eventData.category}.jpg`
+          }
           alt={eventData.title}
         />
 
@@ -617,6 +636,8 @@ function EventDetails() {
                 handleJoinEvent={handleJoinEvent}
                 handleLeaveEvent={handleLeaveEvent}
                 handleCancelEvent={handleCancelEvent}
+                status={eventData.status}
+                cancelled={eventData.cancelled}
               />
             </CardContent>
           </Card>
