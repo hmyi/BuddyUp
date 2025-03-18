@@ -11,12 +11,14 @@ import {
   AvatarGroup,
   Badge,
   Chip,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
+import {fetchUserInfo} from "./fetchUserInfo";
 
 const ImageContainer = styled(Box)(({ theme }) => ({
   position: "relative",
@@ -284,6 +286,85 @@ const EventMap = ({ googleMapSrc }) => {
   );
 };
 
+function AttendeeListBox({eventData, accessToken}) {
+  const navigate = useNavigate();
+  const [hostProfile, setHostProfile] = useState(null);
+  const [attendeeProfiles, setAttendeeProfile] = useState([]);
+  const participantID = eventData?.participants || [];
+  const numParticipants = participantID.length;
+  const hostID = eventData.creator;
+
+  useEffect(() => {
+    if (!hostID || !accessToken) return;
+
+    const fetchAllUsers = async() => {
+      try {
+        const hostData = await fetchUserInfo(hostID, accessToken);
+        setHostProfile(hostData);
+
+        if (participantID.length > 0) {
+          const promises = participantID.map((id) => fetchUserInfo(id, accessToken));
+          const results = await Promise.all(promises);
+          setAttendeeProfile(results);
+        } else {
+          setAttendeeProfile([]);
+        }
+      } catch (error) {
+        console.error("Error fetch attendee info: ", error);
+      }
+    };
+
+    fetchAllUsers();
+  }, [participantID, accessToken, hostID]);
+
+  const combinedAttendees = hostProfile ? [hostProfile, ...attendeeProfiles] : attendeeProfiles;
+
+  const totalCount = combinedAttendees.length;
+  const previewCount = 3;
+  const previewAttendees = combinedAttendees.slice(0,previewCount);
+
+  const handleSeeAll = () => {
+    navigate(`/events/${eventData.id}/attendee`,{state: {eventData, accessToken}})
+  };
+
+  if (!hostProfile && !numParticipants) {
+    return null;
+  }
+
+  return (
+      <Box sx={{borderBottom:"1px solid #ddd", pb:2, mb:2}}>
+        <Box sx={{display:"flex", alignItems:"center", justifyContent:"space-between", mb:2}}>
+          <Typography variant={"h6"}>{totalCount} Attendees</Typography>
+          <Button variant={"text"} onClick={handleSeeAll}>
+            See All
+          </Button>
+        </Box>
+
+        <Grid container spacing={2}>
+          {previewAttendees.map((profile, index) => {
+
+              const isHost = hostProfile && profile.id === eventData.creator;
+              return (
+                  <Grid item key={profile.id || index}>
+                    <Paper sx={{width:120, p:1.5, textAlign:"center", boxShadow:2, position:"relative"}}>
+                      {isHost && (
+                          <Chip label={"Host"} color={"success"} size={"small"}
+                                sx={{position:"absolute", top:8, left:8, zIndex:1}}/>)}
+                      <Avatar alt={profile.username}
+                              src={profile.profile_image || `https://ui-avatars.com/api/?name=${profile.username}`}
+                              sx={{width:60, height:60, mx:"auto", mb:1}}
+                      />
+                      <Typography variant={"body2"} noWrap>{profile.username}</Typography>
+                    </Paper>
+                  </Grid>
+              );
+        })}
+        </Grid>
+      </Box>
+  );
+
+}
+
 function EventDetails() {
   const { id } = useParams();
   const { state } = useLocation();
@@ -291,6 +372,7 @@ function EventDetails() {
 
   const [eventData, setEventData] = useState(state?.event || null);
   const [loading, setLoading] = useState(false);
+  const [hostProfile, setHostProfile] = useState(null);
   const event = state?.event;
   const userProfile = state?.userProfile;
   const accessToken = state?.accessToken;
@@ -322,6 +404,14 @@ function EventDetails() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (!eventHostId || !accessToken) return;
+
+    fetchUserInfo(eventHostId, accessToken)
+        .then((hostData) => {setHostProfile(hostData);})
+        .catch((error) => {console.error("Error fetching host info: ", error)});
+  }, [eventHostId, accessToken]);
 
   if (loading) {
     return <Typography>Loading event details...</Typography>;
@@ -472,63 +562,25 @@ function EventDetails() {
               {eventData.category} | {eventData.city}
             </Typography>
           </div>
-          <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-            {eventData.hostImage && (
-              <Avatar
-                src={eventData.hostImage}
-                alt={eventData.creator}
-                sx={{ width: 32, height: 32, mr: 1 }}
-              />
+            {hostProfile && (
+                <Box sx={{ display: "flex", alignItems: "center", gap:2}}>
+                  <Avatar
+                      src={hostProfile.profile_image || `https://ui-avatars.com/api/?name=${hostProfile.username}`}
+                      alt={hostProfile.username}
+                      sx={{ width: 40, height: 40}}
+                  />
+
+                  <Box>
+                    <Typography variant="body2">
+                      Hosted by
+                    </Typography>
+                    <Typography variant={"body2"} sx={{fontWeight:"bold"}}>
+                      {hostProfile.username}
+                    </Typography>
+                  </Box>
+                </Box>
             )}
-            <Typography variant="caption">
-              Hosted by: {eventData.hostName}
-            </Typography>
-          </Box>
         </TopOverlay>
-        <TopRightOverlay>
-          {eventData?.participants && eventData?.participants?.length > 0 && (
-            <Badge
-              badgeContent={eventData?.participants?.length}
-              color="error"
-              overlap="circular"
-            >
-              <AvatarGroup
-                sx={{ "& .MuiAvatar-root": { marginRight: "-4px" } }}
-                max={4}
-              >
-                {eventData.participants &&
-                  eventData?.participants.map((participant, idx) => (
-                    <Avatar
-                      key={idx}
-                      alt={`User ${participant}`}
-                      src={`https://via.placeholder.com/40/00798a/ffffff?text=U${participant}`}
-                    />
-                  ))}
-              </AvatarGroup>
-            </Badge>
-          )}
-        </TopRightOverlay>
-        <BottomOverlay>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AccessTimeIcon fontSize="small" sx={{ mr: 0.5 }} />
-            <Typography variant="subtitle1">Starts: {eventDate}</Typography>
-          </Box>
-        </BottomOverlay>
-        <StatsOverlay>
-          <Typography variant="caption">
-            Capacity: {eventData.capacity} <br />
-            Joined: {eventData.attendance} <br />
-            Spots: {spotsAvailable} <br />
-            Status:{" "}
-            {eventData.status ? eventData.status.toUpperCase() : "UNKNOWN"}
-          </Typography>
-        </StatsOverlay>
       </ImageContainer>
 
       <Grid container spacing={2}>
@@ -541,6 +593,7 @@ function EventDetails() {
                 calendarLink={calendarLink}
                 handleShare={handleShare}
               />
+              <AttendeeListBox eventData={eventData} accessToken={accessToken}></AttendeeListBox>
               <Typography variant="body2" gutterBottom>
                 <strong>Location:</strong> {eventData.location},{" "}
                 {eventData.city}

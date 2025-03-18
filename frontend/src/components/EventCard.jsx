@@ -40,7 +40,7 @@ function EventCard({ userProfile, accessToken, event }) {
       <CardMedia
         component="img"
         height="200"
-        image={`events_pics/${event.category}.jpg`}
+        image={`/events_pics/${event.category}.jpg`}
         alt={event.title}
       />
       <CardContent sx={{ flexGrow: 1 }}>
