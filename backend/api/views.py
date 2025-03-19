@@ -51,7 +51,7 @@ def facebook_login(request):
     email = user_info.get('email')
     if not email:
         unique_id = uuid.uuid4()
-        email = unique_id
+        email = str(unique_id)
     name = user_info.get('name')
     first_name = user_info.get('first_name', '')  # Default empty string
     last_name = user_info.get('last_name', '')    # Default empty string
@@ -147,7 +147,7 @@ def google_login(request):
         return Response({"error": "Invalid google id_token: " + str(e)}, status=400)
 
     google_user_id = info.get('sub')
-    email = info.get('email') or uuid.uuid4()
+    email = info.get('email') or str(uuid.uuid4())
     name = info.get('name', '')
     first_name = info.get('given_name', '')
     last_name = info.get('family_name', '')
