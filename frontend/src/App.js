@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
+import SettingsPage from "./components/SettingsPage";
 
 import EventCard from "./components/EventCard";
 import HomePage from "./components/HomePage";
@@ -194,12 +195,8 @@ function App() {
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/:id/attendee" element={<AttendeesPage />}/>
         <Route path="/users/:id" element={<Profile accessToken={accessToken}/>} />
-        <Route
-          path="/myEvents"
-          element={
-            <MyEvents userProfile={userProfile} accessToken={accessToken} />
-          }
-        />
+        <Route path="/myEvents" element={<MyEvents userProfile={userProfile} accessToken={accessToken} />}/>
+        <Route path="/settings" element={<SettingsPage userProfile={userProfile} accessToken={accessToken}/>}/>
         <Route
           path="*"
           element={
