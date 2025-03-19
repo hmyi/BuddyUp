@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useContext } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import AppBar from "@mui/material/AppBar";
@@ -28,13 +28,15 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
 import Stack from "@mui/material/Stack";
 import axios from "axios";
+import { AuthContext } from "../AuthContext"; // <-- import the context
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function EventCreation({ accessToken, setOpenSnackBar }) {
-  // flow control state
+export default function EventCreation({ setOpenSnackBar }) {
+  const { accessToken } = useContext(AuthContext); // get token from context
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
 
