@@ -27,7 +27,6 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
 
   }, []);
 
-
   return (
     <div>
       <h1 style={{ marginLeft: "50px" }}>Events near Waterloo</h1>

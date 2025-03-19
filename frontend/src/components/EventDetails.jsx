@@ -172,9 +172,7 @@ const EventScheduleBox = ({ eventDate, eventTimeRange, calendarLink, handleShare
   </Box>
 );
 
-/** 
- * FIX #1: Added the missing `</Box>` for the outer <Box> tag
- */
+
 const EventCapacityBox = ({
   capacity,
   attendance,
@@ -387,7 +385,6 @@ function EventDetails() {
         alert("Error joining event.");
       });
   };
-
   const handleLeaveEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${id}/leave/`, {
       method: "POST",

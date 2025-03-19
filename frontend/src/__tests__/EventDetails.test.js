@@ -13,15 +13,12 @@ const mockEvent = {
   participants: []
 };
 
-
-
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom"; 
 import { MemoryRouter } from "react-router-dom";
 import EventDetails from "../components/EventDetails"; 
 import { AuthContext } from "../AuthContext";
-
 
 test("MemoryRouter import test", () => {
   expect(MemoryRouter).toBeDefined();

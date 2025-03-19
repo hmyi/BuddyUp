@@ -1,4 +1,18 @@
+<<<<<<< HEAD
 jest.mock("../utils/decodeToken", () => ({
+=======
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
+import { EventProvider } from "../EventContext";
+import { jwtDecode } from "jwt-decode"
+import App, { handleFacebookSuccess } from "../App";
+import SearchPage from "../components/SearchPage";
+import "@testing-library/jest-dom"; 
+import { render, waitFor, act, screen } from "@testing-library/react";
+import { AuthProvider } from "../AuthContext";
+
+jest.mock("jwt-decode", () => ({
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
   __esModule: true,
   default: jest.fn().mockImplementation((token) => ({
     username: "Farhan Hossein",
@@ -50,7 +64,19 @@ test("inspect decodeToken calls", () => {
   console.log("decodeToken.mock.calls:", decodeToken.mock.calls);
 });
 
+<<<<<<< HEAD
 
+=======
+test("jwtDecode mock returns expected data", () => {
+  const result = jwtDecode("testJwtaccessToken");
+  expect(result).toEqual({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    avatar_url: "/avatar.png",
+  });
+});
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
 
 test("MemoryRouter import test", () => {
   expect(MemoryRouter).toBeDefined();
@@ -116,6 +142,23 @@ test("handles Facebook API failure gracefully", async () => {
   consoleError.mockRestore();
 });
 
+<<<<<<< HEAD
+=======
+test("decodes JWT token and sets userProfile correctly", async () => {
+  localStorage.setItem("accessToken", "testJwtaccessToken");
+  
+  await act(async () => {
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <EventProvider>
+            <App />
+          </EventProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+  });
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
 
 jest.mock("../utils/decodeToken", () => ({
   __esModule: true,
