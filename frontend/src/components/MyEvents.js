@@ -16,7 +16,7 @@ import {
   CardMedia,
 } from "@mui/material";
 
-const eventTypes = ["Attending", "Hosting", "Past"];
+const eventTypes = ["Attending", "Hosting", "Past", "Cancelled"];
 
 function MyEvents({ userProfile, accessToken }) {
   const [selectedType, setType] = useState("Attending");
@@ -72,15 +72,19 @@ function MyEvents({ userProfile, accessToken }) {
       let filteredEvents = [];
       if (selectedType === "Attending") {
         filteredEvents = attendingEvents.filter(
-          (event) => event.status !== "expire"
+          (event) => event.status !== "expire" && !event.cancelled
         );
       } else if (selectedType === "Hosting") {
         filteredEvents = hostingEvents.filter(
-          (event) => event.status !== "expire"
+          (event) => event.status !== "expire" && !event.cancelled
         );
-      } else {
+      } else if (selectedType === "Past") {
         filteredEvents = [...attendingEvents, ...hostingEvents].filter(
           (event) => event.status === "expire"
+        );
+      } else if (selectedType === "Cancelled") {
+        filteredEvents = [...attendingEvents, ...hostingEvents].filter(
+            (event) => event.cancelled === true
         );
       }
       filteredEvents.sort(
@@ -112,7 +116,7 @@ function MyEvents({ userProfile, accessToken }) {
       <Paper
         sx={{
           width: "250px",
-          height: "150px",
+          height: "200px",
           padding: "1rem",
           backgroundColor: "#f7f7f7f7",
         }}
