@@ -44,9 +44,7 @@ def create_event(request):
     POST: Create a new event, including support for event_image upload.
     USE multipart/form-data
     """
-    data = request.data.copy()
-    data['creator'] = request.user.id
-    serializer = EventSerializer(data=data, context={'request': request})
+    serializer = EventSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         event = serializer.save(creator=request.user)
         return Response(EventSerializer(event, context={'request': request}).data, status=status.HTTP_201_CREATED)
@@ -168,7 +166,7 @@ def search_events(request):
         return Response({"error": "Missing 'city' parameter"}, status=400)
 
     query = request.GET.get('query')
-    events_qs = Event.objects.filter(city__iexact=city, start_time__gte=timezone.now())
+    events_qs = Event.objects.filter(city__iexact=city, start_time__gte=timezone.now(), cancelled=False)
 
     if not query:
         events_qs = events_qs.order_by('start_time')
@@ -241,7 +239,7 @@ def filter_events(request):
         return Response({"error": "At least one pair of (key, name) is required."},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    qs = Event.objects.filter(start_time__gte=timezone.now())
+    qs = Event.objects.filter(start_time__gte=timezone.now(), cancelled=False)
 
     for k, v in zip(keys, names):
         
@@ -308,7 +306,7 @@ def cancel_event(request, pk):
                         status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def improve_description(request):
     """
