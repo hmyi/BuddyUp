@@ -17,7 +17,7 @@ import {
   CardMedia,
 } from "@mui/material";
 
-const eventTypes = ["Attending", "Hosting", "Past"];
+const eventTypes = ["Attending", "Hosting", "Past", "Cancelled"];
 
 function MyEvents({ userProfile }) {
   const [selectedType, setType] = useState("Attending");
@@ -69,21 +69,22 @@ const fetchEvents = async () => {
       ? hostingData
       : (hostingData.hosting_events || []);
 
-    let filteredEvents = [];
-    if (selectedType === "Attending") {
-      filteredEvents = attendingEvents.filter(
-        (event) => event.status !== "expire"
-
-      );
-    }
-
-    else if (selectedType === "Hosting") {
-        filteredEvents = hostingEvents.filter(
-          (event) => event.status !== "expire"
+      let filteredEvents = [];
+      if (selectedType === "Attending") {
+        filteredEvents = attendingEvents.filter(
+          (event) => event.status !== "expire" && !event.cancelled
         );
-      } else {
+      } else if (selectedType === "Hosting") {
+        filteredEvents = hostingEvents.filter(
+          (event) => event.status !== "expire" && !event.cancelled
+        );
+      } else if (selectedType === "Past") {
         filteredEvents = [...attendingEvents, ...hostingEvents].filter(
           (event) => event.status === "expire"
+        );
+      } else if (selectedType === "Cancelled") {
+        filteredEvents = [...attendingEvents, ...hostingEvents].filter(
+            (event) => event.cancelled === true
         );
       }
       filteredEvents.sort(
@@ -95,9 +96,6 @@ const fetchEvents = async () => {
     }
   };
 
-
-
-  
   useEffect(() => {
     fetchEvents();
   }, [selectedType]);
@@ -118,7 +116,7 @@ const fetchEvents = async () => {
       <Paper
         sx={{
           width: "250px",
-          height: "150px",
+          height: "200px",
           padding: "1rem",
           backgroundColor: "#f7f7f7f7",
         }}
