@@ -11,7 +11,8 @@ class User(AbstractUser):
     profile_image = models.ImageField(upload_to='profile_images/', storage=S3Boto3Storage(), null=True, blank=True)
     location = models.CharField(max_length=255, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
-    interests = models.TextField(null=True, blank=True)
+    interests = models.JSONField(default=list, null=True, blank=True)
+    show_email = models.BooleanField(default=False)
 
     def clean(self):
         """Ensure Facebook ID does not exceed max_length."""
