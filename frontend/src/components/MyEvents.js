@@ -82,6 +82,10 @@ const fetchEvents = async () => {
         filteredEvents = [...attendingEvents, ...hostingEvents].filter(
           (event) => event.status === "expire"
         );
+      } else if (selectedType === "Cancelled") {
+        filteredEvents = [...attendingEvents, ...hostingEvents].filter(
+            (event) => event.cancelled === true
+        );
       }
       filteredEvents.sort(
         (a, b) => new Date(a.start_time) - new Date(b.start_time)
