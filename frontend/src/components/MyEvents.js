@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
 import ListItemButton from "@mui/material/ListItemButton";
 import { useNavigate } from "react-router-dom";
@@ -18,9 +19,10 @@ import {
 
 const eventTypes = ["Attending", "Hosting", "Past"];
 
-function MyEvents({ userProfile, accessToken }) {
+function MyEvents({ userProfile }) {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
+  const { accessToken } = useContext(AuthContext);
 
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const navigate = useNavigate();
@@ -28,53 +30,54 @@ function MyEvents({ userProfile, accessToken }) {
     fetchEvents();
   }, [selectedType]);
 
-  const fetchEvents = async () => {
-    try {
-      const attendingResponse = await fetch(
-        "https://18.226.163.235:8000/api/events/joined/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+const fetchEvents = async () => {
+  try {
+    const attendingResponse = await fetch(
+      "https://18.226.163.235:8000/api/events/joined/",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const hostingResponse = await fetch(
+      "https://18.226.163.235:8000/api/events/created",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const attendingData =
+      attendingResponse && typeof attendingResponse.json === "function"
+        ? await attendingResponse.json()
+        : [];
+    const hostingData =
+      hostingResponse && typeof hostingResponse.json === "function"
+        ? await hostingResponse.json()
+        : [];
+
+    const attendingEvents = Array.isArray(attendingData)
+      ? attendingData
+      : (attendingData.attending_events || []);
+    const hostingEvents = Array.isArray(hostingData)
+      ? hostingData
+      : (hostingData.hosting_events || []);
+
+    let filteredEvents = [];
+    if (selectedType === "Attending") {
+      filteredEvents = attendingEvents.filter(
+        (event) => event.status !== "expire"
+
       );
-      const hostingResponse = await fetch(
-        "https://18.226.163.235:8000/api/events/created",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+    }
 
-      // Ensure the responses are valid before calling .json()
-      const attendingData =
-        attendingResponse && typeof attendingResponse.json === "function"
-          ? await attendingResponse.json()
-          : [];
-      const hostingData =
-        hostingResponse && typeof hostingResponse.json === "function"
-          ? await hostingResponse.json()
-          : [];
-
-      // Adjust these lines if your API returns objects with keys (e.g., attending_events)
-      const attendingEvents = Array.isArray(attendingData)
-        ? attendingData
-        : attendingData.attending_events || [];
-      const hostingEvents = Array.isArray(hostingData)
-        ? hostingData
-        : hostingData.hosting_events || [];
-
-      let filteredEvents = [];
-      if (selectedType === "Attending") {
-        filteredEvents = attendingEvents.filter(
-          (event) => event.status !== "expire"
-        );
-      } else if (selectedType === "Hosting") {
+    else if (selectedType === "Hosting") {
         filteredEvents = hostingEvents.filter(
           (event) => event.status !== "expire"
         );
@@ -92,6 +95,9 @@ function MyEvents({ userProfile, accessToken }) {
     }
   };
 
+
+
+  
   useEffect(() => {
     fetchEvents();
   }, [selectedType]);

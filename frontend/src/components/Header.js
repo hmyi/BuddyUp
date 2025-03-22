@@ -1,5 +1,5 @@
-import React from "react";
-import "../App.css"
+import React, { useState, useContext } from "react";
+import "../App.css";
 import { IconButton, Avatar, Menu, MenuItem, Button } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -7,11 +7,10 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from "react-router-dom";
 import EventCreation from "./EventCreation";
+import { useEventContext } from "../EventContext";
+import { AuthContext } from "../AuthContext";
 
 function Header({
-  isSignedIn,
-  userProfile,
-  accessToken,
   handleLogout,
   anchorEl,
   handleMenuOpen,
@@ -20,31 +19,64 @@ function Header({
   openLoginDialog,
 }) {
   const navigate = useNavigate();
+  const { city, setCity } = useEventContext();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { isSignedIn, userProfile } = useContext(AuthContext);
+
+  const handleSearch = () => {
+    let trimmedQuery = searchQuery.trim();
+    const recognizedCities = ["Waterloo", "Toronto", "Kitchener"];
+    let foundCity = "";
+
+    for (const cityName of recognizedCities) {
+      const regex = new RegExp(`\\b${cityName}\\b`, "i");
+      if (regex.test(trimmedQuery)) {
+        foundCity = cityName;
+        // Remove the city name from the search query
+        trimmedQuery = trimmedQuery.replace(regex, "").trim();
+        break;
+      }
+    }
+
+    // If a city is found, update it in the context
+    if (foundCity) {
+      setCity(foundCity);
+    }
+    // Navigate based on the search query
+    if (trimmedQuery) {
+      navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
+    } else {
+      navigate("/search");
+    }
+    setSearchQuery("");
+  };
 
   return (
     <header className="header">
       <div className="header-left">
-        <span
-          className="logo"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
-        >
+        <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           BuddyUp
         </span>
       </div>
 
       <div className="search-bar">
-        <input type="text" placeholder="Search for groups or events" />
-        <button>Search</button>
+        <input
+          type="text"
+          placeholder="Search for groups or events"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+        />
+        <button onClick={handleSearch}>Search</button>
       </div>
 
       <div className="header-right">
         {isSignedIn ? (
           <div className="profile-section">
-            <EventCreation
-              accessToken={accessToken}
-              setOpenSnackBar={setOpenSnackBar}
-            />
+            <EventCreation setOpenSnackBar={setOpenSnackBar} />
             <IconButton
               onClick={handleMenuOpen}
               aria-controls={anchorEl ? "profile-menu" : undefined}
@@ -57,7 +89,7 @@ function Header({
               }}
             >
               <Avatar
-                src={userProfile?.picture?.data?.url || `https://ui-avatars.com/api/?name=${userProfile?.name}`}
+                src={userProfile?.picture?.data?.url}
                 sx={{
                   bgcolor: "primary.main",
                   width: 40,
@@ -74,14 +106,8 @@ function Header({
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
               keepMounted
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
               sx={{
                 "& .MuiPaper-root": {
                   mt: 1.5,
@@ -95,17 +121,14 @@ function Header({
                 <SettingsIcon sx={{ mr: 2 }} fontSize="small" />
                 Settings
               </MenuItem>
+
               <MenuItem
                 onClick={() => navigate(`/users/${userProfile?.userID}`)}
               >
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
-              <MenuItem
-                onClick={() =>
-                  navigate("/myEvents", { state: { userProfile } })
-                }
-              >
+              <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })}>
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
               </MenuItem>
@@ -126,12 +149,12 @@ function Header({
             color="primary"
             onClick={openLoginDialog}
             sx={{
-                backgroundColor: '#00798a',
-                color: '#fff',
-                borderRadius: '30px',
-                padding: '0.5rem 1rem',
-                textTransform: "none",
-                fontWeight: "bold",
+              backgroundColor: "#00798a",
+              color: "#fff",
+              borderRadius: "30px",
+              padding: "0.5rem 1rem",
+              textTransform: "none",
+              fontWeight: "bold",
             }}
           >
             Login

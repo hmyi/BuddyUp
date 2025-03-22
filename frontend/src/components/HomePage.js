@@ -1,11 +1,12 @@
+import  { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
+
 import * as React from "react";
-import { useState, useEffect } from "react";
 
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   const [events, setEvents] = useState([]);
@@ -19,10 +20,11 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         } else if (data.results && Array.isArray(data.results)) {
           setEvents(data.results);
         } else {
-          setEvents([]); // fallback if data is not an array
+          setEvents([]); 
         }
       })
       .catch((err) => console.log(err));
+
   }, []);
 
   return (
@@ -30,7 +32,7 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <h1 style={{ marginLeft: "50px" }}>Events near Waterloo</h1>
       <Grid container spacing={3} sx={{ marginX: "50px" }}>
         {events.map((evt) => (
-          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={evt.id}>
+          <Grid xs={12} sm={6} md={3} key={evt.id}>
             <EventCard
               userProfile={userProfile}
               accessToken={accessToken}
