@@ -263,8 +263,7 @@ def user_profile(request, pk):
     GET: Get user profile
     """
     user = get_object_or_404(User, pk=pk)
-
-    serializer = UserSerializer(user)
+    serializer = UserSerializer(user, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
