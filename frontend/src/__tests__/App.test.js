@@ -1,23 +1,50 @@
-import { render, waitFor, act } from "@testing-library/react";
-import { jwtDecode } from "jwt-decode";
-import App, { handleFacebookSuccess } from "../App";
+<<<<<<< HEAD
+jest.mock("../utils/decodeToken", () => ({
+=======
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
+import { EventProvider } from "../EventContext";
+import { jwtDecode } from "jwt-decode"
+import App, { handleFacebookSuccess } from "../App";
+import SearchPage from "../components/SearchPage";
+import "@testing-library/jest-dom"; 
+import { render, waitFor, act, screen } from "@testing-library/react";
+import { AuthProvider } from "../AuthContext";
 
-test("Facebook API returns a token and backend exchanges it for JWT", async () => {
-  const fbAccessToken = "testFacebookAccessToken";
-  const response = { accessToken: fbAccessToken };
-  const backendResponse = {
-    access: "testJwtaccessToken",
-    refresh: "testRefreshToken",
-  };
+jest.mock("jwt-decode", () => ({
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
+  __esModule: true,
+  default: jest.fn().mockImplementation((token) => ({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    avatar_url: "/avatar.png",
+  })),
+}));
 
-  const originalFetch = global.fetch;
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
+import { EventProvider } from "../EventContext";
+
+import decodeToken from "../utils/decodeToken";
+
+import App, { handleFacebookSuccess } from "../App";
+import SearchPage from "../components/SearchPage";
+import "@testing-library/jest-dom";
+import { render, waitFor, act, screen } from "@testing-library/react";
+import { AuthProvider } from "../AuthContext";
+
+beforeEach(() => {
   global.fetch = jest.fn((url) => {
-    if (url === "https://18.226.163.235:8000/api/auth/facebook/") {
+    if (url.includes("/api/auth/facebook/")) {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(backendResponse),
+        json: () =>
+          Promise.resolve({
+            access: "testJwtaccessToken",
+            refresh: "testRefreshToken",
+          }),
       });
     }
     return Promise.resolve({
@@ -25,7 +52,54 @@ test("Facebook API returns a token and backend exchanges it for JWT", async () =
       json: () => Promise.resolve({}),
     });
   });
+});
 
+afterEach(() => {
+  jest.clearAllMocks();
+  localStorage.clear();
+});
+
+test("inspect decodeToken calls", () => {
+  decodeToken("testJwtaccessToken");
+  console.log("decodeToken.mock.calls:", decodeToken.mock.calls);
+});
+
+<<<<<<< HEAD
+
+=======
+test("jwtDecode mock returns expected data", () => {
+  const result = jwtDecode("testJwtaccessToken");
+  expect(result).toEqual({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    avatar_url: "/avatar.png",
+  });
+});
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
+
+test("MemoryRouter import test", () => {
+  expect(MemoryRouter).toBeDefined();
+});
+
+test("EventProvider import test", () => {
+  expect(EventProvider).toBeDefined();
+});
+
+test("handleFacebookSuccess import test", () => {
+  expect(handleFacebookSuccess).toBeDefined();
+});
+
+test("SearchPage import test", () => {
+  expect(SearchPage).toBeDefined();
+});
+
+test("App import test", () => {
+  expect(App).toBeDefined();
+});
+
+test("Facebook API returns a token and backend exchanges it for JWT", async () => {
+  const response = { accessToken: "testFacebookAccessToken" };
   const setIsSignedIn = jest.fn();
   const setAccessToken = jest.fn();
   const setUserProfile = jest.fn();
@@ -40,11 +114,54 @@ test("Facebook API returns a token and backend exchanges it for JWT", async () =
     });
   });
 
-  await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+});
+
+test("handles Facebook API failure gracefully", async () => {
+  global.fetch.mockImplementationOnce(() =>
+    Promise.resolve({
+      ok: false,
+      status: 400,
+      json: () => Promise.resolve({ detail: "Invalid token" }),
+    })
+  );
+
+  const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+  await act(async () => {
+    handleFacebookSuccess({ accessToken: "invalidToken" });
   });
 
-  // Additional assertions about token decoding can go here
+  await waitFor(() => {
+    expect(consoleError).toHaveBeenCalledWith(
+      "API Response does not contain 'access' token:",
+      expect.objectContaining({ detail: "Invalid token" })
+    );
+  });
 
-  global.fetch = originalFetch;
+  consoleError.mockRestore();
 });
+
+<<<<<<< HEAD
+=======
+test("decodes JWT token and sets userProfile correctly", async () => {
+  localStorage.setItem("accessToken", "testJwtaccessToken");
+  
+  await act(async () => {
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <EventProvider>
+            <App />
+          </EventProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+  });
+>>>>>>> d898a28cc52caca8ec0de7c7c74248287c2b32e1
+
+jest.mock("../utils/decodeToken", () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+

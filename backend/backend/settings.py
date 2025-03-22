@@ -200,6 +200,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 FACEBOOK_APP_ID = os.getenv('FACEBOOK_APP_ID')
 FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET')
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
