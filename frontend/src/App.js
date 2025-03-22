@@ -12,7 +12,6 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import decodeToken from "./utils/decodeToken";
 
-
 import {
   Dialog,
   DialogTitle,
@@ -60,18 +59,18 @@ export const handleFacebookSuccess = (
       setAccessToken(data.access);
       try {
         const decodedToken = decodeToken(data.access);
-        setUserProfile({
+        const profile = {
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
           userID: decodedToken.user_id,
           picture: {
             data: {
-              url:
-                data.profile_image_url ||
-                decodedToken.profile_image_url,
+              url: data.profile_image_url || decodedToken.profile_image_url,
             },
           },
-        });
+        };
+        setUserProfile(profile);
+                localStorage.setItem("userProfile", JSON.stringify(profile));
       } catch (err) {
         console.error("Error decoding token:", err);
       }
@@ -94,6 +93,8 @@ function AppContent() {
     setIsSignedIn(false);
     setUserProfile(null);
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userProfile");
+
     setAccessToken(null);
     navigate("/");
   };
