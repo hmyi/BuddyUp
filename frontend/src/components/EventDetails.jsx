@@ -45,43 +45,11 @@ const TopOverlay = styled(Box)(({ theme }) => ({
   boxSizing: "border-box",
 }));
 
-const TopRightOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  top: 0,
-  right: 0,
-  padding: theme.spacing(2),
-  boxSizing: "border-box",
-}));
-
-const BottomOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.6)",
-  color: "white",
-  padding: theme.spacing(1),
-  boxSizing: "border-box",
-  textAlign: "center",
-}));
-
 const MapContainer = styled("div")(({ theme }) => ({
   position: "relative",
   width: "100%",
   paddingTop: "100%",
   marginBottom: theme.spacing(2),
-}));
-
-const StatsOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.7)",
-  color: "white",
-  padding: theme.spacing(1),
-  borderTopLeftRadius: theme.shape.borderRadius,
-  textAlign: "right",
-  fontSize: "0.8rem",
 }));
 
 // Helper functions
@@ -129,11 +97,11 @@ function generateGoogleCalendarLink(eventData) {
       .replace(/[-:]/g, "")
       .replace(/\.\d{3}Z$/, "Z");
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      eventData.title || "Event"
+      eventData?.title || "Event"
     )}&details=${encodeURIComponent(
-      eventData.description || "No description"
+      eventData?.description || "No description"
     )}&location=${encodeURIComponent(
-      `${eventData.location || "Unknown location"}, ${eventData.city || ""}`
+      `${eventData?.location || "Unknown location"}, ${eventData.city || ""}`
     )}&dates=${startUTC}/${endUTC}`;
   }
 
@@ -145,10 +113,10 @@ function generateGoogleCalendarLink(eventData) {
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
-  const title = encodeURIComponent(eventData.title || "Event");
-  const details = encodeURIComponent(eventData.description || "No description");
+  const title = encodeURIComponent(eventData?.title || "Event");
+  const details = encodeURIComponent(eventData?.description || "No description");
   const location = encodeURIComponent(
-    `${eventData.location || "Unknown location"}, ${eventData.city || ""}`
+    `${eventData?.location || "Unknown location"}, ${eventData?.city || ""}`
   );
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
@@ -345,6 +313,19 @@ function EventDetails() {
 
   const [eventData, setEventData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [hostProfile, setHostProfile] = useState(null);
+
+  const eventDate = formatEventDate(eventData?.start_time);
+  const eventTimeRange = formatEventTimeRange(eventData?.start_time, eventData?.end_time);
+  const spotsAvailable = eventData?.capacity - eventData?.attendance;
+  const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
+  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
+      `${eventData?.location}, ${eventData?.city}`
+  )}`;
+  const calendarLink = generateGoogleCalendarLink(eventData);
+  const participants = eventData?.participants || [];
+  const eventHostId = eventData?.creator;
+  const userIsAttending = participants.includes(currentUserId);
 
   // Re-run fetch when auth state changes so the event data is fresh
   useEffect(() => {
@@ -390,18 +371,6 @@ function EventDetails() {
       </Box>
     );
   }
-
-  const eventDate = formatEventDate(eventData.start_time);
-  const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
-  const spotsAvailable = eventData.capacity - eventData.attendance;
-  const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
-  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
-    `${eventData.location}, ${eventData.city}`
-  )}`;
-  const calendarLink = generateGoogleCalendarLink(eventData);
-  const participants = eventData?.participants || [];
-  const eventHostId = eventData?.creator;
-  const userIsAttending = participants.includes(currentUserId);
 
   const handleShare = () => {
     if (navigator.share) {
