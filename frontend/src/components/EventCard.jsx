@@ -24,6 +24,7 @@ function EventCard({ userProfile, accessToken, event }) {
 
   return (
     <Card
+      data-testid="event-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       sx={{
@@ -31,9 +32,7 @@ function EventCard({ userProfile, accessToken, event }) {
         minHeight: 400,
         margin: "20px auto",
         boxShadow: 3,
-        // display: "flex",
         cursor: "pointer",
-        // flexDirection: "column",
       }}
       onClick={goToDetails}
       className="Card"

@@ -1,20 +1,30 @@
+
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
-import { EventProvider } from "../EventContext";
-import SearchPage from "../components/SearchPage";
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom"; 
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import SearchPage from "../components/SearchPage"; 
+import { EventContext } from "../EventContext";
 
+const dummyEventContextValue = {
+  events: [], 
+  setEvents: jest.fn(),
+  city: "Waterloo",
+  setCity: jest.fn(),
+  category: "Social",
+  setCategory: jest.fn(),
+};
 
-test("SearchPage reads query parameters", async () => {
+test('renders search results heading when query parameter is present', () => {
   render(
-    <MemoryRouter initialEntries={["/search?query=test"]}>
-      <EventProvider>
-        <SearchPage />
-      </EventProvider>
-    </MemoryRouter>
+    <EventContext.Provider value={dummyEventContextValue}>
+      <MemoryRouter initialEntries={["/search?query=music"]}>
+        <Routes>
+          <Route path="/search" element={<SearchPage />} />
+        </Routes>
+      </MemoryRouter>
+    </EventContext.Provider>
   );
 
-  const heading = await screen.findByText(/Search results for "test"/i);
-  expect(heading).toBeInTheDocument();
+  expect(screen.getByText(/Search results for "music"/i)).toBeInTheDocument();
 });
