@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
 import ListItemButton from "@mui/material/ListItemButton";
 import { useNavigate } from "react-router-dom";
@@ -16,18 +17,18 @@ import {
   CardMedia,
 } from "@mui/material";
 
-const eventTypes = ["Attending", "Hosting", "Past"];
+const eventTypes = ["Attending", "Hosting", "Past", "Cancelled"];
 
-function MyEvents({ userProfile, accessToken }) {
+function MyEvents({ userProfile }) {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
+  const { accessToken } = useContext(AuthContext);
 
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
     fetchEvents();
   }, [selectedType]);
-
 
 const fetchEvents = async () => {
   try {
@@ -52,7 +53,6 @@ const fetchEvents = async () => {
       }
     );
 
-    // Ensure the responses are valid before calling .json()
     const attendingData =
       attendingResponse && typeof attendingResponse.json === "function"
         ? await attendingResponse.json()
@@ -62,7 +62,6 @@ const fetchEvents = async () => {
         ? await hostingResponse.json()
         : [];
 
-    // Adjust these lines if your API returns objects with keys (e.g., attending_events)
     const attendingEvents = Array.isArray(attendingData)
       ? attendingData
       : (attendingData.attending_events || []);
@@ -70,29 +69,32 @@ const fetchEvents = async () => {
       ? hostingData
       : (hostingData.hosting_events || []);
 
-    let filteredEvents = [];
-    if (selectedType === "Attending") {
-      filteredEvents = attendingEvents.filter(
-        (event) => event.status !== "expire"
+      let filteredEvents = [];
+      if (selectedType === "Attending") {
+        filteredEvents = attendingEvents.filter(
+          (event) => event.status !== "expire" && !event.cancelled
+        );
+      } else if (selectedType === "Hosting") {
+        filteredEvents = hostingEvents.filter(
+          (event) => event.status !== "expire" && !event.cancelled
+        );
+      } else if (selectedType === "Past") {
+        filteredEvents = [...attendingEvents, ...hostingEvents].filter(
+          (event) => event.status === "expire"
+        );
+      } else if (selectedType === "Cancelled") {
+        filteredEvents = [...attendingEvents, ...hostingEvents].filter(
+            (event) => event.cancelled === true
+        );
+      }
+      filteredEvents.sort(
+        (a, b) => new Date(a.start_time) - new Date(b.start_time)
       );
-    } else if (selectedType === "Hosting") {
-      filteredEvents = hostingEvents.filter(
-        (event) => event.status !== "expire"
-      );
-    } else {
-      filteredEvents = [...attendingEvents, ...hostingEvents].filter(
-        (event) => event.status === "expire"
-      );
+      setEvents(filteredEvents);
+    } catch (error) {
+      console.error("Error fetching events: ", error);
     }
-    filteredEvents.sort(
-      (a, b) => new Date(a.start_time) - new Date(b.start_time)
-    );
-    setEvents(filteredEvents);
-  } catch (error) {
-    console.error("Error fetching events: ", error);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchEvents();
@@ -114,16 +116,18 @@ const fetchEvents = async () => {
       <Paper
         sx={{
           width: "250px",
-          height: "150px",
+          height: "200px",
           padding: "1rem",
           backgroundColor: "#f7f7f7f7",
         }}
       >
         <List>
           {eventTypes.map((type) => (
-           <ListItemButton key={type} onClick={() => setType(type)} style={{ cursor: "pointer" }}>
-
-
+            <ListItemButton
+              key={type}
+              onClick={() => setType(type)}
+              style={{ cursor: "pointer" }}
+            >
               <ListItemText
                 primary={type}
                 primaryTypographyProps={{
@@ -133,9 +137,7 @@ const fetchEvents = async () => {
                   },
                 }}
               />
-
             </ListItemButton>
-
           ))}
         </List>
       </Paper>
@@ -148,17 +150,32 @@ const fetchEvents = async () => {
         <Divider sx={{ mb: 2 }}></Divider>
         {events.length > 0 ? (
           events.map((event) => (
-            <Card onMouseEnter={() => setHoveredEvent(event.id)}
-                  onMouseLeave={() => setHoveredEvent(null)} key={event.id} sx={{ display: "flex", marginBottom: "1rem",
-              transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-              transform: hoveredEvent === event.id ? "scale(1.05)" : "scale(1)",
-              boxShadow: hoveredEvent === event.id ? 6 : 3}} onClick={() => navigate(`/events/${event.id}`, {
-              state: { event, userProfile, accessToken },
-            })} style={{ cursor: "pointer" }}>
+            <Card
+              onMouseEnter={() => setHoveredEvent(event.id)}
+              onMouseLeave={() => setHoveredEvent(null)}
+              key={event.id}
+              sx={{
+                display: "flex",
+                marginBottom: "1rem",
+                transition:
+                  "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                transform:
+                  hoveredEvent === event.id ? "scale(1.05)" : "scale(1)",
+                boxShadow: hoveredEvent === event.id ? 6 : 3,
+              }}
+              onClick={() =>
+                navigate(`/events/${event.id}`, {
+                  state: { event, userProfile, accessToken },
+                })
+              }
+              style={{ cursor: "pointer" }}
+            >
               <CardMedia
                 component={"img"}
-                sx={{ width: 150, height: 100 }}
-                image={`events_pics/${event.category}.jpg`}
+                sx={{ width: 200, height: 150 }}
+                image={
+                  event.event_image_url ?? `events_pics/${event.category}.jpg`
+                }
                 alt={event.category}
               />
               <CardContent>
@@ -177,9 +194,15 @@ const fetchEvents = async () => {
                 </Typography>
                 <Typography variant={"body2"}>
                   {event.attendance} attendees
-                  {event.status === "full" &&
-                      (<Typography color={"error"} component={"span"} sx={{marginLeft:"8px"}}>
-                        Event Full </Typography>)}
+                  {event.status === "full" && (
+                    <Typography
+                      color={"error"}
+                      component={"span"}
+                      sx={{ marginLeft: "8px" }}
+                    >
+                      Event Full{" "}
+                    </Typography>
+                  )}
                 </Typography>
               </CardContent>
             </Card>

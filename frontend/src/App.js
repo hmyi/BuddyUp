@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
-
-import EventCard from "./components/EventCard";
+import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
-
+import { EventProvider } from "./EventContext";
+import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-import "./App.css";
+import decodeToken from "./utils/decodeToken";
+
+
 import {
   Dialog,
   DialogTitle,
@@ -23,193 +24,98 @@ import {
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-export function handleFacebookSuccess(
+export const handleFacebookSuccess = (
   response,
-  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog } = {}
-) {
+  {
+    setIsSignedIn = () => {},
+    setAccessToken = () => {},
+    setUserProfile = () => {},
+    navigate = () => {},
+    setOpenLoginDialog = () => {},
+  } = {}
+) => {
   console.log("HandleFacebookSuccess Called with:", response);
-
   if (!response || !response.accessToken) {
     console.error("No access token received! Response:", response);
     return;
   }
-
   const fbAccessToken = response.accessToken;
   console.log("Facebook Access Token Received:", fbAccessToken);
-  console.log("Making API Request...");
-
   fetch("https://18.226.163.235:8000/api/auth/facebook/", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ access_token: fbAccessToken }),
   })
-    .then((res) => {
-      console.log("API Fetch Called, Status:", res.status);
-      return res.json();
-    })
-    .then((data) => {
+    .then((res) =>
+      res.json().then((data) => ({ status: res.status, data }))
+    )
+    .then(({ status, data }) => {
       console.log("API Response Data:", data);
-
       if (!data.access) {
         console.error("API Response does not contain 'access' token:", data);
         return;
       }
-
-      if (setIsSignedIn) setIsSignedIn(true);
-      if (setAccessToken) setAccessToken(data.access);
-      localStorage.setItem("accessToken", data.access); // Persist token
-
-      console.log("Decoding Token:", data.access);
-      const decodedToken = jwtDecode(data.access);
-      console.log("Decoded JWT:", decodedToken);
-    })
-    .catch((error) => console.error("Error retrieving JWT:", error));
-
-  if (setOpenLoginDialog) setOpenLoginDialog(false);
-}
-function App() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [openLoginDialog, setOpenLoginDialog] = useState(false);
-  const [accessToken, setAccessToken] = useState(null);
-
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-
-  const navigate = useNavigate();
-
-  const handleFacebookSuccess = (response) => {
-    console.log("HandleFacebookSuccess Called with:", response);
-
-    // Ensure authResponse is not undefined before accessing its properties
-    if (!response || !response.accessToken) {
-      console.error("No access token received! Response:", response);
-      return;
-    }
-
-    const fbAccessToken = response.accessToken;
-    console.log("Facebook Access Token Received:", fbAccessToken);
-
-    console.log("🚀 Making API Request...");
-    fetch("https://18.226.163.235:8000/api/auth/facebook/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ access_token: fbAccessToken }),
-    })
-      .then((res) => {
-        console.log("API Fetch Called, Status:", res.status);
-        return res.json();
-      })
-      .then((data) => {
-        console.log("API Response Data:", data);
-
-        if (!data.access) {
-          console.error("API Response does not contain 'access' token:", data);
-          return;
-        }
-
-        setIsSignedIn(true);
-
-        console.log("Decoding Token:", data.access);
-        setAccessToken(data.access);
-
-        const decodedToken = jwtDecode(data.access);
-        console.log("Decoded JWT:", decodedToken);
-
+      localStorage.setItem("accessToken", data.access);
+      setIsSignedIn(true);
+      setAccessToken(data.access);
+      try {
+        const decodedToken = decodeToken(data.access);
         setUserProfile({
           name: decodedToken.username || "Unknown",
           email: decodedToken.email || "No Email Provided",
           userID: decodedToken.user_id,
           picture: {
-            data: { url: data.profile_image_url },
+            data: {
+              url:
+                data.profile_image_url ||
+                decodedToken.profile_image_url,
+            },
           },
         });
-      })
-      .catch((error) => console.error("Error retrieving JWT:", error));
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+      if (window.location.pathname.startsWith("/events/")) {
+        navigate(window.location.pathname, { replace: true });
+      }
+    })
+    .catch((error) => console.error("Error retrieving JWT:", error));
+  setOpenLoginDialog(false);
+};
 
-    setOpenLoginDialog(false);
-  };
-
-  const handleFacebookFailure = (error) => {
-    console.error("Facebook Auth Error:", error);
-    setIsSignedIn(false);
-  };
-
-  const handleGoogleSuccess = (response) => {
-    console.log("Google Auth Success:", response);
-    setIsSignedIn(true);
-    setUserProfile({
-      email: "Google User",
-      picture: { data: { url: "https://via.placeholder.com/150" } },
-    });
-    setOpenLoginDialog(false);
-  };
-
-  const handleGoogleFailure = (error) => {
-    console.error("Google Auth Error:", error);
-  };
+function AppContent() {
+  const navigate = useNavigate();
+  const { setIsSignedIn, setUserProfile, setAccessToken } = React.useContext(AuthContext);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
+  const [openSnackBar, setOpenSnackBar] = React.useState(false);
 
   const handleLogout = () => {
     setIsSignedIn(false);
     setUserProfile(null);
-    setAnchorEl(null);
     localStorage.removeItem("accessToken");
     setAccessToken(null);
     navigate("/");
   };
 
-  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <>
       <Header
-        isSignedIn={isSignedIn}
-        userProfile={userProfile}
-        accessToken={accessToken}
         handleLogout={handleLogout}
-        anchorEl={anchorEl}
-        handleMenuOpen={handleMenuOpen}
-        handleMenuClose={handleMenuClose}
-        setOpenSnackBar={setOpenSnackBar}
         openLoginDialog={() => setOpenLoginDialog(true)}
+        handleMenuOpen={(e) => setAnchorEl(e.currentTarget)}
+        handleMenuClose={() => setAnchorEl(null)}
+        setOpenSnackBar={setOpenSnackBar}
+        anchorEl={anchorEl}
       />
       <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              userProfile={userProfile}
-              accessToken={accessToken}
-              openSnackBar={openSnackBar}
-              setOpenSnackBar={setOpenSnackBar}
-            />
-          }
-        />
+        <Route path="/" element={<HomePage />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route
-          path="/myEvents"
-          element={
-            <MyEvents userProfile={userProfile} accessToken={accessToken} />
-          }
-        />
-        <Route
-          path="*"
-          element={
-            <HomePage
-              userProfile={userProfile}
-              accessToken={accessToken}
-              openSnackBar={openSnackBar}
-              setOpenSnackBar={setOpenSnackBar}
-            />
-          }
-        />{" "}
-        {/* Catch-all for unknown routes */}
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/myEvents" element={<MyEvents />} />
+        <Route path="*" element={<HomePage />} />
+        <Route path="/users/:id" element={<Profile />} />
+
       </Routes>
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
@@ -217,8 +123,19 @@ function App() {
         <DialogContent>
           <FacebookLogin
             appId={FACEBOOK_APP_ID}
-            onSuccess={handleFacebookSuccess}
-            onFail={handleFacebookFailure}
+            onSuccess={(response) =>
+              handleFacebookSuccess(response, {
+                setIsSignedIn,
+                setAccessToken,
+                setUserProfile,
+                navigate,
+                setOpenLoginDialog,
+              })
+            }
+            onFail={(error) => {
+              console.error("Facebook Auth Error:", error);
+              setIsSignedIn(false);
+            }}
             usePopup
             initParams={{ version: "v19.0", xfbml: true, cookie: true }}
             loginOptions={{
@@ -238,17 +155,70 @@ function App() {
           />
           <br />
           <br />
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-          />
+          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+<GoogleLogin
+  onSuccess={(response) =>
+    handleGoogleSuccess(response, {
+      setIsSignedIn,
+      setAccessToken,
+      setUserProfile,
+      setOpenLoginDialog,
+      navigate,
+    })
+  }
+  onError={handleGoogleFailure}
+/>
+
+          </GoogleOAuthProvider>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLoginDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-    </GoogleOAuthProvider>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <EventProvider>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <AppContent />
+        </GoogleOAuthProvider>
+      </EventProvider>
+    </AuthProvider>
   );
 }
 
 export default App;
+
+const handleGoogleSuccess = (
+  response,
+  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog, navigate } = {}
+) => {
+  console.log("Google Auth Success:", response);
+  fetch("https://18.226.163.235:8000/api/auth/google/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: response.credential }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.access) {
+        console.error("No access token received from backend", data);
+        return;
+      }
+      localStorage.setItem("accessToken", data.access);
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setOpenLoginDialog) setOpenLoginDialog(false);
+      if (navigate) navigate("/");
+    })
+    .catch((error) => console.error("Error during Google login:", error));
+};
+
+
+
+const handleGoogleFailure = (error) => {
+  console.error("Google Auth Error:", error);
+};

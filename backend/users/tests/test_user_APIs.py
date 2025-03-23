@@ -3,6 +3,7 @@ import json
 from unittest.mock import patch
 from rest_framework.test import APIClient
 from users.models import User
+from storages.backends.s3boto3 import S3Boto3Storage
 
 @pytest.mark.django_db
 class TestFacebookLoginAPI:
@@ -96,6 +97,97 @@ class TestFacebookLoginAPI:
         # Fix 2: The view will create a user without email, not return an error
         assert response.status_code == 200
         assert "access" in response.data and "refresh" in response.data
+
+    @patch("api.views.requests.get")
+    def test_facebook_login_updates_missing_username(self, mock_get):
+        """Test that Facebook login updates a user's missing username."""
+        
+        # Create a user with an empty username
+        user = User.objects.create(
+            username="",
+            email=self.mock_email,
+            facebook_id=self.mock_facebook_user_id,
+            first_name=self.mock_first_name,
+            last_name=self.mock_last_name
+        )
+
+        # Mock Facebook API responses
+        mock_get.side_effect = [
+            # Mock response for Facebook debug_token (valid token)
+            type("Response", (object,), {"status_code": 200, "json": lambda: {"data": {"is_valid": True, "user_id": self.mock_facebook_user_id}}}),
+            # Mock response for Facebook Graph API user info
+            type("Response", (object,), {"status_code": 200, "json": lambda: {
+                "id": self.mock_facebook_user_id,
+                "name": "John Doe",  # Facebook provides a name
+                "email": self.mock_email
+            }})
+        ]
+
+        # Call the Facebook login API
+        response = self.client.post(
+            "/api/auth/facebook/",
+            {"access_token": self.valid_access_token},
+            format="json"
+        )
+
+        # Refresh user from the database
+        user.refresh_from_db()
+
+        # Assertions
+        assert response.status_code == 200
+        assert user.username == "John Doe"  # Username should be updated from Facebook name
+        assert "access" in response.data  # Ensure tokens are returned
+        assert "refresh" in response.data
+
+    @patch("api.views.requests.get")
+    def test_facebook_login_avatar_without_extension(self, mock_get):
+        """Test that Facebook login assigns .jpg when avatar URL has no extension."""
+
+        # Create a user with no profile image
+        user = User.objects.create(
+            username="testuser",
+            email=self.mock_email,
+            facebook_id=self.mock_facebook_user_id,
+            first_name=self.mock_first_name,
+            last_name=self.mock_last_name,
+            profile_image=""  # No profile image yet
+        )
+
+        # Mock Facebook API responses
+        mock_get.side_effect = [
+            # Mock response for Facebook debug_token (valid token)
+            type("Response", (object,), {"status_code": 200, "json": lambda: {"data": {"is_valid": True, "user_id": self.mock_facebook_user_id}}}),
+            # Mock response for Facebook Graph API user info
+            type("Response", (object,), {"status_code": 200, "json": lambda: {
+                "id": self.mock_facebook_user_id,
+                "name": "John Doe",
+                "email": self.mock_email,
+                "picture": {"data": {"url": "https://graph.facebook.com/1234567890/picture"}}  # ❌ No extension
+            }}),
+            # Mock response for downloading avatar image
+            type("Response", (object,), {"status_code": 200, "content": b"fake_image_bytes"})
+        ]
+
+        # Call the Facebook login API
+        response = self.client.post(
+            "/api/auth/facebook/",
+            {"access_token": self.valid_access_token},
+            format="json"
+        )
+
+        # Refresh user from database
+        user.refresh_from_db()
+
+        # Assertions
+        assert response.status_code == 200
+        assert user.profile_image.name.endswith(".jpg")  # Ensures extension is added
+        assert "access" in response.data  # Ensure tokens are returned
+        assert "refresh" in response.data
+
+    def teardown_method(self):
+        """Ensure images are deleted from S3 after tests"""
+        s3_storage = S3Boto3Storage()
+        s3_storage.delete("profile_images/123456789_avatar.jpg")
 
 @pytest.mark.django_db
 class TestUserIdToUsernameAPI:

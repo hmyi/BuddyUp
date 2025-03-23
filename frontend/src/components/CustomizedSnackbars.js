@@ -19,7 +19,7 @@ export default function CustomizedSnackbars({
     <div>
       <Snackbar
         open={openSnackBar}
-        autoHideDuration={1000}
+        autoHideDuration={3000}
         onClose={handleClose}
       >
         <Alert
@@ -33,6 +33,4 @@ export default function CustomizedSnackbars({
       </Snackbar>
     </div>
   );
-
 }
-

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useContext } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import AppBar from "@mui/material/AppBar";
@@ -27,13 +27,16 @@ import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
 import Stack from "@mui/material/Stack";
+import axios from "axios";
+import { AuthContext } from "../AuthContext"; // <-- import the context
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function EventCreation({ accessToken, setOpenSnackBar }) {
-  // flow control state
+export default function EventCreation({ setOpenSnackBar }) {
+  const { accessToken } = useContext(AuthContext); // get token from context
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
 
@@ -167,21 +170,24 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
     setTimeError("");
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     dayjs.extend(utc); // Extend dayjs with UTC support
     const utcStartTime = dayjs(startTime).utc().format();
     const utcEndTime = dayjs(endTime).utc().format();
 
-    const event = {
-      title: eventName,
-      category: category,
-      city: city,
-      location: location,
-      start_time: utcStartTime,
-      end_time: utcEndTime,
-      description: eventDescription,
-      capacity: capacity,
-    };
+    const formData = new FormData();
+    formData.append("title", eventName);
+    formData.append("category", category);
+    formData.append("city", city);
+    formData.append("location", location);
+    formData.append("start_time", utcStartTime);
+    formData.append("end_time", utcEndTime);
+    formData.append("description", eventDescription);
+    formData.append("capacity", capacity);
+
+    if (file) {
+      formData.append("event_image", file);
+    }
 
     if (!accessToken) {
       console.error("No access token received!");
@@ -191,25 +197,23 @@ export default function EventCreation({ accessToken, setOpenSnackBar }) {
     console.log("EventCreation with acessToekn: ", accessToken);
     console.log("🚀 Making API Request...");
 
-    fetch("https://18.226.163.235:8000/api/events/new/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`, // Add Bearer Token
-      },
-      body: JSON.stringify(event),
-    })
-      .then((res) => {
-        console.log("API Fetch Called, Status:", res.status);
-        return res.json();
-      })
-      .then((data) => {
-        console.log("API Response Data:", data);
-      })
-      .catch((error) => console.error("Error:", error));
+    try {
+      const response = await axios.post(
+        "https://18.226.163.235:8000/api/events/new/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log("Event created successfully:", response.data);
+    } catch (error) {
+      console.error("Error creating event:", error);
+    }
 
     setOpenSnackBar(true);
-
     handleCleanUp();
     handleClose();
   }
