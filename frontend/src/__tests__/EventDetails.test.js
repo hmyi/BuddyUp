@@ -1,4 +1,23 @@
-const mockEvent = {
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom"; 
+import { MemoryRouter } from "react-router-dom";
+import EventDetails from "../components/EventDetails"; 
+import { AuthProvider } from "../AuthContext";
+
+const dummyHeader = btoa(JSON.stringify({ alg: "none", typ: "JWT" })).replace(/=+$/, "");
+const dummyPayload = btoa(
+  JSON.stringify({
+    username: "Farhan Hossein",
+    email: "farhan.hossein@gmail.com",
+    user_id: 1,
+    profile_image_url: "/avatar.png"
+  })
+).replace(/=+$/, "");
+const dummyToken = `${dummyHeader}.${dummyPayload}.`;
+localStorage.setItem("accessToken", dummyToken);
+
+const baseMockEvent = {
   id: 1,
   category: "Food",
   start_time: "2025-03-19T11:00:00Z",
@@ -10,44 +29,33 @@ const mockEvent = {
   city: "Toronto",
   capacity: 100,
   attendance: 10,
-  participants: []
+  participants: []  
 };
 
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom"; 
-import { MemoryRouter } from "react-router-dom";
-import EventDetails from "../components/EventDetails"; 
-import { AuthContext } from "../AuthContext";
-
-test("MemoryRouter import test", () => {
-  expect(MemoryRouter).toBeDefined();
-});
-
-describe("EventDetails component", () => {
-  beforeEach(() => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockEvent),
-      })
-    );
-  });
-
+describe("EventDetails component - Join and Leave actions", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-    test("renders EventDetails with valid event data from router state", async () => {
+  test("Clicking the Attend button adds the current user (button changes to Leave)", async () => {
+  global.fetch = jest.fn((url, options) => {
+      if (url.includes("/join/")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({}),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(baseMockEvent),
+      });
+    });
+
     render(
-      <MemoryRouter
-        initialEntries={[{ pathname: "/events/1", state: { event: mockEvent } }]}
-      >
-                <AuthContext.Provider value={{ userProfile: { userID: 1 }, accessToken: "dummy-token", isSignedIn: true }}>
-
-          <EventDetails userProfile={{ userID: 1 }} accessToken="dummy-token" />
-                  </AuthContext.Provider>
-
+      <MemoryRouter initialEntries={[{ pathname: "/events/1", state: { event: baseMockEvent } }]}>
+        <AuthProvider testMode={true}>
+          <EventDetails />
+        </AuthProvider>
       </MemoryRouter>
     );
 
@@ -55,8 +63,58 @@ describe("EventDetails component", () => {
       expect(screen.getByText(/Sample Event/i)).toBeInTheDocument();
     });
 
-    const cityElements = screen.getAllByText(/Toronto/i);
-expect(cityElements.length).toBeGreaterThan(0);
+  const attendButton = screen.getByText("Attend");
+    expect(attendButton).toBeInTheDocument();
 
+    jest.spyOn(window, "alert").mockImplementation(() => {});
+
+    fireEvent.click(attendButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Leave")).toBeInTheDocument();
+    });
+  });
+
+  test("Clicking the Leave button removes the current user (button changes to Attend)", async () => {
+    const eventWithParticipant = {
+      ...baseMockEvent,
+      participants: [1]
+    };
+
+    global.fetch = jest.fn((url, options) => {
+      if (url.includes("/leave/")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({}),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(eventWithParticipant),
+      });
+    });
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/events/1", state: { event: eventWithParticipant } }]}>
+        <AuthProvider testMode={true}>
+          <EventDetails />
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Sample Event/i)).toBeInTheDocument();
+    });
+
+    const leaveButton = screen.getByText("Leave");
+    expect(leaveButton).toBeInTheDocument();
+
+    jest.spyOn(window, "alert").mockImplementation(() => {});
+
+    fireEvent.click(leaveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Attend")).toBeInTheDocument();
+    });
   });
 });

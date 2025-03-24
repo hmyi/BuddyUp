@@ -24,6 +24,7 @@ function EventCard({ userProfile, accessToken, event }) {
 
   return (
     <Card
+      data-testid="event-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       sx={{
@@ -31,9 +32,7 @@ function EventCard({ userProfile, accessToken, event }) {
         minHeight: 400,
         margin: "20px auto",
         boxShadow: 3,
-        // display: "flex",
         cursor: "pointer",
-        // flexDirection: "column",
       }}
       onClick={goToDetails}
       className="Card"
@@ -41,7 +40,7 @@ function EventCard({ userProfile, accessToken, event }) {
       <CardMedia
         component="img"
         height="200"
-        image={event.event_image_url ?? `events_pics/${event.category}.jpg`}
+        image={`/events_pics/${event.category}.jpg`}
         alt={event.title}
       />
       <CardContent sx={{ flexGrow: 1 }}>
