@@ -1,9 +1,11 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import { Box, Tabs, Tab, Paper } from "@mui/material";
 import EditProfileTab from "./EditProfileTab";
 import InterestsTab from "./InterestsTab";
+import {AuthContext} from "../AuthContext";
 
-export default function SettingsPage({userProfile, accessToken}) {
+export default function SettingsPage() {
+    const {accessToken, userProfile} = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState(0);
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);

@@ -125,7 +125,7 @@ function Header({
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
-              <MenuItem onClick={() => {navigate("/myEvents", { state: { userProfile } }); handleMenuClose();}}>
+              <MenuItem onClick={() => {navigate("/myEvents"); handleMenuClose();}}>
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
               </MenuItem>
