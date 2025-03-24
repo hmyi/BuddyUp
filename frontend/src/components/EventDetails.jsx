@@ -11,11 +11,13 @@ import {
   AvatarGroup,
   Badge,
   Chip,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
+import {fetchUserInfo} from "./fetchUserInfo";
 import { AuthContext } from "../AuthContext";
 
 const ImageContainer = styled(Box)(({ theme }) => ({
@@ -43,43 +45,11 @@ const TopOverlay = styled(Box)(({ theme }) => ({
   boxSizing: "border-box",
 }));
 
-const TopRightOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  top: 0,
-  right: 0,
-  padding: theme.spacing(2),
-  boxSizing: "border-box",
-}));
-
-const BottomOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.6)",
-  color: "white",
-  padding: theme.spacing(1),
-  boxSizing: "border-box",
-  textAlign: "center",
-}));
-
 const MapContainer = styled("div")(({ theme }) => ({
   position: "relative",
   width: "100%",
   paddingTop: "100%",
   marginBottom: theme.spacing(2),
-}));
-
-const StatsOverlay = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: 0,
-  right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.7)",
-  color: "white",
-  padding: theme.spacing(1),
-  borderTopLeftRadius: theme.shape.borderRadius,
-  textAlign: "right",
-  fontSize: "0.8rem",
 }));
 
 // Helper functions
@@ -127,11 +97,11 @@ function generateGoogleCalendarLink(eventData) {
       .replace(/[-:]/g, "")
       .replace(/\.\d{3}Z$/, "Z");
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      eventData.title || "Event"
+      eventData?.title || "Event"
     )}&details=${encodeURIComponent(
-      eventData.description || "No description"
+      eventData?.description || "No description"
     )}&location=${encodeURIComponent(
-      `${eventData.location || "Unknown location"}, ${eventData.city || ""}`
+      `${eventData?.location || "Unknown location"}, ${eventData.city || ""}`
     )}&dates=${startUTC}/${endUTC}`;
   }
 
@@ -143,10 +113,10 @@ function generateGoogleCalendarLink(eventData) {
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
-  const title = encodeURIComponent(eventData.title || "Event");
-  const details = encodeURIComponent(eventData.description || "No description");
+  const title = encodeURIComponent(eventData?.title || "Event");
+  const details = encodeURIComponent(eventData?.description || "No description");
   const location = encodeURIComponent(
-    `${eventData.location || "Unknown location"}, ${eventData.city || ""}`
+    `${eventData?.location || "Unknown location"}, ${eventData?.city || ""}`
   );
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
@@ -256,6 +226,85 @@ const EventMap = ({ googleMapSrc }) => (
   </Card>
 );
 
+function AttendeeListBox({eventData, accessToken}) {
+  const navigate = useNavigate();
+  const [hostProfile, setHostProfile] = useState(null);
+  const [attendeeProfiles, setAttendeeProfile] = useState([]);
+  const participantID = eventData?.participants || [];
+  const numParticipants = participantID.length;
+  const hostID = eventData.creator;
+
+  useEffect(() => {
+    if (!hostID || !accessToken) return;
+
+    const fetchAllUsers = async() => {
+      try {
+        const hostData = await fetchUserInfo(hostID, accessToken);
+        setHostProfile(hostData);
+
+        if (participantID.length > 0) {
+          const promises = participantID.map((id) => fetchUserInfo(id, accessToken));
+          const results = await Promise.all(promises);
+          setAttendeeProfile(results);
+        } else {
+          setAttendeeProfile([]);
+        }
+      } catch (error) {
+        console.error("Error fetch attendee info: ", error);
+      }
+    };
+
+    fetchAllUsers();
+  }, [participantID, accessToken, hostID]);
+
+  const combinedAttendees = hostProfile ? [hostProfile, ...attendeeProfiles] : attendeeProfiles;
+
+  const totalCount = combinedAttendees.length;
+  const previewCount = 3;
+  const previewAttendees = combinedAttendees.slice(0,previewCount);
+
+  const handleSeeAll = () => {
+    navigate(`/events/${eventData.id}/attendee`,{state: {eventData, accessToken}})
+  };
+
+  if (!hostProfile && !numParticipants) {
+    return null;
+  }
+
+  return (
+      <Box sx={{borderBottom:"1px solid #ddd", pb:2, mb:2}}>
+        <Box sx={{display:"flex", alignItems:"center", justifyContent:"space-between", mb:2}}>
+          <Typography variant={"h6"}>{totalCount} Attendees</Typography>
+          <Button variant={"text"} onClick={handleSeeAll}>
+            See All
+          </Button>
+        </Box>
+
+        <Grid container spacing={2}>
+          {previewAttendees.map((profile, index) => {
+
+              const isHost = hostProfile && profile.id === eventData.creator;
+              return (
+                  <Grid item key={profile.id || index}>
+                    <Paper sx={{width:120, p:1.5, textAlign:"center", boxShadow:2, position:"relative"}}>
+                      {isHost && (
+                          <Chip label={"Host"} color={"success"} size={"small"}
+                                sx={{position:"absolute", top:8, left:8, zIndex:1}}/>)}
+                      <Avatar alt={profile.username}
+                              src={profile.profile_image || `https://ui-avatars.com/api/?name=${profile.username}`}
+                              sx={{width:60, height:60, mx:"auto", mb:1}}
+                      />
+                      <Typography variant={"body2"} noWrap>{profile.username}</Typography>
+                    </Paper>
+                  </Grid>
+              );
+        })}
+        </Grid>
+      </Box>
+  );
+
+}
+
 function EventDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -264,6 +313,19 @@ function EventDetails() {
 
   const [eventData, setEventData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [hostProfile, setHostProfile] = useState(null);
+
+  const eventDate = formatEventDate(eventData?.start_time);
+  const eventTimeRange = formatEventTimeRange(eventData?.start_time, eventData?.end_time);
+  const spotsAvailable = eventData?.capacity - eventData?.attendance;
+  const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
+  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
+      `${eventData?.location}, ${eventData?.city}`
+  )}`;
+  const calendarLink = generateGoogleCalendarLink(eventData);
+  const participants = eventData?.participants || [];
+  const eventHostId = eventData?.creator;
+  const userIsAttending = participants.includes(currentUserId);
 
   // Re-run fetch when auth state changes so the event data is fresh
   useEffect(() => {
@@ -286,6 +348,14 @@ function EventDetails() {
       });
   }, [id, isSignedIn, userProfile]);
 
+  useEffect(() => {
+    if (!eventHostId || !accessToken) return;
+
+    fetchUserInfo(eventHostId, accessToken)
+        .then((hostData) => {setHostProfile(hostData);})
+        .catch((error) => {console.error("Error fetching host info: ", error)});
+  }, [eventHostId, accessToken]);
+
   if (loading) {
     return <Typography>Loading event details...</Typography>;
   }
@@ -301,18 +371,6 @@ function EventDetails() {
       </Box>
     );
   }
-
-  const eventDate = formatEventDate(eventData.start_time);
-  const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
-  const spotsAvailable = eventData.capacity - eventData.attendance;
-  const apiKey = process.env.REACT_APP_MAPS_EMBED_API_KEY;
-  const googleMapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
-    `${eventData.location}, ${eventData.city}`
-  )}`;
-  const calendarLink = generateGoogleCalendarLink(eventData);
-  const participants = eventData?.participants || [];
-  const eventHostId = eventData?.creator;
-  const userIsAttending = participants.includes(currentUserId);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -427,49 +485,25 @@ function EventDetails() {
               {eventData.category} | {eventData.city}
             </Typography>
           </div>
-          <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-            {eventData.hostImage && (
-              <Avatar
-                src={eventData.hostImage}
-                alt={eventData.creator}
-                sx={{ width: 32, height: 32, mr: 1 }}
-              />
-            )}
-            <Typography variant="caption">Hosted by: {eventData.hostName}</Typography>
-          </Box>
-        </TopOverlay>
-
-        <TopRightOverlay>
-          {participants.length > 0 && (
-            <Badge badgeContent={participants.length} color="error" overlap="circular">
-              <AvatarGroup sx={{ "& .MuiAvatar-root": { marginRight: "-4px" } }} max={4}>
-                {participants.map((participant, idx) => (
+            {hostProfile && (
+                <Box sx={{ display: "flex", alignItems: "center", gap:2}}>
                   <Avatar
-                    key={idx}
-                    alt={`User ${participant}`}
-                    src={`https://via.placeholder.com/40/00798a/ffffff?text=U${participant}`}
+                      src={hostProfile.profile_image || `https://ui-avatars.com/api/?name=${hostProfile.username}`}
+                      alt={hostProfile.username}
+                      sx={{ width: 40, height: 40}}
                   />
-                ))}
-              </AvatarGroup>
-            </Badge>
-          )}
-        </TopRightOverlay>
 
-        <BottomOverlay>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <AccessTimeIcon fontSize="small" sx={{ mr: 0.5 }} />
-            <Typography variant="subtitle1">Starts: {eventDate}</Typography>
-          </Box>
-        </BottomOverlay>
-
-        <StatsOverlay>
-          <Typography variant="caption">
-            Capacity: {eventData.capacity} <br />
-            Joined: {eventData.attendance} <br />
-            Spots: {spotsAvailable} <br />
-            Status: {eventData.status ? eventData.status.toUpperCase() : "UNKNOWN"}
-          </Typography>
-        </StatsOverlay>
+                  <Box>
+                    <Typography variant="body2">
+                      Hosted by
+                    </Typography>
+                    <Typography variant={"body2"} sx={{fontWeight:"bold"}}>
+                      {hostProfile.username}
+                    </Typography>
+                  </Box>
+                </Box>
+            )}
+        </TopOverlay>
       </ImageContainer>
 
       <Grid container spacing={2}>
@@ -482,6 +516,7 @@ function EventDetails() {
                 calendarLink={calendarLink}
                 handleShare={handleShare}
               />
+              <AttendeeListBox eventData={eventData} accessToken={accessToken}></AttendeeListBox>
               <Typography variant="body2" gutterBottom>
                 <strong>Location:</strong> {eventData.location}, {eventData.city}
               </Typography>
