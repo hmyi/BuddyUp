@@ -3,12 +3,11 @@ module.exports = {
     "^.+\\.[tj]sx?$": "babel-jest",
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(react-router-dom|@mui/x-date-pickers|@babel/runtime)/)"
+    "/node_modules/(?!(react-router-dom|@mui/x-date-pickers|@babel/runtime|axios)/)",
   ],
   moduleNameMapper: {
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    "\\.(css|less|scss)$": "identity-obj-proxy",
   },
-  moduleFileExtensions: ["js", "jsx", "json"],
-  setupFilesAfterEnv: ["<rootDir>/src/setupTests.js"],
-  testEnvironment: "jsdom"
+  setupFilesAfterEnv: ["<rootDir>/src/setuptests.js"],
+  testEnvironment: "jsdom",
 };
