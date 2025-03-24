@@ -4,6 +4,9 @@ import Profile from "./components/Profile";
 import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
+import AttendeesPage from "./components/AttendeesPage";
+
+import EventCard from "./components/EventCard";
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
 import { EventProvider } from "./EventContext";
@@ -111,6 +114,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/:id" element={<EventDetails />} />
+        <Route path="/events/:id/attendee" element={<AttendeesPage />}/>
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="*" element={<HomePage />} />
