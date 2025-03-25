@@ -19,10 +19,10 @@ import {
 
 const eventTypes = ["Attending", "Hosting", "Past", "Cancelled"];
 
-function MyEvents({ userProfile }) {
+function MyEvents() {
   const [selectedType, setType] = useState("Attending");
   const [events, setEvents] = useState([]);
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, userProfile } = useContext(AuthContext);
 
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const navigate = useNavigate();
