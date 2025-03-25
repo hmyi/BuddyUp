@@ -10,20 +10,27 @@ export function AuthProvider({ children, testMode = true }) {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("accessToken");
-    console.log("Stored token in AuthContext:", storedToken);
+    const storedProfile = localStorage.getItem("userProfile");
+    console.log("AuthProvider: storedToken", storedToken);
+    console.log("AuthProvider: storedProfile", storedProfile);
 
-    if (storedToken) {
+    if (storedToken && storedProfile) {
       setAccessToken(storedToken);
       setIsSignedIn(true);
+      const profile = JSON.parse(storedProfile);
+      console.log("Loaded profile:", profile);
+      setUserProfile(profile);
+    } else if (storedToken) {
       try {
-        // Pass dummy flag if testMode is true
+
         const decoded = decodeToken(storedToken, testMode ? { useDummy: true } : {});
-        setUserProfile({
+        const profile = {
           userID: decoded.user_id,
           name: decoded.username || "Unknown",
           email: decoded.email || "No Email Provided",
           picture: { data: { url: decoded.profile_image_url } },
-        });
+        };
+        setUserProfile(profile);
       } catch (err) {
         console.error("Error decoding stored token:", err);
       }

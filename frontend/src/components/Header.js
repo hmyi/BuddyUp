@@ -33,17 +33,14 @@ function Header({
       const regex = new RegExp(`\\b${cityName}\\b`, "i");
       if (regex.test(trimmedQuery)) {
         foundCity = cityName;
-        // Remove the city name from the search query
         trimmedQuery = trimmedQuery.replace(regex, "").trim();
         break;
       }
     }
 
-    // If a city is found, update it in the context
     if (foundCity) {
       setCity(foundCity);
     }
-    // Navigate based on the search query
     if (trimmedQuery) {
       navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
     } else {
