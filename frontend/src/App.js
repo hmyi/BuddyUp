@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
+import SettingsPage from "./components/SettingsPage";
 
 import EventCard from "./components/EventCard";
 import SearchPage from "./components/SearchPage";
@@ -116,10 +117,12 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/:id/attendee" element={<AttendeesPage />}/>
+        <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
+        <Route path="/settings" element={<SettingsPage />}/>
         <Route path="*" element={<HomePage />} />
-        <Route path="/users/:id" element={<Profile />} />
+
 
       </Routes>
 
