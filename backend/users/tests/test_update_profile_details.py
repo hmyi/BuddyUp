@@ -24,7 +24,7 @@ class TestUserAPIs:
             "email": "newemail@example.com",
             "location": "New York",
             "bio": "I love traveling",
-            "interests": "hiking, painting"
+            "interests": ["hiking", "painting"]
         }
         
         # Make the request
@@ -38,7 +38,7 @@ class TestUserAPIs:
         assert response.data["email"] == "newemail@example.com"
         assert response.data["location"] == "New York"
         assert response.data["bio"] == "I love traveling"
-        assert response.data["interests"] == "hiking, painting"
+        assert response.data["interests"] == ["hiking", "painting"]
 
     def test_update_profile_details_partial_update(self):
         """
