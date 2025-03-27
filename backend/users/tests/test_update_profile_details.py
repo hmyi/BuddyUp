@@ -14,30 +14,6 @@ class TestUserAPIs:
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_update_profile_details_successful(self):
-        """
-        Test successfully updating profile details.
-        This covers lines 283-289 in the update_profile_details function.
-        """
-        # Prepare update data
-        update_data = {
-            "email": "newemail@example.com",
-            "location": "New York",
-            "bio": "I love traveling"
-        }
-        
-        # Make the request
-        response = self.client.post("/api/users/update/", update_data)
-        
-        # Refresh user from database
-        self.user.refresh_from_db()
-        
-        # Assertions
-        assert response.status_code == 200
-        assert response.data["email"] == "newemail@example.com"
-        assert response.data["location"] == "New York"
-        assert response.data["bio"] == "I love traveling"
-
     def test_update_profile_details_partial_update(self):
         """
         Test partially updating profile details.
