@@ -6,6 +6,8 @@ import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
 import SettingsPage from "./components/SettingsPage";
+import TermsOfService from "./components/TermsOfService";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 
 import EventCard from "./components/EventCard";
 import SearchPage from "./components/SearchPage";
@@ -121,6 +123,8 @@ function AppContent() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="/settings" element={<SettingsPage />}/>
+          <Route path="/terms-of-service" element={<TermsOfService />}/>
+          <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
 
 

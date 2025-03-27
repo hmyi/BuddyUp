@@ -5,6 +5,9 @@ import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
+import Link from "@mui/material/Link";
+import { Link as RouterLink } from "react-router-dom";
+
 
 import * as React from "react";
 
@@ -53,11 +56,12 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <footer className="footer">
         <Stack direction="row" spacing={5}>
           <span>©2025 BuudyUp</span>
-          <span>Terms of Service</span>
-          <span>Privacy Policy</span>
-          <span>Cookie Settings</span>
-          <span>Cookie Policy</span>
-          <span>Help</span>
+            <Link component={RouterLink} to="/terms-of-service" color={"inherit"} underline={"hover"}>
+                Terms of Service
+            </Link>
+            <Link component={RouterLink} to={"/privacy-policy"} color={"inherit"} underline={"hover"}>
+                Privacy Policy
+            </Link>
         </Stack>
       </footer>
     </div>
