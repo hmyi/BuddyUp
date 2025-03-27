@@ -2,11 +2,7 @@ import * as React from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
-export default function CustomizedSnackbars({
-  openSnackBar,
-  setOpenSnackBar,
-  children,
-}) {
+export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -18,7 +14,7 @@ export default function CustomizedSnackbars({
   return (
     <div>
       <Snackbar
-        open={openSnackBar}
+        open={openSnackBar.oepn}
         autoHideDuration={3000}
         onClose={handleClose}
       >
@@ -28,7 +24,7 @@ export default function CustomizedSnackbars({
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {children}
+          {openSnackBar.msg}
         </Alert>
       </Snackbar>
     </div>

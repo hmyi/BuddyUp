@@ -1,14 +1,13 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 
 import * as React from "react";
 
-function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
+function HomePage({ userProfile, accessToken }) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -20,11 +19,10 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         } else if (data.results && Array.isArray(data.results)) {
           setEvents(data.results);
         } else {
-          setEvents([]); 
+          setEvents([]);
         }
       })
       .catch((err) => console.log(err));
-
   }, []);
 
   return (
@@ -44,12 +42,6 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
         <Button variant="contained">Load more</Button>
       </Box>
-      <CustomizedSnackbars
-        openSnackBar={openSnackBar}
-        setOpenSnackBar={setOpenSnackBar}
-      >
-        You successfully created an event!
-      </CustomizedSnackbars>
       <footer className="footer">
         <Stack direction="row" spacing={5}>
           <span>©2025 BuudyUp</span>

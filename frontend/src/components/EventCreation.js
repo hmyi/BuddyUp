@@ -233,7 +233,10 @@ export default function EventCreation({ setOpenSnackBar }) {
       console.error("Error creating event:", error);
     }
 
-    setOpenSnackBar(true);
+    setOpenSnackBar({
+      msg: "You successfully created an event!",
+      oepn: true,
+    });
     handleCleanUp();
     handleClose();
   }
