@@ -15,6 +15,7 @@ export function AuthProvider({ children, testMode = true }) {
     console.log("AuthProvider: storedProfile", storedProfile);
 
     if (storedToken && storedProfile) {
+
       setAccessToken(storedToken);
       setIsSignedIn(true);
       const profile = JSON.parse(storedProfile);
@@ -22,7 +23,6 @@ export function AuthProvider({ children, testMode = true }) {
       setUserProfile(profile);
     } else if (storedToken) {
       try {
-
         const decoded = decodeToken(storedToken, testMode ? { useDummy: true } : {});
         const profile = {
           userID: decoded.user_id,
