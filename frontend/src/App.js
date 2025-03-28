@@ -1,4 +1,6 @@
 import React from "react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
@@ -9,14 +11,16 @@ import SettingsPage from "./components/SettingsPage";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 
-import EventCard from "./components/EventCard";
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
 import { EventProvider } from "./EventContext";
 import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
+import { GlobalStyles } from "@mui/material";
 import decodeToken from "./utils/decodeToken";
+
+
 
 import {
   Dialog,
@@ -71,7 +75,8 @@ export const handleFacebookSuccess = (
           userID: decodedToken.user_id,
           picture: {
             data: {
-              url: data.profile_image_url || decodedToken.profile_image_url,
+              url:  decodedToken.profile_image_url,
+
             },
           },
         };
@@ -88,7 +93,7 @@ export const handleFacebookSuccess = (
   setOpenLoginDialog(false);
 };
 
-function AppContent() {
+function AppContent({ toggleTheme, mode }) {
   const navigate = useNavigate();
   const { setIsSignedIn, setUserProfile, setAccessToken } = React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -122,7 +127,7 @@ function AppContent() {
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
-        <Route path="/settings" element={<SettingsPage />}/>
+        <Route path="/settings" element={<SettingsPage toggleTheme={toggleTheme} mode={mode} />} />
           <Route path="/terms-of-service" element={<TermsOfService />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
@@ -192,14 +197,52 @@ function AppContent() {
 }
 
 function App() {
+    const [mode, setMode] = React.useState(() => {
+    const savedMode = localStorage.getItem("mode");
+    return savedMode ? savedMode : "light";
+  });
+
+
+   const theme = React.useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+        },
+      }),
+    [mode]
+  );
+
+  const toggleTheme = () => {
+    setMode((prevMode) => {
+      const newMode = prevMode === "light" ? "dark" : "light";
+      localStorage.setItem("mode", newMode);
+      return newMode;
+    });
+  };
+
   return (
-    <AuthProvider>
-      <EventProvider>
-        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-          <AppContent />
-        </GoogleOAuthProvider>
-      </EventProvider>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <GlobalStyles styles={{
+  body: {
+    backgroundColor: theme.palette.background.default,
+    color: theme.palette.text.primary,
+  },
+  ".header": {
+    backgroundColor: theme.palette.background.paper,
+  },
+  ".footer": {
+    backgroundColor: theme.palette.background.paper,
+  }
+}} />
+      <AuthProvider>
+        <EventProvider>
+          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+            <AppContent toggleTheme={toggleTheme} mode={mode} />
+          </GoogleOAuthProvider>
+        </EventProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
@@ -224,12 +267,31 @@ const handleGoogleSuccess = (
       localStorage.setItem("accessToken", data.access);
       if (setIsSignedIn) setIsSignedIn(true);
       if (setOpenLoginDialog) setOpenLoginDialog(false);
+
+      try {
+        const decodedToken = decodeToken(data.access);
+        const profile = {
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          userID: decodedToken.user_id,
+          picture: {
+            data: {
+              url: decodedToken.profile_image_url,  // Use the value directly from the token
+            },
+          },
+        };
+        setUserProfile(profile);
+        localStorage.setItem("userProfile", JSON.stringify(profile));
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+
+
+
       if (navigate) navigate("/");
     })
     .catch((error) => console.error("Error during Google login:", error));
 };
-
-
 
 const handleGoogleFailure = (error) => {
   console.error("Google Auth Error:", error);
