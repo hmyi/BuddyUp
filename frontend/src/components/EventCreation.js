@@ -139,8 +139,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setCapacity(value);
   }
 
-<<<<<<< Updated upstream
-=======
   function handleDescriptionChange() {
     const payload = {
       title: eventName,
@@ -161,7 +159,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       .catch((err) => console.log(err));
   }
 
->>>>>>> Stashed changes
   function handleCleanUp() {
     setEventName("");
     setCity("Waterloo");
@@ -178,12 +175,8 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   }
 
   async function handleSubmit(e) {
-<<<<<<< Updated upstream
-    dayjs.extend(utc); // Extend dayjs with UTC support
-=======
     e.preventDefault();
     dayjs.extend(utc);
->>>>>>> Stashed changes
     const utcStartTime = dayjs(startTime).utc().format();
     const utcEndTime = dayjs(endTime).utc().format();
     const formData = new FormData();
@@ -314,13 +307,8 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                   marginTop: "5rem"
                 }}
               >
-<<<<<<< Updated upstream
-                <Box>
-                  <h1>Describe your event</h1>
-=======
                 <Stack>
                   <Typography variant="h4">Describe your event</Typography>
->>>>>>> Stashed changes
                   <TextField
                     sx={{ width: "50rem", margin: "auto" }}
                     label="Event Description"
@@ -328,14 +316,10 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                     value={eventDescription}
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
-<<<<<<< Updated upstream
-                </Box>
-=======
                   <Button type="button" variant="contained" onClick={handleDescriptionChange}>
                     Generate event description with GPT-4o mini
                   </Button>
                 </Stack>
->>>>>>> Stashed changes
                 <FileUpload file={file} setFile={setFile} />
               </Stack>
             ) : (
