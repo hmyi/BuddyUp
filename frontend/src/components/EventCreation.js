@@ -28,18 +28,16 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
 import Stack from "@mui/material/Stack";
 import axios from "axios";
-import { AuthContext } from "../AuthContext"; // <-- import the context
+import { AuthContext } from "../AuthContext";
+import { LocalizationProvider as MUILocalizationProvider } from "@mui/x-date-pickers";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function EventCreation({ setOpenSnackBar }) {
-  const { accessToken } = useContext(AuthContext); // get token from context
-  const [open, setOpen] = React.useState(false);
+export default function EventCreation({ open, onClose, setOpenSnackBar }) {
+  const { accessToken } = useContext(AuthContext);
   const [step, setStep] = React.useState(0);
-
-  // event data state
   const [eventName, setEventName] = React.useState("");
   const [city, setCity] = React.useState("Waterloo");
   const [category, setCategory] = React.useState("Social");
@@ -49,20 +47,14 @@ export default function EventCreation({ setOpenSnackBar }) {
   const [capacity, setCapacity] = React.useState(1);
   const [eventDescription, setEventDescription] = React.useState("");
   const [file, setFile] = React.useState(null);
-
-  // event data validation state
   const [eventNameError, setEventNameError] = React.useState("");
   const [locationError, setLocationError] = React.useState("");
   const [timeError, setTimeError] = React.useState("");
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     handleCleanUp();
     setStep(0);
-    setOpen(false);
+    onClose();
   };
 
   function handleNext() {
@@ -70,12 +62,10 @@ export default function EventCreation({ setOpenSnackBar }) {
       setEventNameError("event name can not be empty");
       return;
     }
-
     if (step === 1 && location === "") {
       setLocationError("location can not be empty");
       return;
     }
-
     if (step < 2) {
       setStep((s) => s + 1);
     } else {
@@ -113,21 +103,15 @@ export default function EventCreation({ setOpenSnackBar }) {
 
   function handleStartTimeChange(time) {
     setStartTime(time);
-    const today = dayjs().endOf("day"); // Set to end of today to include the full day
-
-    console.log("debug:", time);
-    console.log("debug:", today);
-    console.log("debug:", time.isAfter(today));
+    const today = dayjs().endOf("day");
     if (time.isBefore(today)) {
       setTimeError("Start time cannot be in the past");
       return;
     }
-
     if (endTime.isBefore(time)) {
       setTimeError("start time can not be later than end time");
       return;
     }
-
     setTimeError("");
   }
 
@@ -168,7 +152,7 @@ export default function EventCreation({ setOpenSnackBar }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+
         setEventDescription(data.improved_description);
       })
       .catch((err) => console.log(err));
@@ -191,10 +175,11 @@ export default function EventCreation({ setOpenSnackBar }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    dayjs.extend(utc); // Extend dayjs with UTC support
+
+    dayjs.extend(utc);
+
     const utcStartTime = dayjs(startTime).utc().format();
     const utcEndTime = dayjs(endTime).utc().format();
-
     const formData = new FormData();
     formData.append("title", eventName);
     formData.append("category", category);
@@ -204,19 +189,13 @@ export default function EventCreation({ setOpenSnackBar }) {
     formData.append("end_time", utcEndTime);
     formData.append("description", eventDescription);
     formData.append("capacity", capacity);
-
     if (file) {
       formData.append("event_image", file);
     }
-
     if (!accessToken) {
       console.error("No access token received!");
       return;
     }
-
-    console.log("EventCreation with acessToekn: ", accessToken);
-    console.log("🚀 Making API Request...");
-
     try {
       const response = await axios.post(
         "https://18.226.163.235:8000/api/events/new/",
@@ -232,7 +211,6 @@ export default function EventCreation({ setOpenSnackBar }) {
     } catch (error) {
       console.error("Error creating event:", error);
     }
-
     setOpenSnackBar(true);
     handleCleanUp();
     handleClose();
@@ -240,48 +218,16 @@ export default function EventCreation({ setOpenSnackBar }) {
 
   return (
     <React.Fragment>
-      <Button
-        style={{
-          backgroundColor: "#00798a",
-          color: "white",
-          borderRadius: "30px",
-          padding: "0.5rem 1rem",
-          textTransform: "none",
-          fontWeight: 600,
-          border: "none",
-          marginRight: "2rem",
-        }}
-        variant="contained"
-        type="button"
-        onClick={handleClickOpen}
-      >
-        Create New Event
-      </Button>
-      <Dialog
-        fullScreen
-        open={open}
-        onClose={handleClose}
-        TransitionComponent={Transition}
-      >
+      <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
         <AppBar sx={{ position: "relative" }}>
           <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleClose}
-              aria-label="close"
-            >
+            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               BuddyUp
             </Typography>
-            <Button
-              autoFocus
-              color="inherit"
-              type="button"
-              onClick={handleClose}
-            >
+            <Button autoFocus color="inherit" type="button" onClick={handleClose}>
               Exit
             </Button>
           </Toolbar>
@@ -298,7 +244,7 @@ export default function EventCreation({ setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "10rem",
+                  marginTop: "10rem"
                 }}
               >
                 <TextField
@@ -307,8 +253,8 @@ export default function EventCreation({ setOpenSnackBar }) {
                   color="primary"
                   value={eventName}
                   onChange={handleEventNameChange}
-                  error={eventNameError}
-                  helperText={!eventNameError ? "200 char max" : eventNameError}
+                  error={eventNameError !== ""}
+                  helperText={eventNameError === "" ? "200 char max" : eventNameError}
                 />
                 <CitySelect city={city} setCity={setCity} />
                 <CategorySelect category={category} setCategory={setCategory} />
@@ -323,7 +269,7 @@ export default function EventCreation({ setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "5rem",
+                  marginTop: "5rem"
                 }}
               >
                 <TextField
@@ -331,11 +277,10 @@ export default function EventCreation({ setOpenSnackBar }) {
                   label="Location"
                   color="primary"
                   value={location}
-                  error={locationError}
+                  error={locationError !== ""}
                   onChange={handleLocationChange}
-                  helperText={!locationError ? "255 char max" : locationError}
+                  helperText={locationError === "" ? "255 char max" : locationError}
                 />
-
                 <StartEndDateTimePicker
                   startTime={startTime}
                   setStartTime={setStartTime}
@@ -353,7 +298,6 @@ export default function EventCreation({ setOpenSnackBar }) {
             ) : (
               ""
             )}
-
             {step === 2 ? (
               <Stack
                 direction="column"
@@ -361,11 +305,14 @@ export default function EventCreation({ setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "5rem",
+                  marginTop: "5rem"
                 }}
               >
                 <Stack>
-                  <h1>Describe your event</h1>
+
+                  <Typography variant="h4">Describe your event</Typography>
+
+
                   <TextField
                     sx={{ width: "50rem", margin: "auto" }}
                     label="Event Description"
@@ -373,11 +320,9 @@ export default function EventCreation({ setOpenSnackBar }) {
                     value={eventDescription}
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
-                  <Button
-                    type="button"
-                    variant="contained"
-                    onClick={handleDescriptionChange}
-                  >
+
+                  <Button type="button" variant="contained" onClick={handleDescriptionChange}>
+
                     Generate event description with GPT-4o mini
                   </Button>
                 </Stack>
@@ -393,13 +338,13 @@ export default function EventCreation({ setOpenSnackBar }) {
             sx={{
               justifyContent: "space-evenly",
               alignItems: "center",
-              marginTop: "5rem",
+              marginTop: "5rem"
             }}
           >
             <Button
               type="button"
               variant="contained"
-              disabled={step === 0 || timeError || locationError}
+              disabled={step === 0 || timeError !== "" || locationError !== ""}
               onClick={handlePrevious}
             >
               Previous
@@ -409,7 +354,7 @@ export default function EventCreation({ setOpenSnackBar }) {
                 type="button"
                 variant="contained"
                 onClick={handleNext}
-                disabled={eventNameError || locationError || timeError}
+                disabled={eventNameError !== "" || locationError !== "" || timeError !== ""}
               >
                 Next
               </Button>
@@ -431,12 +376,7 @@ export default function EventCreation({ setOpenSnackBar }) {
 }
 
 function HorizontalLinearAlternativeLabelStepper({ step }) {
-  const steps = [
-    "Basic Information",
-    "Event Details",
-    "Additional Information",
-  ];
-
+  const steps = ["Basic Information", "Event Details", "Additional Information"];
   return (
     <Box sx={{ width: "100%" }}>
       <Stepper activeStep={step} alternativeLabel>
@@ -452,29 +392,12 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
 
 function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
-    {
-      value: 10,
-      label: "small event",
-    },
-    {
-      value: 50,
-      label: "regular event",
-    },
-    {
-      value: 100,
-      label: "big event",
-    },
+    { value: 10, label: "small event" },
+    { value: 50, label: "regular event" },
+    { value: 100, label: "big event" }
   ];
-
   return (
-    <Box
-      sx={{
-        width: 800,
-        margin: "auto",
-        display: "flex",
-        gap: 5,
-      }}
-    >
+    <Box sx={{ width: 800, margin: "auto", display: "flex", gap: 5 }}>
       <TextField
         label="Capacity"
         type="number"
@@ -482,8 +405,8 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
         onChange={(e) => handleCapacityChange(Number(e.target.value))}
         slotProps={{
           inputLabel: {
-            shrink: true,
-          },
+            shrink: true
+          }
         }}
       />
       <Slider
@@ -498,17 +421,15 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
 }
 
 function CitySelect({ city, setCity }) {
-  const citys = ["Waterloo", "kitchener", "Tonronto"];
-
+  const cities = ["Waterloo", "kitchener", "Tonronto"];
   const handleChange = (event) => {
     setCity(event.target.value);
   };
-
   return (
     <FormControl sx={{ width: 150 }}>
       <InputLabel>City</InputLabel>
       <Select label="City" value={city} onChange={handleChange}>
-        {citys.map((city) => (
+        {cities.map((city) => (
           <MenuItem key={city} value={city}>
             {city}
           </MenuItem>
@@ -519,20 +440,10 @@ function CitySelect({ city, setCity }) {
 }
 
 function CategorySelect({ category, setCategory }) {
-  const categories = [
-    "Social",
-    "Entertainment",
-    "Sports",
-    "Food ",
-    "Outdoor",
-    "Gaming ",
-    "Carpool",
-  ];
-
+  const categories = ["Social", "Entertainment", "Sports", "Food ", "Outdoor", "Gaming ", "Carpool"];
   const handleChange = (event) => {
     setCategory(event.target.value);
   };
-
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
       <FormControl sx={{ width: 150 }}>
@@ -556,10 +467,10 @@ function StartEndDateTimePicker({
   setEndTime,
   timeError,
   handleStartTimeChange,
-  handleEndTimeChange,
+  handleEndTimeChange
 }) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <MUILocalizationProvider dateAdapter={AdapterDayjs}>
       <DemoContainer components={["DateTimePicker", "DateTimePicker"]}>
         <Box
           sx={{
@@ -568,19 +479,11 @@ function StartEndDateTimePicker({
             padding: 3,
             borderRadius: 2,
             border: timeError ? 2 : 0,
-            borderColor: "error.main",
+            borderColor: "error.main"
           }}
         >
-          <DateTimePicker
-            label="Start Time"
-            value={startTime}
-            onChange={handleStartTimeChange}
-          />
-          <DateTimePicker
-            label="End Time"
-            value={endTime}
-            onChange={handleEndTimeChange}
-          />
+          <DateTimePicker label="Start Time" value={startTime} onChange={handleStartTimeChange} />
+          <DateTimePicker label="End Time" value={endTime} onChange={handleEndTimeChange} />
         </Box>
         {timeError ? (
           <Typography variant="body1" color="error">
@@ -590,7 +493,7 @@ function StartEndDateTimePicker({
           ""
         )}
       </DemoContainer>
-    </LocalizationProvider>
+    </MUILocalizationProvider>
   );
 }
 
@@ -604,38 +507,23 @@ function FileUpload({ file, setFile }) {
     bottom: 0,
     left: 0,
     whiteSpace: "nowrap",
-    width: 1,
+    width: 1
   });
-
-  // Handle file input change
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      // Convert FileList to an array and update state
       setFile(selectedFile);
     }
   };
-
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        type="button"
-        startIcon={<CloudUploadIcon />}
-      >
+      <Button component="label" role={undefined} variant="contained" tabIndex={-1} type="button" startIcon={<CloudUploadIcon />}>
         Upload image
         <VisuallyHiddenInput type="file" onChange={handleFileChange} />
       </Button>
       {file && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={URL.createObjectURL(file)}
-            alt={`Uploaded`}
-            style={{ maxWidth: "100%", height: "auto", maxHeight: "200px" }}
-          />
+          <img src={URL.createObjectURL(file)} alt="Uploaded" style={{ maxWidth: "100%", height: "auto", maxHeight: "200px" }} />
         </Box>
       )}
     </Box>

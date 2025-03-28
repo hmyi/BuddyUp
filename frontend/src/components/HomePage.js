@@ -1,11 +1,10 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
-
 import * as React from "react";
 
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
@@ -20,19 +19,27 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         } else if (data.results && Array.isArray(data.results)) {
           setEvents(data.results);
         } else {
-          setEvents([]); 
+          setEvents([]);
         }
       })
       .catch((err) => console.log(err));
-
   }, []);
 
   return (
     <div>
-      <h1 style={{ marginLeft: "50px" }}>Events near Waterloo</h1>
-      <Grid container spacing={3} sx={{ marginX: "50px" }}>
+      <h1 style={{ textAlign: "center", margin: "1rem 0" }}>
+        Events near Waterloo
+      </h1>
+      <Grid 
+        container 
+        spacing={3}
+        sx={{ 
+          justifyContent: "center",
+          px: 2  // some horizontal padding
+        }}
+      >
         {events.map((evt) => (
-          <Grid xs={12} sm={6} md={3} key={evt.id}>
+          <Grid item xs={12} sm={6} md={3} key={evt.id}>
             <EventCard
               userProfile={userProfile}
               accessToken={accessToken}
@@ -44,15 +51,12 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
         <Button variant="contained">Load more</Button>
       </Box>
-      <CustomizedSnackbars
-        openSnackBar={openSnackBar}
-        setOpenSnackBar={setOpenSnackBar}
-      >
+      <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
         You successfully created an event!
       </CustomizedSnackbars>
       <footer className="footer">
-        <Stack direction="row" spacing={5}>
-          <span>©2025 BuudyUp</span>
+        <Stack direction="row" spacing={5} justifyContent="center">
+          <span>©2025 BuddyUp</span>
           <span>Terms of Service</span>
           <span>Privacy Policy</span>
           <span>Cookie Settings</span>
