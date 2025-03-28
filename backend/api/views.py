@@ -115,6 +115,7 @@ def facebook_login(request):
     refresh['email'] = user.email
     
     profile_image_url = request.build_absolute_uri(user.profile_image.url) if user.profile_image else None
+    refresh['profile_image_url'] = profile_image_url
     
     access_token = str(refresh.access_token)
     refresh_token = str(refresh)
@@ -200,6 +201,7 @@ def google_login(request):
     refresh['email'] = user.email
 
     profile_image_url = request.build_absolute_uri(user.profile_image.url) if user.profile_image else None
+    refresh['profile_image_url'] = profile_image_url
 
     return Response({
         "access": str(refresh.access_token),
@@ -263,8 +265,7 @@ def user_profile(request, pk):
     GET: Get user profile
     """
     user = get_object_or_404(User, pk=pk)
-
-    serializer = UserSerializer(user)
+    serializer = UserSerializer(user, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
