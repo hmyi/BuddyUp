@@ -69,7 +69,8 @@ export const handleFacebookSuccess = (
           userID: decodedToken.user_id,
           picture: {
             data: {
-              url: data.profile_image_url || decodedToken.profile_image_url,
+              url:  decodedToken.profile_image_url,
+
             },
           },
         };
@@ -220,12 +221,31 @@ const handleGoogleSuccess = (
       localStorage.setItem("accessToken", data.access);
       if (setIsSignedIn) setIsSignedIn(true);
       if (setOpenLoginDialog) setOpenLoginDialog(false);
+
+      try {
+        const decodedToken = decodeToken(data.access);
+        const profile = {
+          name: decodedToken.username || "Unknown",
+          email: decodedToken.email || "No Email Provided",
+          userID: decodedToken.user_id,
+          picture: {
+            data: {
+              url: decodedToken.profile_image_url,  // Use the value directly from the token
+            },
+          },
+        };
+        setUserProfile(profile);
+        localStorage.setItem("userProfile", JSON.stringify(profile));
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+
+
+
       if (navigate) navigate("/");
     })
     .catch((error) => console.error("Error during Google login:", error));
 };
-
-
 
 const handleGoogleFailure = (error) => {
   console.error("Google Auth Error:", error);
