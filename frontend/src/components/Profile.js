@@ -32,8 +32,10 @@ function Profile() {
     };
 
     useEffect(() => {
-        fetchUserProfile();
-    }, [id]);
+        if (accessToken) {
+          fetchUserProfile();
+        }
+      }, [id, accessToken]);
 
     if (loading) {
         return <Typography>Loading user profile...</Typography>;

@@ -33,17 +33,14 @@ function Header({
       const regex = new RegExp(`\\b${cityName}\\b`, "i");
       if (regex.test(trimmedQuery)) {
         foundCity = cityName;
-        // Remove the city name from the search query
         trimmedQuery = trimmedQuery.replace(regex, "").trim();
         break;
       }
     }
 
-    // If a city is found, update it in the context
     if (foundCity) {
       setCity(foundCity);
     }
-    // Navigate based on the search query
     if (trimmedQuery) {
       navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
     } else {
@@ -89,7 +86,7 @@ function Header({
               }}
             >
               <Avatar
-                src={userProfile?.picture?.data?.url}
+                src={userProfile?.picture?.data?.url || `https://ui-avatars.com/api/?name=${userProfile?.name}`}
                 sx={{
                   bgcolor: "primary.main",
                   width: 40,
@@ -117,18 +114,15 @@ function Header({
                 },
               }}
             >
-              <MenuItem onClick={handleMenuClose}>
+              <MenuItem onClick={() => {navigate("/settings"); handleMenuClose();}}>
                 <SettingsIcon sx={{ mr: 2 }} fontSize="small" />
                 Settings
               </MenuItem>
-
-              <MenuItem
-                onClick={() => navigate(`/users/${userProfile?.userID}`)}
-              >
+              <MenuItem onClick={() => {navigate(`/users/${userProfile?.userID}`); handleMenuClose();}}>
                 <AccountCircleIcon sx={{ mr: 2 }} fontSize="small" />
                 View profile
               </MenuItem>
-              <MenuItem onClick={() => navigate("/myEvents", { state: { userProfile } })}>
+              <MenuItem onClick={() => {navigate("/myEvents"); handleMenuClose();}}>
                 <EventIcon sx={{ mr: 2 }} fontSize="small" />
                 My events
               </MenuItem>

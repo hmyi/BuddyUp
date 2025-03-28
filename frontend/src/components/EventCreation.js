@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import AppBar from "@mui/material/AppBar";
@@ -30,7 +30,6 @@ import Stack from "@mui/material/Stack";
 import axios from "axios";
 import { AuthContext } from "../AuthContext"; // <-- import the context
 
-
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -48,9 +47,7 @@ export default function EventCreation({ setOpenSnackBar }) {
   const [startTime, setStartTime] = React.useState(dayjs(Date.now()));
   const [endTime, setEndTime] = React.useState(dayjs(Date.now()));
   const [capacity, setCapacity] = React.useState(1);
-  const [eventDescription, setEventDescription] = React.useState(
-    eventDescriptionFiller
-  );
+  const [eventDescription, setEventDescription] = React.useState("");
   const [file, setFile] = React.useState(null);
 
   // event data validation state
@@ -155,15 +152,37 @@ export default function EventCreation({ setOpenSnackBar }) {
     setCapacity(value);
   }
 
+  function handleDescriptionChange() {
+    const payload = {
+      title: eventName,
+      description: eventDescription,
+    };
+
+    fetch("https://18.226.163.235:8000/api/events/improve/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setEventDescription(data.improved_description);
+      })
+      .catch((err) => console.log(err));
+  }
+
   function handleCleanUp() {
     setEventName("");
     setCity("Waterloo");
     setCategory("Social");
     setLocation("");
-    setStartTime(dayjs("2025-05-12T14:30"));
-    setEndTime(dayjs("2025-05-12T15:30"));
+    setStartTime(dayjs(Date.now()));
+    setEndTime(dayjs(Date.now()));
     setCapacity(1);
-    setEventDescription(eventDescriptionFiller);
+    setEventDescription("");
     setFile(null);
     setEventNameError("");
     setLocationError("");
@@ -171,6 +190,7 @@ export default function EventCreation({ setOpenSnackBar }) {
   }
 
   async function handleSubmit(e) {
+    e.preventDefault();
     dayjs.extend(utc); // Extend dayjs with UTC support
     const utcStartTime = dayjs(startTime).utc().format();
     const utcEndTime = dayjs(endTime).utc().format();
@@ -344,7 +364,7 @@ export default function EventCreation({ setOpenSnackBar }) {
                   marginTop: "5rem",
                 }}
               >
-                <Box>
+                <Stack>
                   <h1>Describe your event</h1>
                   <TextField
                     sx={{ width: "50rem", margin: "auto" }}
@@ -353,7 +373,14 @@ export default function EventCreation({ setOpenSnackBar }) {
                     value={eventDescription}
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
-                </Box>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleDescriptionChange}
+                  >
+                    Generate event description with GPT-4o mini
+                  </Button>
+                </Stack>
                 <FileUpload file={file} setFile={setFile} />
               </Stack>
             ) : (
@@ -390,11 +417,7 @@ export default function EventCreation({ setOpenSnackBar }) {
               ""
             )}
             {step === 2 ? (
-              <Button
-                variant="contained"
-                endIcon={<SendIcon />}
-                onClick={handleSubmit}
-              >
+              <Button type="submit" variant="contained" endIcon={<SendIcon />}>
                 Create
               </Button>
             ) : (
@@ -618,6 +641,3 @@ function FileUpload({ file, setFile }) {
     </Box>
   );
 }
-
-const eventDescriptionFiller =
-  "This group is for anyone looking to improve their core strength and flexibility through the practice of Vinyasa yoga in Kitchener. Whether you are a beginner or an experienced yogi, all are welcome to join us as we work on expanding our abilities and deepening our practice. We will focus on strengthening the core muscles, building endurance, and increasing flexibility to improve overall physical and mental well-being. Come join us for an energizing and empowering flow that will leave you feeling stronger and more centered. Let's come together to support and motivate each other on our journey to core strength!";
