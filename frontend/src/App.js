@@ -10,6 +10,7 @@ import AttendeesPage from "./components/AttendeesPage";
 import SettingsPage from "./components/SettingsPage";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
+import footer from "./components/Footer";
 
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
@@ -29,6 +30,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -134,6 +136,7 @@ function AppContent({ toggleTheme, mode }) {
 
 
       </Routes>
+        <Footer />
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
