@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Box, Tabs, Tab, Paper, Switch, FormControlLabel } from "@mui/material";
+import { Box, Tabs, Tab, Paper, Switch, FormControlLabel, Typography } from "@mui/material";
 import EditProfileTab from "./EditProfileTab";
 import InterestsTab from "./InterestsTab";
 import { AuthContext } from "../AuthContext";
@@ -9,12 +9,7 @@ function DisplaySettingsTab({ mode, toggleTheme }) {
   return (
     <Box>
       <FormControlLabel
-        control={
-          <Switch
-            checked={mode === "dark"}
-            onChange={toggleTheme}
-          />
-        }
+        control={<Switch checked={mode === "dark"} onChange={toggleTheme} />}
         label="Enable Dark Mode"
       />
     </Box>
@@ -24,18 +19,18 @@ function DisplaySettingsTab({ mode, toggleTheme }) {
 function CookiePreferencesTab() {
   return (
     <Box>
-      <FormControlLabel
-        control={<Switch defaultChecked />} 
-        label="Analytics Cookies"
-      />
-      <FormControlLabel
-        control={<Switch defaultChecked />}
-        label="Marketing Cookies"
-      />
-      <FormControlLabel
-        control={<Switch defaultChecked />}
-        label="Functional Cookies"
-      />
+      <Typography variant="h6" gutterBottom>
+        Cookie Preferences
+      </Typography>
+      <Typography paragraph>
+        Currently, this site does not use analytics or marketing cookies. We only rely on
+        essential cookies or local storage for login and basic functionality. No other cookies
+        are tracked or stored.
+      </Typography>
+      <Typography paragraph>
+        If that changes in the future (e.g., adding analytics), we will update this page so
+        you can manage those preferences.
+      </Typography>
     </Box>
   );
 }
@@ -45,11 +40,10 @@ export default function SettingsPage({ toggleTheme, mode }) {
   const [activeTab, setActiveTab] = useState(0);
   const [searchParams] = useSearchParams();
 
-
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "cookie") {
-      setActiveTab(3); // or whichever index is Cookie Settings
+      setActiveTab(3);
     }
   }, [searchParams]);
 
