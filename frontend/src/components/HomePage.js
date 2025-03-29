@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
@@ -10,7 +9,7 @@ import Stack from "@mui/material/Stack";
 
 import * as React from "react";
 
-function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
+function HomePage({ userProfile, accessToken }) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -38,7 +37,7 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
         spacing={3}
         sx={{
           justifyContent: "center",
-          px: 2  // some horizontal padding
+          px: 2, // some horizontal padding
         }}
       >
         {events.map((evt) => (
@@ -54,9 +53,11 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
         <Button variant="contained">Load more</Button>
       </Box>
+
       <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
         You successfully created an event!
       </CustomizedSnackbars>
+
     </div>
   );
 }

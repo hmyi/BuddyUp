@@ -20,8 +20,7 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import { GlobalStyles } from "@mui/material";
 import decodeToken from "./utils/decodeToken";
-
-
+import CustomizedSnackbars from "./components/CustomizedSnackbars";
 
 import {
   Dialog,
@@ -57,9 +56,7 @@ export const handleFacebookSuccess = (
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ access_token: fbAccessToken }),
   })
-    .then((res) =>
-      res.json().then((data) => ({ status: res.status, data }))
-    )
+    .then((res) => res.json().then((data) => ({ status: res.status, data })))
     .then(({ status, data }) => {
       console.log("API Response Data:", data);
       if (!data.access) {
@@ -83,7 +80,7 @@ export const handleFacebookSuccess = (
           },
         };
         setUserProfile(profile);
-                localStorage.setItem("userProfile", JSON.stringify(profile));
+        localStorage.setItem("userProfile", JSON.stringify(profile));
       } catch (err) {
         console.error("Error decoding token:", err);
       }
@@ -97,10 +94,14 @@ export const handleFacebookSuccess = (
 
 function AppContent({ toggleTheme, mode }) {
   const navigate = useNavigate();
-  const { setIsSignedIn, setUserProfile, setAccessToken } = React.useContext(AuthContext);
+  const { setIsSignedIn, setUserProfile, setAccessToken } =
+    React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
-  const [openSnackBar, setOpenSnackBar] = React.useState(false);
+  const [openSnackBar, setOpenSnackBar] = React.useState({
+    msg: "",
+    oepn: false,
+  });
 
   const handleLogout = () => {
     setIsSignedIn(false);
@@ -124,8 +125,11 @@ function AppContent({ toggleTheme, mode }) {
       />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/:id/attendee" element={<AttendeesPage />}/>
+        <Route
+          path="/events/:id"
+          element={<EventDetails setOpenSnackBar={setOpenSnackBar} />}
+        />
+        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
@@ -133,10 +137,12 @@ function AppContent({ toggleTheme, mode }) {
           <Route path="/terms-of-service" element={<TermsOfService />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
-
-
       </Routes>
-        <Footer />
+      <CustomizedSnackbars
+        openSnackBar={openSnackBar}
+        setOpenSnackBar={setOpenSnackBar}
+      ></CustomizedSnackbars>
+
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
@@ -176,19 +182,18 @@ function AppContent({ toggleTheme, mode }) {
           <br />
           <br />
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-<GoogleLogin
-  onSuccess={(response) =>
-    handleGoogleSuccess(response, {
-      setIsSignedIn,
-      setAccessToken,
-      setUserProfile,
-      setOpenLoginDialog,
-      navigate,
-    })
-  }
-  onError={handleGoogleFailure}
-/>
-
+            <GoogleLogin
+              onSuccess={(response) =>
+                handleGoogleSuccess(response, {
+                  setIsSignedIn,
+                  setAccessToken,
+                  setUserProfile,
+                  setOpenLoginDialog,
+                  navigate,
+                })
+              }
+              onError={handleGoogleFailure}
+            />
           </GoogleOAuthProvider>
         </DialogContent>
         <DialogActions>
@@ -253,7 +258,13 @@ export default App;
 
 const handleGoogleSuccess = (
   response,
-  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog, navigate } = {}
+  {
+    setIsSignedIn,
+    setAccessToken,
+    setUserProfile,
+    setOpenLoginDialog,
+    navigate,
+  } = {}
 ) => {
   console.log("Google Auth Success:", response);
   fetch("https://18.226.163.235:8000/api/auth/google/", {

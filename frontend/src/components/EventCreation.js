@@ -152,7 +152,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     })
       .then((res) => res.json())
       .then((data) => {
-
         setEventDescription(data.improved_description);
       })
       .catch((err) => console.log(err));
@@ -211,23 +210,42 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     } catch (error) {
       console.error("Error creating event:", error);
     }
-    setOpenSnackBar(true);
+
+    setOpenSnackBar({
+      msg: "You successfully created an event!",
+      oepn: true,
+    });
     handleCleanUp();
     handleClose();
   }
 
   return (
     <React.Fragment>
-      <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
+      <Dialog
+        fullScreen
+        open={open}
+        onClose={handleClose}
+        TransitionComponent={Transition}
+      >
         <AppBar sx={{ position: "relative" }}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleClose}
+              aria-label="close"
+            >
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               BuddyUp
             </Typography>
-            <Button autoFocus color="inherit" type="button" onClick={handleClose}>
+            <Button
+              autoFocus
+              color="inherit"
+              type="button"
+              onClick={handleClose}
+            >
               Exit
             </Button>
           </Toolbar>
@@ -244,7 +262,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "10rem"
+                  marginTop: "10rem",
                 }}
               >
                 <TextField
@@ -254,7 +272,9 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                   value={eventName}
                   onChange={handleEventNameChange}
                   error={eventNameError !== ""}
-                  helperText={eventNameError === "" ? "200 char max" : eventNameError}
+                  helperText={
+                    eventNameError === "" ? "200 char max" : eventNameError
+                  }
                 />
                 <CitySelect city={city} setCity={setCity} />
                 <CategorySelect category={category} setCategory={setCategory} />
@@ -269,7 +289,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "5rem"
+                  marginTop: "5rem",
                 }}
               >
                 <TextField
@@ -279,7 +299,9 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                   value={location}
                   error={locationError !== ""}
                   onChange={handleLocationChange}
-                  helperText={locationError === "" ? "255 char max" : locationError}
+                  helperText={
+                    locationError === "" ? "255 char max" : locationError
+                  }
                 />
                 <StartEndDateTimePicker
                   startTime={startTime}
@@ -305,13 +327,11 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
-                  marginTop: "5rem"
+                  marginTop: "5rem",
                 }}
               >
                 <Stack>
-
                   <Typography variant="h4">Describe your event</Typography>
-
 
                   <TextField
                     sx={{ width: "50rem", margin: "auto" }}
@@ -321,8 +341,11 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
 
-                  <Button type="button" variant="contained" onClick={handleDescriptionChange}>
-
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleDescriptionChange}
+                  >
                     Generate event description with GPT-4o mini
                   </Button>
                 </Stack>
@@ -338,7 +361,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
             sx={{
               justifyContent: "space-evenly",
               alignItems: "center",
-              marginTop: "5rem"
+              marginTop: "5rem",
             }}
           >
             <Button
@@ -354,7 +377,11 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 type="button"
                 variant="contained"
                 onClick={handleNext}
-                disabled={eventNameError !== "" || locationError !== "" || timeError !== ""}
+                disabled={
+                  eventNameError !== "" ||
+                  locationError !== "" ||
+                  timeError !== ""
+                }
               >
                 Next
               </Button>
@@ -376,7 +403,11 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
 }
 
 function HorizontalLinearAlternativeLabelStepper({ step }) {
-  const steps = ["Basic Information", "Event Details", "Additional Information"];
+  const steps = [
+    "Basic Information",
+    "Event Details",
+    "Additional Information",
+  ];
   return (
     <Box sx={{ width: "100%" }}>
       <Stepper activeStep={step} alternativeLabel>
@@ -394,7 +425,7 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
     { value: 10, label: "small event" },
     { value: 50, label: "regular event" },
-    { value: 100, label: "big event" }
+    { value: 100, label: "big event" },
   ];
   return (
     <Box sx={{ width: 800, margin: "auto", display: "flex", gap: 5 }}>
@@ -405,8 +436,8 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
         onChange={(e) => handleCapacityChange(Number(e.target.value))}
         slotProps={{
           inputLabel: {
-            shrink: true
-          }
+            shrink: true,
+          },
         }}
       />
       <Slider
@@ -440,7 +471,15 @@ function CitySelect({ city, setCity }) {
 }
 
 function CategorySelect({ category, setCategory }) {
-  const categories = ["Social", "Entertainment", "Sports", "Food ", "Outdoor", "Gaming ", "Carpool"];
+  const categories = [
+    "Social",
+    "Entertainment",
+    "Sports",
+    "Food ",
+    "Outdoor",
+    "Gaming ",
+    "Carpool",
+  ];
   const handleChange = (event) => {
     setCategory(event.target.value);
   };
@@ -467,7 +506,7 @@ function StartEndDateTimePicker({
   setEndTime,
   timeError,
   handleStartTimeChange,
-  handleEndTimeChange
+  handleEndTimeChange,
 }) {
   return (
     <MUILocalizationProvider dateAdapter={AdapterDayjs}>
@@ -479,11 +518,19 @@ function StartEndDateTimePicker({
             padding: 3,
             borderRadius: 2,
             border: timeError ? 2 : 0,
-            borderColor: "error.main"
+            borderColor: "error.main",
           }}
         >
-          <DateTimePicker label="Start Time" value={startTime} onChange={handleStartTimeChange} />
-          <DateTimePicker label="End Time" value={endTime} onChange={handleEndTimeChange} />
+          <DateTimePicker
+            label="Start Time"
+            value={startTime}
+            onChange={handleStartTimeChange}
+          />
+          <DateTimePicker
+            label="End Time"
+            value={endTime}
+            onChange={handleEndTimeChange}
+          />
         </Box>
         {timeError ? (
           <Typography variant="body1" color="error">
@@ -507,7 +554,7 @@ function FileUpload({ file, setFile }) {
     bottom: 0,
     left: 0,
     whiteSpace: "nowrap",
-    width: 1
+    width: 1,
   });
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -517,13 +564,24 @@ function FileUpload({ file, setFile }) {
   };
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Button component="label" role={undefined} variant="contained" tabIndex={-1} type="button" startIcon={<CloudUploadIcon />}>
+      <Button
+        component="label"
+        role={undefined}
+        variant="contained"
+        tabIndex={-1}
+        type="button"
+        startIcon={<CloudUploadIcon />}
+      >
         Upload image
         <VisuallyHiddenInput type="file" onChange={handleFileChange} />
       </Button>
       {file && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <img src={URL.createObjectURL(file)} alt="Uploaded" style={{ maxWidth: "100%", height: "auto", maxHeight: "200px" }} />
+          <img
+            src={URL.createObjectURL(file)}
+            alt="Uploaded"
+            style={{ maxWidth: "100%", height: "auto", maxHeight: "200px" }}
+          />
         </Box>
       )}
     </Box>
