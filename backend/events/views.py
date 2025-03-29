@@ -331,14 +331,14 @@ def improve_description(request):
     if description:
         user_prompt = (
             "I'm organizing an event. "
-            "Here is the event title and a rough description. Please rewrite the description to make it more appealing, the description should be about 3 sentences long:\n\n"
+            "Here is the event title and a rough description. Please rewrite the description to make it more appealing, the description should be about 3 sentences long, only return the description itself:\n\n"
             f"Title: {title}\n"
             f"Description: {description}\n"
         )
     else:
         user_prompt = (
             "I'm organizing an event. "
-            "I only have an event title so far. Please propose a good description for it, the description should be about 3 sentences long:\n\n"
+            "I only have an event title so far. Please propose a good description for it, the description should be about 3 sentences long, only return the description itself:\n\n"
             f"Title: {title}\n"
         )
 

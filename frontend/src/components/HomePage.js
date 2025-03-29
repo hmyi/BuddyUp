@@ -4,6 +4,9 @@ import Button from "@mui/material/Button";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
+
+
+
 import * as React from "react";
 
 function HomePage({ userProfile, accessToken }) {
@@ -50,16 +53,11 @@ function HomePage({ userProfile, accessToken }) {
       <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
         <Button variant="contained">Load more</Button>
       </Box>
-      <footer className="footer">
-        <Stack direction="row" spacing={5} justifyContent="center">
-          <span>©2025 BuddyUp</span>
-          <span>Terms of Service</span>
-          <span>Privacy Policy</span>
-          <span>Cookie Settings</span>
-          <span>Cookie Policy</span>
-          <span>Help</span>
-        </Stack>
-      </footer>
+
+      <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
+        You successfully created an event!
+      </CustomizedSnackbars>
+
     </div>
   );
 }

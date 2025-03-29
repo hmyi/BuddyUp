@@ -8,6 +8,9 @@ import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
 import SettingsPage from "./components/SettingsPage";
+import TermsOfService from "./components/TermsOfService";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import footer from "./components/Footer";
 
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
@@ -26,6 +29,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -130,12 +134,15 @@ function AppContent({ toggleTheme, mode }) {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="/settings" element={<SettingsPage toggleTheme={toggleTheme} mode={mode} />} />
+          <Route path="/terms-of-service" element={<TermsOfService />}/>
+          <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
       </Routes>
       <CustomizedSnackbars
         openSnackBar={openSnackBar}
         setOpenSnackBar={setOpenSnackBar}
       ></CustomizedSnackbars>
+
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
@@ -203,12 +210,12 @@ function App() {
     return savedMode ? savedMode : "light";
   });
 
-  
+
    const theme = React.useMemo(
     () =>
       createTheme({
         palette: {
-          mode, 
+          mode,
         },
       }),
     [mode]
@@ -225,7 +232,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles styles={{
-  body: { 
+  body: {
     backgroundColor: theme.palette.background.default,
     color: theme.palette.text.primary,
   },
