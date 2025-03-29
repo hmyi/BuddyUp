@@ -11,6 +11,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 
+
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   const [allFetchedEvents, setAllFetchedEvents] = useState([]);
   const [events, setEvents] = useState([]);
@@ -159,7 +160,6 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
         You successfully created an event!
       </CustomizedSnackbars>
-
     </div>
   );
 }

@@ -7,6 +7,13 @@ import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
 import SettingsPage from "./components/SettingsPage";
+
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import CookieSettings from "./pages/CookieSettings";
+import footer from "./components/Footer";
+
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
 import { EventProvider } from "./EventContext";
@@ -16,10 +23,16 @@ import FacebookLogin from "@greatsumini/react-facebook-login";
 import { GlobalStyles, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import decodeToken from "./utils/decodeToken";
 
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import CookiePolicy from "./pages/CookiePolicy";
-import CookieSettings from "./pages/CookieSettings";
+
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@mui/material";
+
 import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
@@ -118,17 +131,19 @@ function AppContent({ toggleTheme, mode }) {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="/settings" element={<SettingsPage toggleTheme={toggleTheme} mode={mode} />} />
+
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/cookie-settings" element={<CookieSettings />} />
+        <Route path="/cookie-settings" element={<CookieSettings />} 
+          <Route path="/terms-of-service" element={<TermsOfService />}/>
+          <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
       </Routes>
+        <Footer />
 
-      {/* NEW: FOOTER is rendered AFTER the routes -> appears on all pages */}
       <Footer />
 
-      {/* Login Dialog */}
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>
@@ -191,6 +206,7 @@ function App() {
   });
 
   const theme = React.useMemo(
+
     () =>
       createTheme({
         palette: {
@@ -224,6 +240,7 @@ function App() {
           },
         }}
       />
+
       <AuthProvider>
         <EventProvider>
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
