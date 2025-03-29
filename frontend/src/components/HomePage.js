@@ -5,6 +5,9 @@ import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
+
+
+
 import * as React from "react";
 
 function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
@@ -30,10 +33,10 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <h1 style={{ textAlign: "center", margin: "1rem 0" }}>
         Events near Waterloo
       </h1>
-      <Grid 
-        container 
+      <Grid
+        container
         spacing={3}
-        sx={{ 
+        sx={{
           justifyContent: "center",
           px: 2  // some horizontal padding
         }}
@@ -54,16 +57,6 @@ function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
       <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
         You successfully created an event!
       </CustomizedSnackbars>
-      <footer className="footer">
-        <Stack direction="row" spacing={5} justifyContent="center">
-          <span>©2025 BuddyUp</span>
-          <span>Terms of Service</span>
-          <span>Privacy Policy</span>
-          <span>Cookie Settings</span>
-          <span>Cookie Policy</span>
-          <span>Help</span>
-        </Stack>
-      </footer>
     </div>
   );
 }
