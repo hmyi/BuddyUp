@@ -10,35 +10,33 @@ import {
   Avatar,
   Chip,
   Paper,
-  Divider,
-  Stack,
+  Stack
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ShareIcon from "@mui/icons-material/Share";
+import TodayIcon from "@mui/icons-material/Today";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleIcon from "@mui/icons-material/People";
 import EventSeatIcon from "@mui/icons-material/EventSeat";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CustomizedSnackbars from "./CustomizedSnackbars";
 import { fetchUserInfo } from "./fetchUserInfo";
 import { AuthContext } from "../AuthContext";
-
-//
-// ----- STYLED COMPONENTS & HELPERS (unchanged from your snippet) -----
-//
+import { Link } from "react-router-dom";
 
 const ImageContainer = styled(Box)(({ theme }) => ({
   position: "relative",
   width: "100%",
-  height: "400px",
+  height: 400,
   marginBottom: theme.spacing(2),
-  overflow: "hidden",
+  overflow: "hidden"
 }));
 
 const StyledImage = styled("img")({
   width: "100%",
   height: "100%",
-  objectFit: "cover",
+  objectFit: "cover"
 });
 
 const TopOverlay = styled(Box)(({ theme }) => ({
@@ -46,32 +44,27 @@ const TopOverlay = styled(Box)(({ theme }) => ({
   top: 0,
   left: 0,
   right: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.6)",
+  backgroundColor: "rgba(0,0,0,0.6)",
   color: "white",
   padding: theme.spacing(2),
-  boxSizing: "border-box",
+  boxSizing: "border-box"
 }));
 
 function formatEventDate(dateString) {
-  const options = {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
+  const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
   return new Date(dateString).toLocaleDateString("en-US", options);
 }
 
 function formatEventTimeRange(start, end) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  return `${startDate.toLocaleTimeString("en-US", {
+  const s = new Date(start);
+  const e = new Date(end);
+  return `${s.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit"
+  })} - ${e.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-  })} to ${endDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
+    timeZoneName: "short"
   })}`;
 }
 
@@ -80,24 +73,21 @@ function generateGoogleCalendarLink(eventData) {
   const defaultEnd = "2025-01-01T01:00:00Z";
   const startTime = eventData?.start_time || defaultStart;
   const endTime = eventData?.end_time || defaultEnd;
-  const startDate = new Date(startTime);
-  const endDate = new Date(endTime);
-
-  if (isNaN(startDate) || isNaN(endDate)) {
-    console.error("Invalid start or end time", eventData?.start_time, eventData?.end_time);
-    const fallbackStartDate = new Date(defaultStart);
-    const fallbackEndDate = new Date(defaultEnd);
-    const startUTC = fallbackStartDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-    const endUTC = fallbackEndDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const s = new Date(startTime);
+  const e = new Date(endTime);
+  if (isNaN(s) || isNaN(e)) {
+    const fs = new Date(defaultStart);
+    const fe = new Date(defaultEnd);
+    const startUTC = fs.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+    const endUTC = fe.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       eventData?.title || "Event"
     )}&details=${encodeURIComponent(eventData?.description || "No description")}&location=${encodeURIComponent(
       `${eventData?.location || "Unknown location"}, ${eventData.city || ""}`
     )}&dates=${startUTC}/${endUTC}`;
   }
-
-  const startUTC = startDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const endUTC = endDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const startUTC = s.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const endUTC = e.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   const title = encodeURIComponent(eventData?.title || "Event");
   const details = encodeURIComponent(eventData?.description || "No description");
   const location = encodeURIComponent(
@@ -106,221 +96,188 @@ function generateGoogleCalendarLink(eventData) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUTC}/${endUTC}`;
 }
 
-//
-// ----- LEFT COLUMN COMPONENTS -----
-//
-
-const EventScheduleBox = ({ eventDate, eventTimeRange, calendarLink, handleShare }) => (
-  <Box sx={{ borderBottom: "1px solid #ddd", pb: 2, mb: 2 }}>
-    <Typography variant="h6">{eventDate}</Typography>
-    <Typography variant="subtitle1">{eventTimeRange}</Typography>
-    <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-      <Button variant="outlined" onClick={() => window.open(calendarLink, "_blank")} sx={{ mr: 2 }}>
-        <EventAvailableIcon sx={{ mr: 0.5 }} />
-        Add to Calendar
-      </Button>
-      <Button variant="outlined" onClick={handleShare}>
-        <ShareIcon sx={{ mr: 0.5 }} />
-        Share
-      </Button>
-    </Box>
-  </Box>
-);
-
-function LeftColumn({ eventData, calendarLink, handleShare }) {
-  const eventDate = formatEventDate(eventData.start_time);
-  const eventTimeRange = formatEventTimeRange(eventData.start_time, eventData.end_time);
-
+const DescriptionCard = ({ description }) => {
   return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <CardContent sx={{ flexGrow: 1, overflowY: "auto" }}>
-        <EventScheduleBox
-          eventDate={eventDate}
-          eventTimeRange={eventTimeRange}
-          calendarLink={calendarLink}
-          handleShare={handleShare}
-        />
-        <AttendeeListBox eventData={eventData} accessToken={eventData.accessToken} />
-
-        <Typography variant="body2" gutterBottom>
-          <strong>Location:</strong> {eventData.location}, {eventData.city}
+    <Card sx={{ height: 200, display: "flex", flexDirection: "column" }}>
+      <CardContent sx={{ overflowY: "auto" }}>
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          Description
         </Typography>
-        <Typography variant="body1" paragraph sx={{ mt: 2 }}>
-          {eventData.description}
-        </Typography>
+        <Typography variant="body1">{description}</Typography>
       </CardContent>
     </Card>
   );
-}
+};
 
-//
-// ----- RIGHT COLUMN COMPONENTS -----
-//
-
-const EventActionsBox = ({
-  handleCancelEvent,
-  currentUserId,
-  participants,
-  eventHostId,
-  handleJoinEvent,
-  handleLeaveEvent,
-  status,
-  cancelled,
-}) => (
-  <Box sx={{ mt: 2 }}>
-    <Button
-      variant="contained"
-      color="primary"
-      fullWidth
-      disabled={!currentUserId || status === "full" || cancelled}
-      onClick={
-        currentUserId === eventHostId
-          ? handleCancelEvent
-          : participants.includes(currentUserId)
-          ? handleLeaveEvent
-          : handleJoinEvent
-      }
-    >
-      {currentUserId === eventHostId
-        ? "Cancel"
-        : participants.includes(currentUserId)
-        ? "Leave"
-        : "Attend"}
-    </Button>
-  </Box>
-);
-
-function RightSidebar({
-  googleMapSrc,
+function AttendeeCard({
   eventData,
-  spotsAvailable,
   currentUserId,
   participants,
   handleJoinEvent,
   handleLeaveEvent,
   handleCancelEvent,
+  accessToken,
+  openLoginDialog 
 }) {
+  const spotsAvailable = eventData.capacity - eventData.attendance;
+  const userIsLoggedIn = Boolean(currentUserId && accessToken);
+
   return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column", boxShadow: 3 }}>
-      {/* Fixed height map */}
-      <Box
-        component="iframe"
-        src={googleMapSrc}
-        title="Google Map"
-        sx={{
-          width: "100%",
-          height: 400,
-          border: 0,
-          flexShrink: 0,
-        }}
-        loading="lazy"
-        allowFullScreen
-      />
-      <CardContent sx={{ flexGrow: 1, overflowY: "auto" }}>
-        <Stack spacing={2}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <LocationOnIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {eventData.location}, {eventData.city}
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="body2" color="text.secondary">
-              Capacity:
-            </Typography>
-            <EventSeatIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {eventData.capacity}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              |
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Joined:
-            </Typography>
-            <PeopleIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {eventData.attendance}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              |
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Spots Available:
-            </Typography>
-            <EventSeatIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {spotsAvailable}
-            </Typography>
-          </Stack>
-          <Stack direction="row" spacing={1}>
-            <Chip
-              label={(eventData.status || "unknown").toUpperCase()}
-              color={
-                (eventData.status || "").toLowerCase() === "active"
-                  ? "success"
-                  : (eventData.status || "").toLowerCase() === "full"
-                  ? "error"
-                  : "default"
-              }
-              size="small"
-            />
-            <Chip
-              label={(eventData.category || "unknown").toUpperCase()}
-              color={
-                (eventData.category || "").toLowerCase() === "food"
-                  ? "warning"
-                  : "default"
-              }
-              size="small"
-            />
-          </Stack>
-          <EventActionsBox
-            currentUserId={currentUserId}
-            participants={participants}
-            eventHostId={eventData.creator}
-            handleJoinEvent={handleJoinEvent}
-            handleLeaveEvent={handleLeaveEvent}
-            handleCancelEvent={handleCancelEvent}
-            status={eventData.status}
-            cancelled={eventData.cancelled}
-          />
+    <Card sx={{ height: 305, display: "flex", flexDirection: "column" }}>
+      <CardContent sx={{ overflowY: "auto" }}>
+        {userIsLoggedIn ? (
+          <AttendeeListBox eventData={eventData} accessToken={accessToken} />
+        ) : (
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {participants.length} Attendees
+            <br />
+            Please{" "}
+            <Button
+              variant="text"
+              color="primary"
+              onClick={openLoginDialog}
+              sx={{ textTransform: "none", p: 0, minWidth: "unset" }}
+            >
+              log in
+            </Button>{" "}
+            to view participatings, or to join this event.
+          </Typography>
+        )}
+
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          <Typography variant="body2">
+            <EventSeatIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5 }} />
+            Capacity: {eventData.capacity}
+          </Typography>
+          <Typography variant="body2">
+            <PeopleIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5 }} />
+            Joined: {eventData.attendance}
+          </Typography>
+          <Typography variant="body2">
+            <EventSeatIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5 }} />
+            Spots: {spotsAvailable}
+          </Typography>
         </Stack>
+
+        {userIsLoggedIn && (
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={eventData.status === "full" || eventData.cancelled}
+            onClick={
+              currentUserId === eventData.creator
+                ? handleCancelEvent
+                : participants.includes(currentUserId)
+                ? handleLeaveEvent
+                : handleJoinEvent
+            }
+          >
+            {currentUserId === eventData.creator
+              ? "Cancel"
+              : participants.includes(currentUserId)
+              ? "Leave"
+              : "Attend"}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-//
-// ----- ATTENDEE LIST COMPONENT -----
-//
+
+const InfoCard = ({ eventData }) => (
+  <Card sx={{ height: 200, display: "flex", flexDirection: "column" }}>
+    <CardContent sx={{ overflowY: "auto" }}>
+      <Stack spacing={1} sx={{ mb: 1 }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <TodayIcon fontSize="small" />
+          <Typography variant="subtitle1">
+            {formatEventDate(eventData.start_time)}
+          </Typography>
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <AccessTimeIcon fontSize="small" />
+          <Typography variant="subtitle1">
+            {formatEventTimeRange(eventData.start_time, eventData.end_time)}
+          </Typography>
+        </Stack>
+      </Stack>
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+        <LocationOnIcon fontSize="small" />
+        <Typography variant="subtitle1">
+          {eventData.location}, {eventData.city}
+        </Typography>
+      </Stack>
+      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+        <Button variant="outlined" size="small" onClick={() => window.open(generateGoogleCalendarLink(eventData), "_blank")}>
+          <EventAvailableIcon fontSize="small" sx={{ mr: 0.5 }} />
+          Add to Calendar
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: eventData.title,
+                text: eventData.description,
+                url: window.location.href
+              }).catch((error) => console.log("Error sharing", error));
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Event URL copied to clipboard");
+            }
+          }}
+        >
+          <ShareIcon fontSize="small" sx={{ mr: 0.5 }} />
+          Share
+        </Button>
+      </Stack>
+    </CardContent>
+  </Card>
+);
+
+const MapCard = ({ googleMapSrc }) => (
+  <Card sx={{ height: 305, display: "flex", flexDirection: "column" }}>
+    <Box
+      component="iframe"
+      src={googleMapSrc}
+      title="Google Map"
+      sx={{ width: "100%", height: "100%", border: 0 }}
+      loading="lazy"
+      allowFullScreen
+    />
+  </Card>
+);
+
 function AttendeeListBox({ eventData, accessToken }) {
   const navigate = useNavigate();
   const [hostProfile, setHostProfile] = useState(null);
-  const [attendeeProfiles, setAttendeeProfile] = useState([]);
-  const participantID = eventData?.participants || [];
+  const [attendeeProfiles, setAttendeeProfiles] = useState([]);
+  const participantIDs = eventData?.participants || [];
   const hostID = eventData.creator;
 
   useEffect(() => {
     if (!hostID || !accessToken) return;
-    const fetchAllUsers = async () => {
+    const fetchAll = async () => {
       try {
         const hostData = await fetchUserInfo(hostID, accessToken);
         setHostProfile(hostData);
 
-        if (participantID.length > 0) {
-          const promises = participantID.map((id) => fetchUserInfo(id, accessToken));
+        if (participantIDs.length > 0) {
+          const promises = participantIDs.map((id) => fetchUserInfo(id, accessToken));
           const results = await Promise.all(promises);
-          setAttendeeProfile(results);
+          setAttendeeProfiles(results);
         } else {
-          setAttendeeProfile([]);
+          setAttendeeProfiles([]);
         }
       } catch (error) {
-        console.error("Error fetching attendee info: ", error);
+        console.error("Error fetching attendee info:", error);
       }
     };
-    fetchAllUsers();
-  }, [participantID, accessToken, hostID]);
+    fetchAll();
+  }, [participantIDs, accessToken, hostID]);
 
   const combinedAttendees = hostProfile ? [hostProfile, ...attendeeProfiles] : attendeeProfiles;
   const totalCount = combinedAttendees.length;
@@ -331,13 +288,12 @@ function AttendeeListBox({ eventData, accessToken }) {
     navigate(`/events/${eventData.id}/attendee`, { state: { eventData, accessToken } });
   };
 
-  if (!hostProfile && participantID.length === 0) {
-    return null;
-  }
+  if (!accessToken) return null;
+  if (!hostProfile && participantIDs.length === 0) return null;
 
   return (
-    <Box sx={{ borderBottom: "1px solid #ddd", pb: 2, mb: 2 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+    <Box sx={{ borderBottom: "1px solid #ddd", pb: 2, mt: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
         <Typography variant="h6">{totalCount} Attendees</Typography>
         <Button variant="text" onClick={handleSeeAll}>
           See All
@@ -348,7 +304,15 @@ function AttendeeListBox({ eventData, accessToken }) {
           const isHost = hostProfile && profile.id === eventData.creator;
           return (
             <Grid item key={profile.id || index}>
-              <Paper sx={{ width: 120, p: 1.5, textAlign: "center", boxShadow: 2, position: "relative" }}>
+              <Paper
+                sx={{
+                  width: 120,
+                  p: 1.5,
+                  textAlign: "center",
+                  boxShadow: 2,
+                  position: "relative"
+                }}
+              >
                 {isHost && (
                   <Chip
                     label="Host"
@@ -374,50 +338,39 @@ function AttendeeListBox({ eventData, accessToken }) {
   );
 }
 
-//
-// ----- MAIN COMPONENT: EventDetails -----
-//
-function EventDetails() {
+function EventDetails({openLoginDialog }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { userProfile, accessToken } = useContext(AuthContext);
   const currentUserId = userProfile?.userID;
-
   const [eventData, setEventData] = useState(null);
-  const [hostProfile, setHostProfile] = useState(null); // only if you want to show host in the overlay
+  const [hostProfile, setHostProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [openSnackBar, setOpenSnackBar] = useState({ open: false, msg: "" });
 
-  const showSnackbar = (message) => {
-    setSnackbar({ open: true, message });
-  };
-
-  // Fetch event details
   useEffect(() => {
     setLoading(true);
     fetch(`https://18.226.163.235:8000/api/events/${id}/`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
       })
       .then((data) => {
         setEventData(data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Error fetching event details:", error);
+      .catch((err) => {
+        console.error("Error fetching event details:", err);
         setLoading(false);
       });
   }, [id]);
 
-  // Optionally fetch host for the overlay
   useEffect(() => {
     if (!eventData?.creator || !accessToken) return;
     fetchUserInfo(eventData.creator, accessToken)
       .then((hostData) => setHostProfile(hostData))
-      .catch((error) => console.error("Error fetching host info: ", error));
+      .catch((err) => console.error("Error fetching host info:", err));
   }, [eventData?.creator, accessToken]);
 
   if (loading) {
@@ -433,26 +386,22 @@ function EventDetails() {
     );
   }
 
-  // Helper stuff
-  const spotsAvailable = eventData.capacity - eventData.attendance;
-  const googleMapSrc = eventData
-    ? `https://www.google.com/maps/embed/v1/place?key=${process.env.REACT_APP_MAPS_EMBED_API_KEY}&q=${encodeURIComponent(
-        `${eventData.location}, ${eventData.city}`
-      )}`
-    : "";
-  const calendarLink = generateGoogleCalendarLink(eventData);
   const participants = eventData?.participants || [];
+  const googleMapSrc = eventData
+    ? `https://www.google.com/maps/embed/v1/place?key=${
+        process.env.REACT_APP_MAPS_EMBED_API_KEY
+      }&q=${encodeURIComponent(`${eventData.location}, ${eventData.city}`)}`
+    : "";
 
-  // Handlers
   const handleShare = () => {
     if (navigator.share) {
       navigator
         .share({
           title: eventData.title,
           text: eventData.description,
-          url: window.location.href,
+          url: window.location.href
         })
-        .catch((error) => console.log("Error sharing", error));
+        .catch((err) => console.log("Error sharing", err));
     } else {
       navigator.clipboard.writeText(window.location.href);
       alert("Event URL copied to clipboard");
@@ -462,14 +411,19 @@ function EventDetails() {
   const handleCancelEvent = () => {
     fetch(`https://18.226.163.235:8000/api/events/${eventData.id}/cancel/`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: { Authorization: `Bearer ${accessToken}` }
     })
-      .then(() => {
-        navigate("/");
+      .then((res) => {
+        if (!res.ok) throw new Error("Cancel event failed");
+        return res.json();
       })
-      .catch((error) => console.error("Error:", error));
+      .then(() => {
+        setOpenSnackBar({ open: true, msg: "Event canceled successfully." });
+        setTimeout(() => navigate("/"), 1000); 
+      })
+      .catch(() =>
+        setOpenSnackBar({ open: true, msg: "Error canceling event." })
+      );
   };
 
   const handleJoinEvent = () => {
@@ -477,23 +431,23 @@ function EventDetails() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+        Authorization: `Bearer ${accessToken}`
+      }
     })
       .then((res) => {
         if (!res.ok) throw new Error("Join event failed");
         return res.json();
       })
       .then(() => {
-        showSnackbar("Successfully joined the event.");
+        setOpenSnackBar({ open: true, msg: "Successfully joined the event." });
         setEventData({
           ...eventData,
-          participants: [...participants, currentUserId],
+          participants: [...participants, currentUserId]
         });
       })
-      .catch(() => {
-        showSnackbar("Error joining event.");
-      });
+      .catch(() =>
+        setOpenSnackBar({ open: true, msg: "Error joining event." })
+      );
   };
 
   const handleLeaveEvent = () => {
@@ -501,28 +455,27 @@ function EventDetails() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+        Authorization: `Bearer ${accessToken}`
+      }
     })
       .then((res) => {
         if (!res.ok) throw new Error("Leave event failed");
         return res.json();
       })
       .then(() => {
-        showSnackbar("You left the event.");
+        setOpenSnackBar({ open: true, msg: "You left the event." });
         setEventData({
           ...eventData,
-          participants: participants.filter((p) => p !== currentUserId),
+          participants: participants.filter((p) => p !== currentUserId)
         });
       })
-      .catch(() => {
-        showSnackbar("Error leaving event.");
-      });
+      .catch(() =>
+        setOpenSnackBar({ open: true, msg: "Error leaving event." })
+      );
   };
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
-      {/* The top image container with hosted by info remains the same */}
       <ImageContainer>
         <StyledImage
           src={eventData.event_image_url ?? `/events_pics/${eventData.category}.jpg`}
@@ -556,62 +509,31 @@ function EventDetails() {
         </TopOverlay>
       </ImageContainer>
 
-      {/* Below: Two columns with total fixed height of 600px */}
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          height: "600px", // fix total height for the columns
-        }}
-      >
-        {/* LEFT COLUMN */}
-        <Grid
-          item
-          xs={12}
-          md={6}
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <LeftColumn
-            eventData={{ ...eventData, accessToken }}
-            calendarLink={calendarLink}
-            handleShare={handleShare}
-          />
-        </Grid>
-
-        {/* RIGHT COLUMN */}
-        <Grid
-          item
-          xs={12}
-          md={6}
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <RightSidebar
-            googleMapSrc={googleMapSrc}
+      {/* Grid of four cards, each 300px high */}
+      <Grid container spacing={2} sx={{ height: 620 }}>
+        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <DescriptionCard description={eventData.description} />
+          <AttendeeCard
             eventData={eventData}
-            spotsAvailable={spotsAvailable}
             currentUserId={currentUserId}
             participants={participants}
             handleJoinEvent={handleJoinEvent}
             handleLeaveEvent={handleLeaveEvent}
             handleCancelEvent={handleCancelEvent}
+            accessToken={accessToken}
+            openLoginDialog={openLoginDialog}    // <-- Pass it down here
           />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <InfoCard eventData={eventData} />
+          <MapCard googleMapSrc={googleMapSrc} />
         </Grid>
       </Grid>
 
       <CustomizedSnackbars
-        openSnackBar={snackbar.open}
-        setOpenSnackBar={(open) => setSnackbar((prev) => ({ ...prev, open }))}
-      >
-        {snackbar.message}
-      </CustomizedSnackbars>
+        openSnackBar={openSnackBar}
+        setOpenSnackBar={setOpenSnackBar}
+      />
     </Box>
   );
 }

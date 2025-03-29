@@ -1,7 +1,5 @@
-// src/components/FilterMenu.jsx
 import React from "react";
 import {
-  Box,
   FormControl,
   InputLabel,
   Select,
@@ -10,6 +8,16 @@ import {
   Typography,
   Stack
 } from "@mui/material";
+
+const categories = [
+  "Social",
+  "Entertainment",
+  "Sports",
+  "Food",
+  "Outdoor",
+  "Gaming",
+  "Carpool"
+];
 
 function FilterMenu({ city, setCity, category, setCategory }) {
   const handleCityChange = (event) => {
@@ -26,11 +34,10 @@ function FilterMenu({ city, setCity, category, setCategory }) {
       sx={{
         p: 2,
         mb: 2,
-        borderRadius: 1,
+        borderRadius: 1
       }}
     >
       <Stack direction="row" alignItems="center" spacing={3}>
-        {/* Title for the Filter Section (optional) */}
         <Typography variant="h6" sx={{ whiteSpace: "nowrap" }}>
           Filter Events
         </Typography>
@@ -48,9 +55,11 @@ function FilterMenu({ city, setCity, category, setCategory }) {
           <InputLabel>Category</InputLabel>
           <Select value={category} label="Category" onChange={handleCategoryChange}>
             <MenuItem value="">All</MenuItem>
-            <MenuItem value="sports">Sports</MenuItem>
-            <MenuItem value="food">Food</MenuItem>
-            <MenuItem value="music">Music</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat} value={cat.toLowerCase()}>
+                {cat}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Stack>

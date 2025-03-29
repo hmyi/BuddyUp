@@ -195,11 +195,11 @@ function Header({
         </Box>
       </Box>
       {showEventCreation && (
-        <EventCreation
-          open={showEventCreation}
-          onClose={() => setShowEventCreation(false)}
-          setOpenSnackBar={setOpenSnackBar}
-        />
+  <EventCreation
+  open={showEventCreation}
+  onClose={() => setShowEventCreation(false)}
+  setOpenSnackBar={setOpenSnackBar} 
+/>
       )}
     </>
   );

@@ -1,18 +1,31 @@
 import React, { useState } from "react";
-import { Box, Stack, Link, Paper, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Link,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button
+} from "@mui/material";
 import { NavLink } from "react-router-dom";
 
 import TermsOfService from "../pages/TermsOfService";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import CookiePolicy from "../pages/CookiePolicy";
+import CookiePreferences from "../pages/CookiePreferences";
 
 function Footer() {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogContent, setDialogContent] = useState(null);
   const [dialogTitle, setDialogTitle] = useState("");
 
-  const openDialogWithContent = (title, Component) => (event) => {
-    event.preventDefault();
+    const openDialogWithContent = (title, Component) => (maybeEvent) => {
+        if (maybeEvent?.preventDefault) {
+          maybeEvent.preventDefault();
+       }
     setDialogTitle(title);
     setDialogContent(<Component />);
     setOpenDialog(true);
@@ -24,6 +37,9 @@ function Footer() {
     setDialogTitle("");
   };
 
+  const openCookiePreferencesDialog = () =>
+    openDialogWithContent("Cookie Preferences", CookiePreferences)();
+
   return (
     <Box
       component="footer"
@@ -31,7 +47,7 @@ function Footer() {
         mt: "auto",
         borderTop: 1,
         borderColor: "divider",
-        backgroundColor: "background.paper",
+        backgroundColor: "background.paper"
       }}
     >
       <Paper
@@ -42,7 +58,7 @@ function Footer() {
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
-          gap: 1,
+          gap: 1
         }}
       >
         <Box component="span" sx={{ fontSize: "0.875rem", color: "text.secondary" }}>
@@ -81,11 +97,10 @@ function Footer() {
 
           <Link
             component={NavLink}
-            to="/settings?tab=cookie"
+            to="/cookie-preferences"
             variant="body2"
-            onClick={(e) => {
-
-            }}
+            sx={{ textDecoration: "none" }}
+            onClick={openDialogWithContent("Cookie Preferences", CookiePreferences)}
           >
             Cookie Preferences
           </Link>
@@ -96,11 +111,14 @@ function Footer() {
         open={openDialog}
         onClose={handleCloseDialog}
         fullWidth
-        maxWidth="md" // or "sm", "lg", etc. 
+        maxWidth="md"
       >
         <DialogTitle>{dialogTitle}</DialogTitle>
         <DialogContent dividers sx={{ maxHeight: "70vh" }}>
-          {dialogContent}
+        {dialogContent &&
+    React.cloneElement(dialogContent, {
+      openCookiePreferencesDialog: openCookiePreferencesDialog // pass as prop
+    })}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Close</Button>

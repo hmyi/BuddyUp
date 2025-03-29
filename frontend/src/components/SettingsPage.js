@@ -16,26 +16,9 @@ function DisplaySettingsTab({ mode, toggleTheme }) {
   );
 }
 
-function CookiePreferencesTab() {
-  return (
-    <Box>
-      <Typography variant="h6" gutterBottom>
-        Cookie Preferences
-      </Typography>
-      <Typography paragraph>
-        Currently, this site does not use analytics or marketing cookies. We only rely on
-        essential cookies or local storage for login and basic functionality. No other cookies
-        are tracked or stored.
-      </Typography>
-      <Typography paragraph>
-        If that changes in the future (e.g., adding analytics), we will update this page so
-        you can manage those preferences.
-      </Typography>
-    </Box>
-  );
-}
 
-export default function SettingsPage({ toggleTheme, mode }) {
+
+export default function SettingsPage({ toggleTheme, mode,openSnackBar, setOpenSnackBar }) {
   const { accessToken, userProfile } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState(0);
   const [searchParams] = useSearchParams();
@@ -64,21 +47,22 @@ export default function SettingsPage({ toggleTheme, mode }) {
           <Tab label="Edit Profile" />
           <Tab label="Interests" />
           <Tab label="Display Settings" />
-          <Tab label="Cookie Preferences" />
         </Tabs>
       </Paper>
 
       <Box sx={{ flex: 1, p: 2 }}>
         {activeTab === 0 && (
-          <EditProfileTab userProfile={userProfile} accessToken={accessToken} />
+          <EditProfileTab userProfile={userProfile} accessToken={accessToken}     openSnackBar={openSnackBar}
+          setOpenSnackBar={setOpenSnackBar} />
         )}
         {activeTab === 1 && (
-          <InterestsTab userProfile={userProfile} accessToken={accessToken} />
+          <InterestsTab userProfile={userProfile} accessToken={accessToken}     openSnackBar={openSnackBar}
+          setOpenSnackBar={setOpenSnackBar} />
         )}
         {activeTab === 2 && (
-          <DisplaySettingsTab mode={mode} toggleTheme={toggleTheme} />
+          <DisplaySettingsTab mode={mode} toggleTheme={toggleTheme}     openSnackBar={openSnackBar}
+          setOpenSnackBar={setOpenSnackBar} />
         )}
-        {activeTab === 3 && <CookiePreferencesTab />}
       </Box>
     </Box>
   );

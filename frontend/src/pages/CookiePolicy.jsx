@@ -1,7 +1,8 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Link } from "@mui/material";
+import { NavLink } from "react-router-dom";
 
-function CookiePolicy() {
+function CookiePolicy({openCookiePreferencesDialog }) {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
@@ -26,7 +27,7 @@ function CookiePolicy() {
         tablet, or mobile) when you visit. They are widely used to make websites work
         more efficiently and to provide reporting information. However, BuddyUp primarily
         uses local storage (instead of traditional cookies) to store certain information
-        for user authentication and preferences. 
+        for user authentication and preferences.
       </Typography>
 
       <Typography variant="h6" gutterBottom>
@@ -36,7 +37,7 @@ function CookiePolicy() {
         <strong>Local Storage (Access Tokens)</strong>: We store your login tokens and
         user profile data in your browser’s local storage so that you remain signed in
         and can access member-only functionality. Local storage is not technically a
-        “cookie,” but it functions similarly by persisting data in your browser. 
+        “cookie,” but it functions similarly by persisting data in your browser.
       </Typography>
       <Typography variant="body1" paragraph>
         <strong>Essential Cookies</strong>: Our backend or third-party authentication
@@ -86,6 +87,25 @@ function CookiePolicy() {
       <Typography variant="body1" paragraph>
         If you have any questions about our use of cookies or local storage, please
         contact us at [your contact email].
+      </Typography>
+
+      <Typography variant="h6" gutterBottom>
+        7. Manage Your Cookie Preferences
+      </Typography>
+      <Typography variant="body1" paragraph>
+        If you wish to review or manage your cookie preferences, please{" "}
+        <Link
+          href="#"
+          variant="body2"
+          onClick={(e) => {
+            e.preventDefault();
+            openCookiePreferencesDialog(); 
+          }}
+          sx={{ cursor: "pointer" }}
+        >
+          click here
+        </Link>{" "}
+        to open Cookie Preferences.
       </Typography>
     </Box>
   );

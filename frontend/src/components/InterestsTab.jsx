@@ -8,13 +8,9 @@ export default function InterestsTab({ userProfile, accessToken }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [interests, setInterests] = useState([]);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarOpen, setSnackbarOpen] = useState({ open: false, msg: "" });
 
   const showSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
 
@@ -71,10 +67,10 @@ export default function InterestsTab({ userProfile, accessToken }) {
         throw new Error(`Failed to update user interests ${response.status}`);
       }
       await response.json();
-      showSnackbar("Update user interests successfully", "success");
+      setSnackbarOpen({ open: true, msg: "Interests saved successfully" });
     } catch (error) {
       console.error("Error updating interests: ", error);
-      showSnackbar("Error updating interests", "error");
+      setSnackbarOpen({ open: true, msg: "Error updating interests" });
     }
   };
 
@@ -110,12 +106,10 @@ export default function InterestsTab({ userProfile, accessToken }) {
         Save Interests
       </Button>
       <CustomizedSnackbars
-        openSnackBar={snackbarOpen}
-        setOpenSnackBar={setSnackbarOpen}
-        severity={snackbarSeverity}
-      >
-        {snackbarMessage}
-      </CustomizedSnackbars>
+  openSnackBar={snackbarOpen}      
+  setOpenSnackBar={setSnackbarOpen}
+/>
+
     </Box>
   );
 }

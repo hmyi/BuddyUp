@@ -87,7 +87,7 @@ function AppContent({ toggleTheme, mode }) {
   const { setIsSignedIn, setUserProfile, setAccessToken } = React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
-  const [openSnackBar, setOpenSnackBar] = React.useState(false);
+  const [openSnackBar, setOpenSnackBar] = React.useState({ open: false, msg: "" });
 
   const handleLogout = () => {
     setIsSignedIn(false);
@@ -110,14 +110,32 @@ function AppContent({ toggleTheme, mode }) {
       />
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
+      <Route        path="/"
+         element={
+           <HomePage
+             openSnackBar={openSnackBar}
+             setOpenSnackBar={setOpenSnackBar}
+           />
+         }
+        />
+        <Route
+    path="/events/:id"
+    element={<EventDetails openLoginDialog={() => setOpenLoginDialog(true)} />}
+  />        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
-        <Route path="/settings" element={<SettingsPage toggleTheme={toggleTheme} mode={mode} />} />
-
+        <Route
+          path="/settings"
+          element={
+            <SettingsPage
+              toggleTheme={toggleTheme}
+              mode={mode}
+              openSnackBar={openSnackBar}
+              setOpenSnackBar={setOpenSnackBar}
+            />
+          }
+        />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />

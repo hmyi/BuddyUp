@@ -68,7 +68,7 @@ function SearchEventCard({ event }) {
       <Box sx={{ width: "25%", position: "relative" }}>
         <CardMedia
           component="img"
-          image={`events_pics/${event.category}.jpg`}
+          image={event.event_image_url ?? `events_pics/${event.category}.jpg`}
           alt={event.title}
           sx={{
             height: "100%",

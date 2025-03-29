@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import CustomizedSnackbars from "./CustomizedSnackbars"; 
 
-export default function EditProfileTab({ userProfile, accessToken }) {
+export default function EditProfileTab({ userProfile, accessToken, openSnackBar, setOpenSnackBar  }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,9 +20,8 @@ export default function EditProfileTab({ userProfile, accessToken }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
+  const [snackbarOpen, setSnackbarOpen] = useState({ open: false, msg: "" });
+
 
   useEffect(() => {
     if (!userProfile || !accessToken) {
@@ -71,9 +70,7 @@ export default function EditProfileTab({ userProfile, accessToken }) {
   };
 
   const showSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
+    setSnackbarOpen({ open: true, msg: message });
   };
 
   const handleUploadImage = async () => {
@@ -98,11 +95,10 @@ export default function EditProfileTab({ userProfile, accessToken }) {
       }
       const data = await response.json();
       console.log("New image data: ", data);
-      showSnackbar("Profile image uploaded successfully!", "success");
+      setSnackbarOpen({ open: true, msg: "Profile image uploaded successfully!" });
     } catch (error) {
       console.error("Error uploading image: ", error);
-      showSnackbar("Error uploading image.", "error");
-    }
+      showSnackbar("Error uploading image.");    }
   };
 
   const handleSaveProfile = async () => {
@@ -124,10 +120,10 @@ export default function EditProfileTab({ userProfile, accessToken }) {
       }
       const data = await response.json();
       console.log("Update profile data: ", data);
-      showSnackbar("Profile updated successfully!", "success");
+      setOpenSnackBar({ open: true, msg: "Profile updated successfully!" });
     } catch (error) {
       console.error("Error updating profile: ", error);
-      showSnackbar("Error updating profile.", "error");
+      setOpenSnackBar({ open: true, msg: "Error updating profile!" });
     }
   };
 
@@ -211,13 +207,10 @@ export default function EditProfileTab({ userProfile, accessToken }) {
         </Button>
       </Paper>
 
-      <CustomizedSnackbars
-        openSnackBar={snackbarOpen}
-        setOpenSnackBar={setSnackbarOpen}
-        severity={snackbarSeverity}
-      >
-        {snackbarMessage}
-      </CustomizedSnackbars>
+          <CustomizedSnackbars
+      openSnackBar={snackbarOpen}      
+      setOpenSnackBar={setSnackbarOpen}
+    />
     </Box>
   );
 }

@@ -1,12 +1,6 @@
+// EventCard.jsx
 import React, { useContext, useState } from "react";
-import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Box,
-  Stack,
-} from "@mui/material";
+import { Card, CardMedia, CardContent, Typography, Box, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../AuthContext";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -21,7 +15,7 @@ function formatDateTime(startTime) {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZoneName: "short",
+    timeZoneName: "short"
   });
 }
 
@@ -35,35 +29,28 @@ function EventCard({ event, hostName }) {
   const isAttending = participants.includes(userProfile?.userID);
 
   const goToDetails = () => {
-    navigate(`/events/${event.id}`, {
-      state: { event },
-    });
+    navigate(`/events/${event.id}`, { state: { event } });
   };
 
   return (
     <Card
       onClick={goToDetails}
       sx={{
-        maxWidth: 400,
-        margin: "20px auto",
+        width: 280,
         boxShadow: 3,
         cursor: "pointer",
         position: "relative",
         transition: "box-shadow 0.3s ease-in-out",
-        "&:hover": {
-          boxShadow: "0 0 15px 5px rgba(0,123,255,0.7)",
-        },
+        "&:hover": { boxShadow: "0 0 15px 5px rgba(0,123,255,0.7)" }
       }}
     >
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
           height="200"
-          image={`/events_pics/${event.category}.jpg`}
+          image={event.event_image_url ?? `/events_pics/${event.category}.jpg`}
           alt={event.title}
         />
-
-        {/* Diagonal Ribbon for Attending */}
         {isAttending && (
           <Box
             sx={{
@@ -79,14 +66,12 @@ function EventCard({ event, hostName }) {
               transform: "rotate(45deg)",
               zIndex: 10,
               py: 0.5,
-              boxShadow: 2,
+              boxShadow: 2
             }}
           >
             Attending
           </Box>
         )}
-
-        {/* Diagonal Ribbon for Full */}
         {!isAttending && spotsLeft <= 0 && (
           <Box
             sx={{
@@ -102,7 +87,7 @@ function EventCard({ event, hostName }) {
               transform: "rotate(-45deg)",
               zIndex: 10,
               py: 0.5,
-              boxShadow: 2,
+              boxShadow: 2
             }}
           >
             Event Full

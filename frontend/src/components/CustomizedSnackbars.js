@@ -2,40 +2,30 @@ import * as React from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
-export default function CustomizedSnackbars({
-  openSnackBar,
-  setOpenSnackBar,
-  children,
-  severity = "success", 
-  autoHideDuration = 3000, 
-  anchorOrigin = { vertical: "bottom", horizontal: "center" }, // default position
-}) {
+export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    setOpenSnackBar(false);
+    setOpenSnackBar({ ...openSnackBar, open: false });
   };
 
   return (
-    <Snackbar
-      open={openSnackBar}
-      autoHideDuration={autoHideDuration}
-      onClose={handleClose}
-      anchorOrigin={anchorOrigin}
-    >
-      <Alert
+    <div>
+      <Snackbar
+        open={openSnackBar?.open}
+        autoHideDuration={3000}
         onClose={handleClose}
-        severity={severity}
-        variant="filled"
-        sx={{
-          width: "100%",
-          borderRadius: 2,  
-          boxShadow: 4,     
-        }}
       >
-        {children}
-      </Alert>
-    </Snackbar>
+        <Alert
+          onClose={handleClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {openSnackBar?.msg}
+        </Alert>
+      </Snackbar>
+    </div>
   );
 }
