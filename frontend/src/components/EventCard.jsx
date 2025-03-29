@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   Card,
   CardMedia,
@@ -6,11 +6,6 @@ import {
   Typography,
   Box,
   Stack,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../AuthContext";
@@ -32,172 +27,118 @@ function formatDateTime(startTime) {
 
 function EventCard({ event, hostName }) {
   const navigate = useNavigate();
-  const { userProfile, accessToken } = useContext(AuthContext);
-
-  const [participants, setParticipants] = useState(event.participants || []);
+  const { userProfile } = useContext(AuthContext);
+  const [participants] = useState(event.participants || []);
   const attendanceCount = participants.length;
   const spotsLeft = event.capacity - attendanceCount;
   const formattedDateTime = formatDateTime(event.start_time);
   const isAttending = participants.includes(userProfile?.userID);
-  const [openConfirm, setOpenConfirm] = useState(false);
 
   const goToDetails = () => {
     navigate(`/events/${event.id}`, {
-      state: { event, userProfile, accessToken },
+      state: { event },
     });
   };
 
-  const handleOverlayClick = (e) => {
-    e.stopPropagation();
-    if (!userProfile?.userID) {
-      alert("Please log in to perform this action.");
-      return;
-    }
-    if (!isAttending && spotsLeft <= 0) return;
-    setOpenConfirm(true);
-  };
-  const handleConfirmAction = async () => {
-    const endpoint = `https://18.226.163.235:8000/api/events/${event.id}/${isAttending ? "leave" : "join"}/`;
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (!res.ok) {
-        throw new Error(`${isAttending ? "Leave" : "Join"} event failed`);
-      }
-      if (!isAttending) {
-        setParticipants([...participants, userProfile.userID]);
-        alert("Successfully joined the event!");
-      } else {
-        setParticipants(participants.filter((id) => id !== userProfile.userID));
-        alert("You have left the event.");
-      }
-    } catch (error) {
-      console.error("Error in join/leave event:", error);
-      alert(`Error ${isAttending ? "leaving" : "joining"} event.`);
-    }
-    setOpenConfirm(false);
-  };
-
-  const handleCancelAction = () => {
-    setOpenConfirm(false);
-  };
-
   return (
-    <>
-      <Card
-        onClick={goToDetails}
-        sx={{
-          maxWidth: 400,
-          margin: "20px auto",
-          boxShadow: 3,
-          cursor: "pointer",
-          position: "relative",
-          transition: "box-shadow 0.3s ease-in-out",
-          "&:hover": {
-            boxShadow: "0 0 15px 5px rgba(0,123,255,0.7)",
-          },
-        }}
-      >
-        <Box sx={{ position: "relative" }}>
-          <CardMedia
-            component="img"
-            height="200"
-            image={`/events_pics/${event.category}.jpg`}
-            alt={event.title}
-          />
-          {/* Bottom overlay integrated into the image */}
+    <Card
+      onClick={goToDetails}
+      sx={{
+        maxWidth: 400,
+        margin: "20px auto",
+        boxShadow: 3,
+        cursor: "pointer",
+        position: "relative",
+        transition: "box-shadow 0.3s ease-in-out",
+        "&:hover": {
+          boxShadow: "0 0 15px 5px rgba(0,123,255,0.7)",
+        },
+      }}
+    >
+      <Box sx={{ position: "relative" }}>
+        <CardMedia
+          component="img"
+          height="200"
+          image={`/events_pics/${event.category}.jpg`}
+          alt={event.title}
+        />
+
+        {/* Diagonal Ribbon for Attending */}
+        {isAttending && (
           <Box
-            onClick={handleOverlayClick}
             sx={{
               position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: "rgba(0,0,0,0.5)",
+              top: 16,
+              right: -50,
+              width: 150,
+              backgroundColor: "green",
               color: "white",
               textAlign: "center",
-              py: 1,
-              cursor: "pointer",
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+              transform: "rotate(45deg)",
+              zIndex: 10,
+              py: 0.5,
+              boxShadow: 2,
             }}
           >
-            {isAttending ? (
-              <Typography
-                variant="subtitle1"
-                sx={{ color: "lightgreen", fontWeight: "bold" }}
-              >
-                You are attending this event!
-              </Typography>
-            ) : (
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  backgroundColor: spotsLeft > 0 ? "green" : "grey",
-                  color: "white",
-                  textTransform: "none",
-                }}
-                disabled={spotsLeft <= 0}
-              >
-                {spotsLeft > 0 ? "Join Event" : "Event Full"}
-              </Button>
-            )}
+            Attending
           </Box>
-        </Box>
+        )}
 
-        <CardContent>
-          <Typography variant="h6">{event.title}</Typography>
-          {hostName && (
-            <Typography variant="body2" color="text.secondary">
-              Hosted by: {hostName}
-            </Typography>
-          )}
-          <Box sx={{ mt: 1 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <AccessTimeIcon fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
-                {formattedDateTime}
-              </Typography>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
-              <PeopleIcon fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
-                {attendanceCount} going
-              </Typography>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
-              <EventSeatIcon fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
-                {spotsLeft} spots left
-              </Typography>
-            </Stack>
+        {/* Diagonal Ribbon for Full */}
+        {!isAttending && spotsLeft <= 0 && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 16,
+              left: -50,
+              width: 150,
+              backgroundColor: "red",
+              color: "white",
+              textAlign: "center",
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+              transform: "rotate(-45deg)",
+              zIndex: 10,
+              py: 0.5,
+              boxShadow: 2,
+            }}
+          >
+            Event Full
           </Box>
-        </CardContent>
-      </Card>
+        )}
+      </Box>
 
-      <Dialog open={openConfirm} onClose={handleCancelAction}>
-        <DialogTitle>{isAttending ? "Leave Event?" : "Join Event?"}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {isAttending
-              ? "Are you sure you want to leave this event?"
-              : "Do you want to join this event?"}
+      <CardContent>
+        <Typography variant="h6">{event.title}</Typography>
+        {hostName && (
+          <Typography variant="body2" color="text.secondary">
+            Hosted by: {hostName}
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelAction} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmAction} color="primary">
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+        )}
+        <Box sx={{ mt: 1 }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <AccessTimeIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              {formattedDateTime}
+            </Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+            <PeopleIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              {attendanceCount} going
+            </Typography>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+            <EventSeatIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              {spotsLeft} spots left
+            </Typography>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
 

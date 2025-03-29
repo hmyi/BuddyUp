@@ -1,6 +1,5 @@
 import React from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Profile from "./components/Profile";
 import Header from "./components/Header";
@@ -8,25 +7,20 @@ import MyEvents from "./components/MyEvents";
 import EventDetails from "./components/EventDetails";
 import AttendeesPage from "./components/AttendeesPage";
 import SettingsPage from "./components/SettingsPage";
-
 import SearchPage from "./components/SearchPage";
 import HomePage from "./components/HomePage";
 import { EventProvider } from "./EventContext";
 import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-import { GlobalStyles } from "@mui/material";
+import { GlobalStyles, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import decodeToken from "./utils/decodeToken";
 
-
-
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import CookieSettings from "./pages/CookieSettings";
+import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -53,9 +47,7 @@ export const handleFacebookSuccess = (
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ access_token: fbAccessToken }),
   })
-    .then((res) =>
-      res.json().then((data) => ({ status: res.status, data }))
-    )
+    .then((res) => res.json().then((data) => ({ status: res.status, data })))
     .then(({ status, data }) => {
       console.log("API Response Data:", data);
       if (!data.access) {
@@ -73,13 +65,12 @@ export const handleFacebookSuccess = (
           userID: decodedToken.user_id,
           picture: {
             data: {
-              url:  decodedToken.profile_image_url,
-
+              url: decodedToken.profile_image_url,
             },
           },
         };
         setUserProfile(profile);
-                localStorage.setItem("userProfile", JSON.stringify(profile));
+        localStorage.setItem("userProfile", JSON.stringify(profile));
       } catch (err) {
         console.error("Error decoding token:", err);
       }
@@ -103,7 +94,6 @@ function AppContent({ toggleTheme, mode }) {
     setUserProfile(null);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userProfile");
-
     setAccessToken(null);
     navigate("/");
   };
@@ -118,19 +108,27 @@ function AppContent({ toggleTheme, mode }) {
         setOpenSnackBar={setOpenSnackBar}
         anchorEl={anchorEl}
       />
+
+      {/* MAIN ROUTES */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/:id/attendee" element={<AttendeesPage />}/>
+        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
         <Route path="/settings" element={<SettingsPage toggleTheme={toggleTheme} mode={mode} />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/cookie-settings" element={<CookieSettings />} />
         <Route path="*" element={<HomePage />} />
-
-
       </Routes>
 
+      {/* NEW: FOOTER is rendered AFTER the routes -> appears on all pages */}
+      <Footer />
+
+      {/* Login Dialog */}
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
         <DialogContent>
@@ -156,12 +154,7 @@ function AppContent({ toggleTheme, mode }) {
               return_scopes: true,
             }}
             render={({ onClick }) => (
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={onClick}
-              >
+              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
                 Sign In with Facebook
               </Button>
             )}
@@ -169,19 +162,18 @@ function AppContent({ toggleTheme, mode }) {
           <br />
           <br />
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-<GoogleLogin
-  onSuccess={(response) =>
-    handleGoogleSuccess(response, {
-      setIsSignedIn,
-      setAccessToken,
-      setUserProfile,
-      setOpenLoginDialog,
-      navigate,
-    })
-  }
-  onError={handleGoogleFailure}
-/>
-
+            <GoogleLogin
+              onSuccess={(response) =>
+                handleGoogleSuccess(response, {
+                  setIsSignedIn,
+                  setAccessToken,
+                  setUserProfile,
+                  setOpenLoginDialog,
+                  navigate,
+                })
+              }
+              onError={handleGoogleFailure}
+            />
           </GoogleOAuthProvider>
         </DialogContent>
         <DialogActions>
@@ -193,17 +185,16 @@ function AppContent({ toggleTheme, mode }) {
 }
 
 function App() {
-    const [mode, setMode] = React.useState(() => {
+  const [mode, setMode] = React.useState(() => {
     const savedMode = localStorage.getItem("mode");
     return savedMode ? savedMode : "light";
   });
 
-  
-   const theme = React.useMemo(
+  const theme = React.useMemo(
     () =>
       createTheme({
         palette: {
-          mode, 
+          mode,
         },
       }),
     [mode]
@@ -219,18 +210,20 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyles styles={{
-  body: { 
-    backgroundColor: theme.palette.background.default,
-    color: theme.palette.text.primary,
-  },
-  ".header": {
-    backgroundColor: theme.palette.background.paper,
-  },
-  ".footer": {
-    backgroundColor: theme.palette.background.paper,
-  }
-}} />
+      <GlobalStyles
+        styles={{
+          body: {
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+          },
+          ".header": {
+            backgroundColor: theme.palette.background.paper,
+          },
+          ".footer": {
+            backgroundColor: theme.palette.background.paper,
+          },
+        }}
+      />
       <AuthProvider>
         <EventProvider>
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -272,7 +265,7 @@ const handleGoogleSuccess = (
           userID: decodedToken.user_id,
           picture: {
             data: {
-              url: decodedToken.profile_image_url,  // Use the value directly from the token
+              url: decodedToken.profile_image_url,
             },
           },
         };
@@ -281,8 +274,6 @@ const handleGoogleSuccess = (
       } catch (err) {
         console.error("Error decoding token:", err);
       }
-
-
 
       if (navigate) navigate("/");
     })

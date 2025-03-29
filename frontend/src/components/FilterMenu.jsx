@@ -1,59 +1,60 @@
+// src/components/FilterMenu.jsx
 import React from "react";
-import { Box, FormControl, InputLabel, MenuItem, Select, Stack, Card, CardContent, Typography } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  Typography,
+  Stack
+} from "@mui/material";
 
 function FilterMenu({ city, setCity, category, setCategory }) {
-  const categories = [
-    "Social",
-    "Entertainment",
-    "Sports",
-    "Food",
-    "Outdoor",
-    "Gaming",
-    "Carpool",
-  ];
+  const handleCityChange = (event) => {
+    setCity(event.target.value);
+  };
 
-  const cities = ["Waterloo", "Kitchener", "Toronto"];
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-      <Card sx={{ width: "90%", maxWidth: "1200px", boxShadow: 3 }}>
-        <CardContent>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="city-select-label">City</InputLabel>
-              <Select
-                labelId="city-select-label"
-                value={city}
-                label="City"
-                onChange={(e) => setCity(e.target.value)}
-              >
-                {cities.map((cty) => (
-                  <MenuItem key={cty} value={cty}>
-                    {cty}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+    <Paper
+      elevation={1}
+      sx={{
+        p: 2,
+        mb: 2,
+        borderRadius: 1,
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={3}>
+        {/* Title for the Filter Section (optional) */}
+        <Typography variant="h6" sx={{ whiteSpace: "nowrap" }}>
+          Filter Events
+        </Typography>
 
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="category-select-label">Category</InputLabel>
-              <Select
-                labelId="category-select-label"
-                value={category}
-                label="Category"
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Box>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>City</InputLabel>
+          <Select value={city} label="City" onChange={handleCityChange}>
+            <MenuItem value="Waterloo">Waterloo</MenuItem>
+            <MenuItem value="Toronto">Toronto</MenuItem>
+            <MenuItem value="Kitchener">Kitchener</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Category</InputLabel>
+          <Select value={category} label="Category" onChange={handleCategoryChange}>
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="sports">Sports</MenuItem>
+            <MenuItem value="food">Food</MenuItem>
+            <MenuItem value="music">Music</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+    </Paper>
   );
 }
 
