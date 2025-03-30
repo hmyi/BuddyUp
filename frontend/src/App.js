@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from 'react-dom';
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, useNavigate } from "react-router-dom";
@@ -17,13 +16,14 @@ import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import { GlobalStyles, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
-import decodeToken from "./utils/decodeToken";
-import { handleFacebookSuccess } from "./auth/handleFacebook";
-import { handleGoogleSuccess, handleGoogleFailure } from "./auth/handleGoogle";
+
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import Footer from "./components/Footer";
+import { handleFacebookSuccess } from "./auth/handleFacebook";
+import { handleGoogleSuccess, handleGoogleFailure } from "./auth/handleGoogle";
+
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -85,7 +85,6 @@ function AppContent({ toggleTheme, mode }) {
           }
         />
         <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
