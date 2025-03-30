@@ -7,14 +7,14 @@ export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
     if (reason === "clickaway") {
       return;
     }
-
-    setOpenSnackBar(false);
+    setOpenSnackBar({ ...openSnackBar, open: false });
   };
 
   return (
     <div>
       <Snackbar
-        open={openSnackBar.oepn}
+        open={openSnackBar?.open}
+
         autoHideDuration={3000}
         onClose={handleClose}
       >
@@ -24,7 +24,8 @@ export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {openSnackBar.msg}
+          {openSnackBar?.msg}
+
         </Alert>
       </Snackbar>
     </div>

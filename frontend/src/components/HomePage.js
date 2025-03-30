@@ -1,62 +1,85 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Fab from "@mui/material/Fab";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import CustomizedSnackbars from "./CustomizedSnackbars";
 import EventCard from "./EventCard";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
 
-
-
-import * as React from "react";
-
-function HomePage({ userProfile, accessToken }) {
+function HomePage({ userProfile, accessToken, openSnackBar, setOpenSnackBar }) {
   const [events, setEvents] = useState([]);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const navigate = useNavigate();
+
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0");
+      const data = await res.json();
+      let result;
+      if (Array.isArray(data)) {
+        result = data;
+      } else if (data.results && Array.isArray(data.results)) {
+        result = data.results;
+      } else {
+        result = [];
+      }
+      setEvents(result);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setEvents([]);
+    }
+  };
 
   useEffect(() => {
-    fetch("https://18.226.163.235:8000/api/events/search/?city=Waterloo&page=0")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setEvents(data);
-        } else if (data.results && Array.isArray(data.results)) {
-          setEvents(data.results);
-        } else {
-          setEvents([]);
-        }
-      })
-      .catch((err) => console.log(err));
+    fetchEvents();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 150);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleViewAll = () => {
+    navigate("/search");
+  };
 
   return (
     <div>
-      <h1 style={{ textAlign: "center", margin: "1rem 0" }}>
-        Events near Waterloo
-      </h1>
-      <Grid
-        container
-        spacing={3}
-        sx={{
-          justifyContent: "center",
-          px: 2, // some horizontal padding
-        }}
-      >
-        {events.map((evt) => (
-          <Grid item xs={12} sm={6} md={3} key={evt.id}>
-            <EventCard
-              userProfile={userProfile}
-              accessToken={accessToken}
-              event={evt}
-            />
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ display: "flex", justifyContent: "center", margin: "2rem" }}>
-        <Button variant="contained">Load more</Button>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mx: 4, mt: 3 }}>
+        <h2 style={{ margin: 0 }}>Events near Waterloo</h2>
+        <Button variant="outlined" size="medium" onClick={handleViewAll} sx={{ textTransform: "none" }}>
+          View All Events
+        </Button>
       </Box>
+      <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "20px", px: 2, mt: 1 }}>
+        {events.map((evt) => (
+          <Box key={evt.id}>
+            <EventCard userProfile={userProfile} accessToken={accessToken} event={evt} />
+          </Box>
+        ))}
+      </Box>
+      {showScrollTop && (
+        <Fab
+          color="primary"
+          onClick={scrollToTop}
+          sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 2000, boxShadow: 4, transition: "opacity 0.3s ease" }}
+        >
+          <KeyboardArrowUpIcon />
+        </Fab>
+      )}
 
-      <CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar}>
-        You successfully created an event!
-      </CustomizedSnackbars>
+
+<CustomizedSnackbars openSnackBar={openSnackBar} setOpenSnackBar={setOpenSnackBar} />
+
+
 
     </div>
   );

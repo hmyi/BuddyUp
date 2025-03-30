@@ -1,115 +1,144 @@
 import React, { useContext } from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
+import {
+  Button,
+  Dialog,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Slide,
+  Box,
+  Stepper,
+  Step,
+  StepLabel,
+  TextField,
+  Slider,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+  Stack,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import Slide from "@mui/material/Slide";
-import Box from "@mui/material/Box";
-import Stepper from "@mui/material/Stepper";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
-import TextField from "@mui/material/TextField";
-import Slider from "@mui/material/Slider";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import SendIcon from "@mui/icons-material/Send";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { styled } from "@mui/material/styles";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SendIcon from "@mui/icons-material/Send";
-import Stack from "@mui/material/Stack";
 import axios from "axios";
+import { styled } from "@mui/material/styles";
 import { AuthContext } from "../AuthContext";
 import { LocalizationProvider as MUILocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
+// Slide transition for the Dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   const { accessToken } = useContext(AuthContext);
+
   const [step, setStep] = React.useState(0);
   const [eventName, setEventName] = React.useState("");
   const [city, setCity] = React.useState("Waterloo");
   const [category, setCategory] = React.useState("Social");
   const [location, setLocation] = React.useState("");
-  const [startTime, setStartTime] = React.useState(dayjs(Date.now()));
-  const [endTime, setEndTime] = React.useState(dayjs(Date.now()));
+  const [startTime, setStartTime] = React.useState(dayjs());
+  const [endTime, setEndTime] = React.useState(dayjs());
   const [capacity, setCapacity] = React.useState(1);
   const [eventDescription, setEventDescription] = React.useState("");
   const [file, setFile] = React.useState(null);
+
+  // Validation errors
   const [eventNameError, setEventNameError] = React.useState("");
   const [locationError, setLocationError] = React.useState("");
   const [timeError, setTimeError] = React.useState("");
 
-  const handleClose = () => {
+  // -- Closing & cleanup logic -----------------------------------------
+  function handleClose() {
     handleCleanUp();
     setStep(0);
     onClose();
-  };
+  }
 
+  function handleCleanUp() {
+    setEventName("");
+    setCity("Waterloo");
+    setCategory("Social");
+    setLocation("");
+    setStartTime(dayjs());
+    setEndTime(dayjs());
+    setCapacity(1);
+    setEventDescription("");
+    setFile(null);
+    setEventNameError("");
+    setLocationError("");
+    setTimeError("");
+  }
+
+  // -- Stepper logic: Next/Previous steps ------------------------------
   function handleNext() {
-    if (step === 0 && eventName === "") {
-      setEventNameError("event name can not be empty");
+    // Basic checks
+    if (step === 0 && eventName.trim() === "") {
+      setEventNameError("Event name cannot be empty");
       return;
     }
-    if (step === 1 && location === "") {
-      setLocationError("location can not be empty");
+    if (step === 1 && location.trim() === "") {
+      setLocationError("Location cannot be empty");
       return;
     }
     if (step < 2) {
-      setStep((s) => s + 1);
+      setStep((prev) => prev + 1);
     } else {
+      // Done with step 2
       handleClose();
     }
   }
 
   function handlePrevious() {
     if (step > 0) {
-      setStep((s) => s - 1);
+      setStep((prev) => prev - 1);
     }
   }
 
+  // -- Handlers for each input -----------------------------------------
   function handleEventNameChange(e) {
-    if (e.target.value === "") {
-      setEventNameError("event name can not be empty");
-    } else if (e.target.value.length > 200) {
-      setEventNameError("event name can not be longer than 200 char");
+    const value = e.target.value;
+    if (!value) {
+      setEventNameError("Event name cannot be empty");
+    } else if (value.length > 200) {
+      setEventNameError("Event name cannot exceed 200 characters");
     } else {
       setEventNameError("");
     }
-    setEventName(e.target.value);
+    setEventName(value);
   }
 
   function handleLocationChange(e) {
-    if (e.target.value === "") {
-      setLocationError("location can not be empty");
-    } else if (e.target.value.length > 255) {
-      setLocationError("event name can not be longer than 255 char");
+    const value = e.target.value;
+    if (!value) {
+      setLocationError("Location cannot be empty");
+    } else if (value.length > 255) {
+      setLocationError("Location cannot exceed 255 characters");
     } else {
       setLocationError("");
     }
-    setLocation(e.target.value);
+    setLocation(value);
   }
 
+  // Times
   function handleStartTimeChange(time) {
     setStartTime(time);
     const today = dayjs().endOf("day");
+
     if (time.isBefore(today)) {
       setTimeError("Start time cannot be in the past");
       return;
     }
-    if (endTime.isBefore(time)) {
-      setTimeError("start time can not be later than end time");
+    if (time.isAfter(endTime)) {
+      setTimeError("Start time cannot be later than end time");
       return;
     }
     setTimeError("");
@@ -117,31 +146,23 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
 
   function handleEndTimeChange(time) {
     setEndTime(time);
-    if (startTime.isAfter(time)) {
-      setTimeError("end time can not be earlier than start time");
+    if (time.isBefore(startTime)) {
+      setTimeError("End time cannot be earlier than start time");
       return;
     }
     setTimeError("");
   }
 
+  // Capacity
   function handleCapacityChange(value) {
-    if (value < 0) {
-      setCapacity(0);
-      return;
-    }
-    if (value > 100) {
-      setCapacity(100);
-      return;
-    }
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
     setCapacity(value);
   }
 
+  // GPT-4o mini improvement
   function handleDescriptionChange() {
-    const payload = {
-      title: eventName,
-      description: eventDescription,
-    };
-
+    const payload = { title: eventName, description: eventDescription };
     fetch("https://18.226.163.235:8000/api/events/improve/", {
       method: "POST",
       headers: {
@@ -152,50 +173,40 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        setEventDescription(data.improved_description);
+        if (data.improved_description) {
+          setEventDescription(data.improved_description);
+        }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("Error improving description:", err));
   }
 
-  function handleCleanUp() {
-    setEventName("");
-    setCity("Waterloo");
-    setCategory("Social");
-    setLocation("");
-    setStartTime(dayjs(Date.now()));
-    setEndTime(dayjs(Date.now()));
-    setCapacity(1);
-    setEventDescription("");
-    setFile(null);
-    setEventNameError("");
-    setLocationError("");
-    setTimeError("");
-  }
-
+  // -- Submit (create) event logic -------------------------------------
   async function handleSubmit(e) {
     e.preventDefault();
-
     dayjs.extend(utc);
 
-    const utcStartTime = dayjs(startTime).utc().format();
-    const utcEndTime = dayjs(endTime).utc().format();
-    const formData = new FormData();
-    formData.append("title", eventName);
-    formData.append("category", category);
-    formData.append("city", city);
-    formData.append("location", location);
-    formData.append("start_time", utcStartTime);
-    formData.append("end_time", utcEndTime);
-    formData.append("description", eventDescription);
-    formData.append("capacity", capacity);
-    if (file) {
-      formData.append("event_image", file);
-    }
     if (!accessToken) {
-      console.error("No access token received!");
+      console.error("No access token available!");
       return;
     }
+
     try {
+      const utcStartTime = dayjs(startTime).utc().format();
+      const utcEndTime = dayjs(endTime).utc().format();
+
+      const formData = new FormData();
+      formData.append("title", eventName);
+      formData.append("category", category);
+      formData.append("city", city);
+      formData.append("location", location);
+      formData.append("start_time", utcStartTime);
+      formData.append("end_time", utcEndTime);
+      formData.append("description", eventDescription);
+      formData.append("capacity", capacity);
+      if (file) {
+        formData.append("event_image", file);
+      }
+
       const response = await axios.post(
         "https://18.226.163.235:8000/api/events/new/",
         formData,
@@ -206,208 +217,184 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
           },
         }
       );
+
       console.log("Event created successfully:", response.data);
+      // Show success in your global snackBar
+      setOpenSnackBar({ open: true, msg: "Event created successfully!" });
+
+      // Cleanup + close
+      handleCleanUp();
+      handleClose();
     } catch (error) {
       console.error("Error creating event:", error);
+      setOpenSnackBar({ open: true, msg: "Error creating event." });
     }
-
-    setOpenSnackBar({
-      msg: "You successfully created an event!",
-      oepn: true,
-    });
-    handleCleanUp();
-    handleClose();
   }
 
+  // -- The actual JSX --------------------------------------------------
   return (
-    <React.Fragment>
-      <Dialog
-        fullScreen
-        open={open}
-        onClose={handleClose}
-        TransitionComponent={Transition}
-      >
-        <AppBar sx={{ position: "relative" }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleClose}
-              aria-label="close"
+    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
+      <AppBar sx={{ position: "relative" }}>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+            BuddyUp
+          </Typography>
+          <Button autoFocus color="inherit" onClick={handleClose}>
+            Exit
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      {/* Step indicator */}
+      <Box sx={{ mt: 10 }}>
+        <HorizontalLinearAlternativeLabelStepper step={step} />
+      </Box>
+
+      <form onSubmit={handleSubmit}>
+        <Box>
+          {/* STEP 0: Basic Info */}
+          {step === 0 && (
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                marginTop: "10rem",
+              }}
             >
-              <CloseIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              BuddyUp
-            </Typography>
-            <Button
-              autoFocus
-              color="inherit"
-              type="button"
-              onClick={handleClose}
+              <TextField
+                sx={{ width: "20rem", margin: "auto" }}
+                label="Event Name"
+                color="primary"
+                value={eventName}
+                onChange={handleEventNameChange}
+                error={eventNameError !== ""}
+                helperText={eventNameError || "200 char max"}
+              />
+
+              <CitySelect city={city} setCity={setCity} />
+              <CategorySelect category={category} setCategory={setCategory} />
+            </Stack>
+          )}
+
+          {/* STEP 1: Location, times, capacity */}
+          {step === 1 && (
+            <Stack
+              direction="column"
+              spacing={10}
+              sx={{
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                marginTop: "5rem",
+              }}
             >
-              Exit
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ mt: 10 }}>
-          <HorizontalLinearAlternativeLabelStepper step={step} />
-        </Box>
-        <form onSubmit={handleSubmit}>
-          <Box>
-            {step === 0 ? (
-              <Stack
-                direction="row"
-                spacing={2}
-                sx={{
-                  justifyContent: "space-evenly",
-                  alignItems: "center",
-                  marginTop: "10rem",
-                }}
-              >
-                <TextField
-                  sx={{ width: "20rem", margin: "auto" }}
-                  label="Event Name"
-                  color="primary"
-                  value={eventName}
-                  onChange={handleEventNameChange}
-                  error={eventNameError !== ""}
-                  helperText={
-                    eventNameError === "" ? "200 char max" : eventNameError
-                  }
-                />
-                <CitySelect city={city} setCity={setCity} />
-                <CategorySelect category={category} setCategory={setCategory} />
-              </Stack>
-            ) : (
-              ""
-            )}
-            {step === 1 ? (
-              <Stack
-                direction="column"
-                spacing={10}
-                sx={{
-                  justifyContent: "space-evenly",
-                  alignItems: "center",
-                  marginTop: "5rem",
-                }}
-              >
+              <TextField
+                sx={{ width: "50rem", margin: "auto" }}
+                label="Location"
+                color="primary"
+                value={location}
+                error={locationError !== ""}
+                onChange={handleLocationChange}
+                helperText={locationError || "255 char max"}
+              />
+
+              <StartEndDateTimePicker
+                startTime={startTime}
+                setStartTime={setStartTime}
+                endTime={endTime}
+                setEndTime={setEndTime}
+                timeError={timeError}
+                handleStartTimeChange={handleStartTimeChange}
+                handleEndTimeChange={handleEndTimeChange}
+              />
+
+              <CapacitySlider capacity={capacity} handleCapacityChange={handleCapacityChange} />
+            </Stack>
+          )}
+
+          {/* STEP 2: Description, file upload */}
+          {step === 2 && (
+            <Stack
+              direction="column"
+              spacing={10}
+              sx={{
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                marginTop: "5rem",
+              }}
+            >
+              <Stack>
+                <Typography variant="h4" sx={{ mb: 2 }}>
+                  Describe your event
+                </Typography>
+
                 <TextField
                   sx={{ width: "50rem", margin: "auto" }}
-                  label="Location"
-                  color="primary"
-                  value={location}
-                  error={locationError !== ""}
-                  onChange={handleLocationChange}
-                  helperText={
-                    locationError === "" ? "255 char max" : locationError
-                  }
+                  label="Event Description"
+                  multiline
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
                 />
-                <StartEndDateTimePicker
-                  startTime={startTime}
-                  setStartTime={setStartTime}
-                  endTime={endTime}
-                  setEndTime={setEndTime}
-                  timeError={timeError}
-                  handleStartTimeChange={handleStartTimeChange}
-                  handleEndTimeChange={handleEndTimeChange}
-                />
-                <CapacitySlider
-                  capacity={capacity}
-                  handleCapacityChange={handleCapacityChange}
-                />
-              </Stack>
-            ) : (
-              ""
-            )}
-            {step === 2 ? (
-              <Stack
-                direction="column"
-                spacing={10}
-                sx={{
-                  justifyContent: "space-evenly",
-                  alignItems: "center",
-                  marginTop: "5rem",
-                }}
-              >
-                <Stack>
-                  <Typography variant="h4">Describe your event</Typography>
 
-                  <TextField
-                    sx={{ width: "50rem", margin: "auto" }}
-                    label="Event Description"
-                    multiline
-                    value={eventDescription}
-                    onChange={(e) => setEventDescription(e.target.value)}
-                  />
-
-                  <Button
-                    type="button"
-                    variant="contained"
-                    onClick={handleDescriptionChange}
-                  >
-                    Generate event description with GPT-4o mini
-                  </Button>
-                </Stack>
-                <FileUpload file={file} setFile={setFile} />
+                <Button variant="contained" onClick={handleDescriptionChange} sx={{ mt: 2 }}>
+                  Generate event description with GPT-4o mini
+                </Button>
               </Stack>
-            ) : (
-              ""
-            )}
-          </Box>
-          <Stack
-            direction="row"
-            spacing={10}
-            sx={{
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              marginTop: "5rem",
-            }}
+
+              <FileUpload file={file} setFile={setFile} />
+            </Stack>
+          )}
+        </Box>
+
+        {/* Buttons: Previous / Next or Submit */}
+        <Stack
+          direction="row"
+          spacing={10}
+          sx={{
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            marginTop: "5rem",
+          }}
+        >
+          <Button
+            type="button"
+            variant="contained"
+            disabled={step === 0 || timeError !== "" || locationError !== ""}
+            onClick={handlePrevious}
           >
+            Previous
+          </Button>
+
+          {step < 2 && (
             <Button
               type="button"
               variant="contained"
-              disabled={step === 0 || timeError !== "" || locationError !== ""}
-              onClick={handlePrevious}
+              onClick={handleNext}
+              disabled={eventNameError !== "" || locationError !== "" || timeError !== ""}
             >
-              Previous
+              Next
             </Button>
-            {step < 2 ? (
-              <Button
-                type="button"
-                variant="contained"
-                onClick={handleNext}
-                disabled={
-                  eventNameError !== "" ||
-                  locationError !== "" ||
-                  timeError !== ""
-                }
-              >
-                Next
-              </Button>
-            ) : (
-              ""
-            )}
-            {step === 2 ? (
-              <Button type="submit" variant="contained" endIcon={<SendIcon />}>
-                Create
-              </Button>
-            ) : (
-              ""
-            )}
-          </Stack>
-        </form>
-      </Dialog>
-    </React.Fragment>
+          )}
+
+          {step === 2 && (
+            <Button type="submit" variant="contained" endIcon={<SendIcon />}>
+              Create
+            </Button>
+          )}
+        </Stack>
+      </form>
+    </Dialog>
   );
 }
 
+
 function HorizontalLinearAlternativeLabelStepper({ step }) {
-  const steps = [
-    "Basic Information",
-    "Event Details",
-    "Additional Information",
-  ];
+  const steps = ["Basic Information", "Event Details", "Additional Information"];
+
   return (
     <Box sx={{ width: "100%" }}>
       <Stepper activeStep={step} alternativeLabel>
@@ -421,12 +408,14 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
   );
 }
 
+// Capacity slider
 function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
-    { value: 10, label: "small event" },
-    { value: 50, label: "regular event" },
-    { value: 100, label: "big event" },
+    { value: 10, label: "Small event" },
+    { value: 50, label: "Regular event" },
+    { value: 100, label: "Big event" },
   ];
+
   return (
     <Box sx={{ width: 800, margin: "auto", display: "flex", gap: 5 }}>
       <TextField
@@ -434,14 +423,10 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
         type="number"
         value={capacity}
         onChange={(e) => handleCapacityChange(Number(e.target.value))}
-        slotProps={{
-          inputLabel: {
-            shrink: true,
-          },
-        }}
+        slotProps={{ inputLabel: { shrink: true } }}
       />
       <Slider
-        aria-label="Default"
+        aria-label="CapacitySlider"
         valueLabelDisplay="auto"
         marks={marks}
         value={capacity}
@@ -451,18 +436,17 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
   );
 }
 
+// City dropdown
 function CitySelect({ city, setCity }) {
-  const cities = ["Waterloo", "kitchener", "Tonronto"];
-  const handleChange = (event) => {
-    setCity(event.target.value);
-  };
+  const cities = ["Waterloo", "Kitchener", "Toronto"];
+
   return (
     <FormControl sx={{ width: 150 }}>
       <InputLabel>City</InputLabel>
-      <Select label="City" value={city} onChange={handleChange}>
-        {cities.map((city) => (
-          <MenuItem key={city} value={city}>
-            {city}
+      <Select label="City" value={city} onChange={(e) => setCity(e.target.value)}>
+        {cities.map((cty) => (
+          <MenuItem key={cty} value={cty}>
+            {cty}
           </MenuItem>
         ))}
       </Select>
@@ -470,27 +454,18 @@ function CitySelect({ city, setCity }) {
   );
 }
 
+// Category dropdown
 function CategorySelect({ category, setCategory }) {
-  const categories = [
-    "Social",
-    "Entertainment",
-    "Sports",
-    "Food ",
-    "Outdoor",
-    "Gaming ",
-    "Carpool",
-  ];
-  const handleChange = (event) => {
-    setCategory(event.target.value);
-  };
+  const categories = ["Social", "Entertainment", "Sports", "Food", "Outdoor", "Gaming", "Carpool"];
+
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
       <FormControl sx={{ width: 150 }}>
-        <InputLabel>category</InputLabel>
-        <Select label="category" value={category} onChange={handleChange}>
-          {categories.map((category) => (
-            <MenuItem key={category} value={category}>
-              {category}
+        <InputLabel>Category</InputLabel>
+        <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
+          {categories.map((cat) => (
+            <MenuItem key={cat} value={cat}>
+              {cat}
             </MenuItem>
           ))}
         </Select>
@@ -499,6 +474,7 @@ function CategorySelect({ category, setCategory }) {
   );
 }
 
+// Start/End time pickers
 function StartEndDateTimePicker({
   startTime,
   setStartTime,
@@ -521,29 +497,20 @@ function StartEndDateTimePicker({
             borderColor: "error.main",
           }}
         >
-          <DateTimePicker
-            label="Start Time"
-            value={startTime}
-            onChange={handleStartTimeChange}
-          />
-          <DateTimePicker
-            label="End Time"
-            value={endTime}
-            onChange={handleEndTimeChange}
-          />
+          <DateTimePicker label="Start Time" value={startTime} onChange={handleStartTimeChange} />
+          <DateTimePicker label="End Time" value={endTime} onChange={handleEndTimeChange} />
         </Box>
-        {timeError ? (
+        {timeError && (
           <Typography variant="body1" color="error">
             {timeError}
           </Typography>
-        ) : (
-          ""
         )}
       </DemoContainer>
     </MUILocalizationProvider>
   );
 }
 
+// File upload
 function FileUpload({ file, setFile }) {
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -556,22 +523,17 @@ function FileUpload({ file, setFile }) {
     whiteSpace: "nowrap",
     width: 1,
   });
+
   const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
+    const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
     }
   };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        type="button"
-        startIcon={<CloudUploadIcon />}
-      >
+      <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}>
         Upload image
         <VisuallyHiddenInput type="file" onChange={handleFileChange} />
       </Button>
