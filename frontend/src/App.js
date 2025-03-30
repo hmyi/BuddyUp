@@ -19,9 +19,20 @@ import FacebookLogin from "@greatsumini/react-facebook-login";
 import { GlobalStyles, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import decodeToken from "./utils/decodeToken";
 
+
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
+
+import CustomizedSnackbars from "./components/CustomizedSnackbars";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
@@ -89,10 +100,12 @@ export const handleFacebookSuccess = (
 
 function AppContent({ toggleTheme, mode }) {
   const navigate = useNavigate();
-  const { setIsSignedIn, setUserProfile, setAccessToken } = React.useContext(AuthContext);
+  const { setIsSignedIn, setUserProfile, setAccessToken } =
+    React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
   const [openSnackBar, setOpenSnackBar] = React.useState({ open: false, msg: "" });
+
 
   const handleLogout = () => {
     setIsSignedIn(false);
@@ -127,6 +140,7 @@ function AppContent({ toggleTheme, mode }) {
     path="/events/:id"
     element={<EventDetails openLoginDialog={() => setOpenLoginDialog(true)} />}
   />        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
+
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
@@ -148,7 +162,11 @@ function AppContent({ toggleTheme, mode }) {
           <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         <Route path="*" element={<HomePage />} />
       </Routes>
-        <Footer />
+      <CustomizedSnackbars
+        openSnackBar={openSnackBar}
+        setOpenSnackBar={setOpenSnackBar}
+      ></CustomizedSnackbars>
+
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
@@ -262,7 +280,13 @@ export default App;
 
 const handleGoogleSuccess = (
   response,
-  { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog, navigate } = {}
+  {
+    setIsSignedIn,
+    setAccessToken,
+    setUserProfile,
+    setOpenLoginDialog,
+    navigate,
+  } = {}
 ) => {
   console.log("Google Auth Success:", response);
   fetch("https://18.226.163.235:8000/api/auth/google/", {

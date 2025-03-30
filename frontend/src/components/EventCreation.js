@@ -34,6 +34,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
 import CityLocationAutocomplete from "./CityLocationAutoComplete.js";
 
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -75,7 +76,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setEventNameError("");
     setLocationError("");
     setTimeError("");
-  }
 
   function handleNext() {
 
@@ -90,6 +90,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     if (step < 2) {
       setStep((prev) => prev + 1);
     } else {
+
       handleClose();
     }
   }
@@ -125,6 +126,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setLocation(value);
   }
 
+  
   function handleStartTimeChange(time) {
     setStartTime(time);
     const today = dayjs().endOf("day");
@@ -149,6 +151,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setTimeError("");
   }
 
+  // Capacity
   function handleCapacityChange(value) {
     if (value < 0) value = 0;
     if (value > 100) value = 100;
@@ -218,6 +221,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
 
 
 
+
       handleCleanUp();
       handleClose();
     } catch (error) {
@@ -242,6 +246,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
         </Toolbar>
       </AppBar>
 
+      {/* Step indicator */}
       <Box sx={{ mt: 10 }}>
         <HorizontalLinearAlternativeLabelStepper step={step} />
       </Box>
@@ -289,6 +294,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 setLocation={setLocation}
                 locationError={locationError}
                 setLocationError={setLocationError}
+
 
               />
 
@@ -495,6 +501,7 @@ function StartEndDateTimePicker({
   );
 }
 
+// File upload
 function FileUpload({ file, setFile }) {
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
