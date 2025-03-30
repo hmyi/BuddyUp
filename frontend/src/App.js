@@ -1,4 +1,6 @@
 import React from "react";
+import ReactDOM from 'react-dom';
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Profile from "./components/Profile";
@@ -24,6 +26,9 @@ import Footer from "./components/Footer";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+
+
 
 export const handleFacebookSuccess = (
   response,

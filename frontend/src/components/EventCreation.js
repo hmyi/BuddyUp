@@ -17,7 +17,7 @@ import {
   MenuItem,
   FormControl,
   Select,
-  Stack
+  Stack,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
@@ -32,11 +32,13 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
+import CityLocationAutocomplete from "./CityLocationAutoComplete.js";
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function EventCreation({ open, onClose, setOpenSnackBar, navigate }) {
+export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   const { accessToken } = useContext(AuthContext);
 
   const [step, setStep] = React.useState(0);
@@ -58,102 +60,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
   function handleClose() {
     handleCleanUp();
     setStep(0);
-    onClose(); // Closes the dialog
-  }
-
-  function handleNext() {
-    if (step === 0 && eventName === "") {
-      setEventNameError("event name can not be empty");
-      return;
-    }
-    if (step === 1 && location === "") {
-      setLocationError("location can not be empty");
-      return;
-    }
-    if (step < 2) {
-      setStep((s) => s + 1);
-    } else {
-      // step === 2 -> done
-      handleClose();
-    }
-  }
-
-  function handlePrevious() {
-    if (step > 0) {
-      setStep((s) => s - 1);
-    }
-  }
-
-  function handleEventNameChange(e) {
-    const value = e.target.value;
-    if (value === "") {
-      setEventNameError("event name can not be empty");
-    } else if (value.length > 200) {
-      setEventNameError("event name can not be longer than 200 char");
-    } else {
-      setEventNameError("");
-    }
-    setEventName(value);
-  }
-
-  function handleLocationChange(e) {
-    const value = e.target.value;
-    if (value === "") {
-      setLocationError("location can not be empty");
-    } else if (value.length > 255) {
-      setLocationError("location can not be longer than 255 char");
-    } else {
-      setLocationError("");
-    }
-    setLocation(value);
-  }
-
-  function handleStartTimeChange(time) {
-    setStartTime(time);
-    const today = dayjs().endOf("day");
-    if (time.isBefore(today)) {
-      setTimeError("Start time cannot be in the past");
-      return;
-    }
-    if (endTime.isBefore(time)) {
-      setTimeError("start time can not be later than end time");
-      return;
-    }
-    setTimeError("");
-  }
-
-  function handleEndTimeChange(time) {
-    setEndTime(time);
-    if (startTime.isAfter(time)) {
-      setTimeError("end time can not be earlier than start time");
-      return;
-    }
-    setTimeError("");
-  }
-
-  function handleCapacityChange(value) {
-    if (value < 0) value = 0;
-    if (value > 100) value = 100;
-    setCapacity(value);
-  }
-
-  function handleDescriptionChange() {
-    const payload = {
-      title: eventName,
-      description: eventDescription
-    };
-
-    fetch("https://18.226.163.235:8000/api/events/improve/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`
-      },
-      body: JSON.stringify(payload)
-    })
-      .then((res) => res.json())
-      .then((data) => setEventDescription(data.improved_description))
-      .catch((err) => console.log(err));
+    onClose();
   }
 
   function handleCleanUp() {
@@ -171,12 +78,112 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
     setTimeError("");
   }
 
+  function handleNext() {
+    if (step === 0 && eventName.trim() === "") {
+      setEventNameError("Event name cannot be empty");
+      return;
+    }
+    if (step === 1 && location.trim() === "") {
+      setLocationError("Location cannot be empty");
+      return;
+    }
+    if (step < 2) {
+      setStep((prev) => prev + 1);
+    } else {
+      handleClose();
+    }
+  }
+
+  function handlePrevious() {
+    if (step > 0) {
+      setStep((prev) => prev - 1);
+    }
+  }
+
+  function handleEventNameChange(e) {
+    const value = e.target.value;
+    if (!value) {
+      setEventNameError("Event name cannot be empty");
+    } else if (value.length > 200) {
+      setEventNameError("Event name cannot exceed 200 characters");
+    } else {
+      setEventNameError("");
+    }
+    setEventName(value);
+  }
+
+  // Because location will be updated inside CityLocationAutocomplete, we don't do too much here,
+  // but if you still want to handle manual changes, you could keep this function. 
+  // For now, we only keep it for validation usage if desired.
+  function handleLocationChange(e) {
+    const value = e.target.value;
+    if (!value) {
+      setLocationError("Location cannot be empty");
+    } else if (value.length > 255) {
+      setLocationError("Location cannot exceed 255 characters");
+    } else {
+      setLocationError("");
+    }
+    setLocation(value);
+  }
+
+  // Times
+  function handleStartTimeChange(time) {
+    setStartTime(time);
+    const today = dayjs().endOf("day");
+
+    if (time.isBefore(today)) {
+      setTimeError("Start time cannot be in the past");
+      return;
+    }
+    if (time.isAfter(endTime)) {
+      setTimeError("Start time cannot be later than end time");
+      return;
+    }
+    setTimeError("");
+  }
+
+  function handleEndTimeChange(time) {
+    setEndTime(time);
+    if (time.isBefore(startTime)) {
+      setTimeError("End time cannot be earlier than start time");
+      return;
+    }
+    setTimeError("");
+  }
+
+  function handleCapacityChange(value) {
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    setCapacity(value);
+  }
+
+  function handleDescriptionChange() {
+    const payload = { title: eventName, description: eventDescription };
+    fetch("https://18.226.163.235:8000/api/events/improve/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.improved_description) {
+          setEventDescription(data.improved_description);
+        }
+      })
+      .catch((err) => console.log("Error improving description:", err));
+  }
+
+  // Submit (create) event logic
   async function handleSubmit(e) {
     e.preventDefault();
     dayjs.extend(utc);
 
     if (!accessToken) {
-      console.error("No access token received!");
+      console.error("No access token available!");
       return;
     }
 
@@ -193,7 +200,9 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
       formData.append("end_time", utcEndTime);
       formData.append("description", eventDescription);
       formData.append("capacity", capacity);
-      if (file) formData.append("event_image", file);
+      if (file) {
+        formData.append("event_image", file);
+      }
 
       const response = await axios.post(
         "https://18.226.163.235:8000/api/events/new/",
@@ -201,22 +210,20 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`
-          }
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
       );
+
       console.log("Event created successfully:", response.data);
-
       setOpenSnackBar({ open: true, msg: "Event created successfully!" });
-      handleClose();
 
+      handleCleanUp();
+      handleClose();
     } catch (error) {
       console.error("Error creating event:", error);
       setOpenSnackBar({ open: true, msg: "Error creating event." });
     }
-
-    handleCleanUp();
-    handleClose();
   }
 
   return (
@@ -229,18 +236,20 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
             BuddyUp
           </Typography>
-          <Button autoFocus color="inherit" type="button" onClick={handleClose}>
+          <Button autoFocus color="inherit" onClick={handleClose}>
             Exit
           </Button>
         </Toolbar>
       </AppBar>
 
+      {/* Step indicator */}
       <Box sx={{ mt: 10 }}>
         <HorizontalLinearAlternativeLabelStepper step={step} />
       </Box>
 
       <form onSubmit={handleSubmit}>
         <Box>
+          {/* STEP 0: Basic Info */}
           {step === 0 && (
             <Stack
               direction="row"
@@ -248,7 +257,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
               sx={{
                 justifyContent: "space-evenly",
                 alignItems: "center",
-                marginTop: "10rem"
+                marginTop: "10rem",
               }}
             >
               <TextField
@@ -258,13 +267,15 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
                 value={eventName}
                 onChange={handleEventNameChange}
                 error={eventNameError !== ""}
-                helperText={eventNameError === "" ? "200 char max" : eventNameError}
+                helperText={eventNameError || "200 char max"}
               />
+
               <CitySelect city={city} setCity={setCity} />
               <CategorySelect category={category} setCategory={setCategory} />
             </Stack>
           )}
 
+          {/* STEP 1: Location, times, capacity */}
           {step === 1 && (
             <Stack
               direction="column"
@@ -272,18 +283,18 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
               sx={{
                 justifyContent: "space-evenly",
                 alignItems: "center",
-                marginTop: "5rem"
+                marginTop: "5rem",
               }}
             >
-              <TextField
-                sx={{ width: "50rem", margin: "auto" }}
-                label="Location"
-                color="primary"
-                value={location}
-                error={locationError !== ""}
-                onChange={handleLocationChange}
-                helperText={locationError === "" ? "255 char max" : locationError}
+              {/* Replace your TextField for location with the new CityLocationAutocomplete */}
+              <CityLocationAutocomplete
+                city={city}
+                location={location}
+                setLocation={setLocation}
+                locationError={locationError}
+                setLocationError={setLocationError}
               />
+
               <StartEndDateTimePicker
                 startTime={startTime}
                 setStartTime={setStartTime}
@@ -293,10 +304,12 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
                 handleStartTimeChange={handleStartTimeChange}
                 handleEndTimeChange={handleEndTimeChange}
               />
+
               <CapacitySlider capacity={capacity} handleCapacityChange={handleCapacityChange} />
             </Stack>
           )}
 
+          {/* STEP 2: Description, file upload */}
           {step === 2 && (
             <Stack
               direction="column"
@@ -304,11 +317,14 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
               sx={{
                 justifyContent: "space-evenly",
                 alignItems: "center",
-                marginTop: "5rem"
+                marginTop: "5rem",
               }}
             >
               <Stack>
-                <Typography variant="h4">Describe your event</Typography>
+                <Typography variant="h4" sx={{ mb: 2 }}>
+                  Describe your event
+                </Typography>
+
                 <TextField
                   sx={{ width: "50rem", margin: "auto" }}
                   label="Event Description"
@@ -316,26 +332,25 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
                 />
-                <Button
-                  type="button"
-                  variant="contained"
-                  onClick={handleDescriptionChange}
-                >
+
+                <Button variant="contained" onClick={handleDescriptionChange} sx={{ mt: 2 }}>
                   Generate event description with GPT-4o mini
                 </Button>
               </Stack>
+
               <FileUpload file={file} setFile={setFile} />
             </Stack>
           )}
         </Box>
 
+        {/* Buttons: Previous / Next or Submit */}
         <Stack
           direction="row"
           spacing={10}
           sx={{
             justifyContent: "space-evenly",
             alignItems: "center",
-            marginTop: "5rem"
+            marginTop: "5rem",
           }}
         >
           <Button
@@ -352,11 +367,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
               type="button"
               variant="contained"
               onClick={handleNext}
-              disabled={
-                eventNameError !== "" ||
-                locationError !== "" ||
-                timeError !== ""
-              }
+              disabled={eventNameError !== "" || locationError !== "" || timeError !== ""}
             >
               Next
             </Button>
@@ -373,7 +384,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar, navigate
   );
 }
 
-// The Stepper
 function HorizontalLinearAlternativeLabelStepper({ step }) {
   const steps = ["Basic Information", "Event Details", "Additional Information"];
   return (
@@ -389,12 +399,11 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
   );
 }
 
-// The CapacitySlider
 function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
-    { value: 10, label: "small event" },
-    { value: 50, label: "regular event" },
-    { value: 100, label: "big event" }
+    { value: 10, label: "Small event" },
+    { value: 50, label: "Regular event" },
+    { value: 100, label: "Big event" },
   ];
 
   return (
@@ -404,14 +413,10 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
         type="number"
         value={capacity}
         onChange={(e) => handleCapacityChange(Number(e.target.value))}
-        slotProps={{
-          inputLabel: {
-            shrink: true
-          }
-        }}
+        slotProps={{ inputLabel: { shrink: true } }}
       />
       <Slider
-        aria-label="Default"
+        aria-label="CapacitySlider"
         valueLabelDisplay="auto"
         marks={marks}
         value={capacity}
@@ -421,15 +426,13 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
   );
 }
 
+// City dropdown
 function CitySelect({ city, setCity }) {
   const cities = ["Waterloo", "Kitchener", "Toronto"];
-  const handleChange = (event) => {
-    setCity(event.target.value);
-  };
   return (
     <FormControl sx={{ width: 150 }}>
       <InputLabel>City</InputLabel>
-      <Select label="City" value={city} onChange={handleChange}>
+      <Select label="City" value={city} onChange={(e) => setCity(e.target.value)}>
         {cities.map((cty) => (
           <MenuItem key={cty} value={cty}>
             {cty}
@@ -440,24 +443,14 @@ function CitySelect({ city, setCity }) {
   );
 }
 
+// Category dropdown
 function CategorySelect({ category, setCategory }) {
-  const categories = [
-    "Social",
-    "Entertainment",
-    "Sports",
-    "Food",
-    "Outdoor",
-    "Gaming",
-    "Carpool"
-  ];
-  const handleChange = (event) => {
-    setCategory(event.target.value);
-  };
+  const categories = ["Social", "Entertainment", "Sports", "Food", "Outdoor", "Gaming", "Carpool"];
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
       <FormControl sx={{ width: 150 }}>
         <InputLabel>Category</InputLabel>
-        <Select label="category" value={category} onChange={handleChange}>
+        <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
           {categories.map((cat) => (
             <MenuItem key={cat} value={cat}>
               {cat}
@@ -469,6 +462,7 @@ function CategorySelect({ category, setCategory }) {
   );
 }
 
+// Start/End time pickers
 function StartEndDateTimePicker({
   startTime,
   setStartTime,
@@ -476,7 +470,7 @@ function StartEndDateTimePicker({
   setEndTime,
   timeError,
   handleStartTimeChange,
-  handleEndTimeChange
+  handleEndTimeChange,
 }) {
   return (
     <MUILocalizationProvider dateAdapter={AdapterDayjs}>
@@ -488,7 +482,7 @@ function StartEndDateTimePicker({
             padding: 3,
             borderRadius: 2,
             border: timeError ? 2 : 0,
-            borderColor: "error.main"
+            borderColor: "error.main",
           }}
         >
           <DateTimePicker label="Start Time" value={startTime} onChange={handleStartTimeChange} />
@@ -504,6 +498,7 @@ function StartEndDateTimePicker({
   );
 }
 
+// File upload
 function FileUpload({ file, setFile }) {
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -514,11 +509,11 @@ function FileUpload({ file, setFile }) {
     bottom: 0,
     left: 0,
     whiteSpace: "nowrap",
-    width: 1
+    width: 1,
   });
 
   const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
+    const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
     }
@@ -526,14 +521,7 @@ function FileUpload({ file, setFile }) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        type="button"
-        startIcon={<CloudUploadIcon />}
-      >
+      <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}>
         Upload image
         <VisuallyHiddenInput type="file" onChange={handleFileChange} />
       </Button>

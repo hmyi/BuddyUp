@@ -14,6 +14,7 @@ export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
     <div>
       <Snackbar
         open={openSnackBar?.open}
+
         autoHideDuration={3000}
         onClose={handleClose}
       >
@@ -24,6 +25,7 @@ export default function CustomizedSnackbars({ openSnackBar, setOpenSnackBar }) {
           sx={{ width: "100%" }}
         >
           {openSnackBar?.msg}
+
         </Alert>
       </Snackbar>
     </div>
