@@ -23,6 +23,7 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.3.5",
     "react-infinite-scroll-component": "^6.1.0",
+    "react-places-autocomplete": "^7.3.0",
     "react-router": "^6.30.0",
     "react-router-dom": "6.5",
     "react-scripts": "^5.0.1",

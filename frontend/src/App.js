@@ -1,4 +1,6 @@
 import React from "react";
+import ReactDOM from "react-dom";
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Profile from "./components/Profile";
@@ -14,24 +16,21 @@ import { EventProvider } from "./EventContext";
 import { AuthProvider, AuthContext } from "./AuthContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
-import { GlobalStyles, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
-import decodeToken from "./utils/decodeToken";
-
-
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import CookiePolicy from "./pages/CookiePolicy";
-
-import CustomizedSnackbars from "./components/CustomizedSnackbars";
-
 import {
+  GlobalStyles,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
 } from "@mui/material";
-import Footer from "./components/Footer";
+import decodeToken from "./utils/decodeToken";
+
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+
+import CustomizedSnackbars from "./components/CustomizedSnackbars";
 
 const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -99,8 +98,10 @@ function AppContent({ toggleTheme, mode }) {
     React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
-  const [openSnackBar, setOpenSnackBar] = React.useState({ open: false, msg: "" });
-
+  const [openSnackBar, setOpenSnackBar] = React.useState({
+    open: false,
+    msg: "",
+  });
 
   const handleLogout = () => {
     setIsSignedIn(false);
@@ -123,19 +124,22 @@ function AppContent({ toggleTheme, mode }) {
       />
 
       <Routes>
-      <Route        path="/"
-         element={
-           <HomePage
-             openSnackBar={openSnackBar}
-             setOpenSnackBar={setOpenSnackBar}
-           />
-         }
+        <Route
+          path="/"
+          element={
+            <HomePage
+              openSnackBar={openSnackBar}
+              setOpenSnackBar={setOpenSnackBar}
+            />
+          }
         />
         <Route
-    path="/events/:id"
-    element={<EventDetails openLoginDialog={() => setOpenLoginDialog(true)} />}
-  />        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
-
+          path="/events/:id"
+          element={
+            <EventDetails openLoginDialog={() => setOpenLoginDialog(true)} />
+          }
+        />{" "}
+        <Route path="/events/:id/attendee" element={<AttendeesPage />} />
         <Route path="/users/:id" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/myEvents" element={<MyEvents />} />
@@ -153,15 +157,14 @@ function AppContent({ toggleTheme, mode }) {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />}/>
-          <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="*" element={<HomePage />} />
       </Routes>
       <CustomizedSnackbars
         openSnackBar={openSnackBar}
         setOpenSnackBar={setOpenSnackBar}
       ></CustomizedSnackbars>
-
 
       <Dialog open={openLoginDialog} onClose={() => setOpenLoginDialog(false)}>
         <DialogTitle>Sign In</DialogTitle>
@@ -188,7 +191,12 @@ function AppContent({ toggleTheme, mode }) {
               return_scopes: true,
             }}
             render={({ onClick }) => (
-              <Button fullWidth variant="contained" color="primary" onClick={onClick}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={onClick}
+              >
                 Sign In with Facebook
               </Button>
             )}
@@ -225,7 +233,6 @@ function App() {
   });
 
   const theme = React.useMemo(
-
     () =>
       createTheme({
         palette: {
