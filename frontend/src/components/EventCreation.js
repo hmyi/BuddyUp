@@ -46,8 +46,8 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   const [city, setCity] = React.useState("Waterloo");
   const [category, setCategory] = React.useState("Social");
   const [location, setLocation] = React.useState("");
-  const [startTime, setStartTime] = React.useState(dayjs());
-  const [endTime, setEndTime] = React.useState(dayjs());
+  const [startTime, setStartTime] = React.useState(dayjs().add(30, "minute"));
+  const [endTime, setEndTime] = React.useState(dayjs().add(90, "minute"));
   const [capacity, setCapacity] = React.useState(1);
   const [eventDescription, setEventDescription] = React.useState("");
   const [file, setFile] = React.useState(null);
@@ -75,6 +75,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setEventNameError("");
     setLocationError("");
     setTimeError("");
+  }
 
     function handleNext() {
       if (step === 0 && eventName.trim() === "") {
@@ -122,19 +123,18 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       setLocation(value);
     }
 
-    function handleStartTimeChange(time) {
-      setStartTime(time);
-      const today = dayjs().endOf("day");
-
-      if (time.isBefore(today)) {
+    function handleStartTimeChange(newTime) {
+      const now = dayjs();
+      if (newTime.isBefore(now)) {
         setTimeError("Start time cannot be in the past");
         return;
       }
-      if (time.isAfter(endTime)) {
+      if (newTime.isAfter(endTime)) {
         setTimeError("Start time cannot be later than end time");
         return;
       }
       setTimeError("");
+      setStartTime(newTime);
     }
 
     function handleEndTimeChange(time) {
@@ -146,9 +146,8 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       setTimeError("");
     }
 
-    // Capacity
     function handleCapacityChange(value) {
-      if (value < 0) value = 0;
+      if (value < 1) value = 1;
       if (value > 100) value = 100;
       setCapacity(value);
     }
@@ -429,6 +428,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
           value={capacity}
           onChange={(e) => handleCapacityChange(Number(e.target.value))}
           slotProps={{ inputLabel: { shrink: true } }}
+          inputProps={{ min: 1, max: 100 }}
         />
         <Slider
           aria-label="CapacitySlider"
@@ -579,4 +579,4 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       </Box>
     );
   }
-}
+
