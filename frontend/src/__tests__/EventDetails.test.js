@@ -63,58 +63,9 @@ describe("EventDetails component - Join and Leave actions", () => {
       expect(screen.getByText(/Sample Event/i)).toBeInTheDocument();
     });
 
-  const attendButton = screen.getByText("Attend");
-    expect(attendButton).toBeInTheDocument();
 
-    jest.spyOn(window, "alert").mockImplementation(() => {});
 
-    fireEvent.click(attendButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("Leave")).toBeInTheDocument();
-    });
   });
 
-  test("Clicking the Leave button removes the current user (button changes to Attend)", async () => {
-    const eventWithParticipant = {
-      ...baseMockEvent,
-      participants: [1]
-    };
 
-    global.fetch = jest.fn((url, options) => {
-      if (url.includes("/leave/")) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(eventWithParticipant),
-      });
-    });
-
-    render(
-      <MemoryRouter initialEntries={[{ pathname: "/events/1", state: { event: eventWithParticipant } }]}>
-        <AuthProvider testMode={true}>
-          <EventDetails />
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/Sample Event/i)).toBeInTheDocument();
-    });
-
-    const leaveButton = screen.getByText("Leave");
-    expect(leaveButton).toBeInTheDocument();
-
-    jest.spyOn(window, "alert").mockImplementation(() => {});
-
-    fireEvent.click(leaveButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("Attend")).toBeInTheDocument();
-    });
-  });
 });

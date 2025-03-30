@@ -31,6 +31,7 @@ export function AuthProvider({ children, testMode = true }) {
           picture: { data: { url: decoded.profile_image_url } },
         };
         setUserProfile(profile);
+        setIsSignedIn(true);
       } catch (err) {
         console.error("Error decoding stored token:", err);
       }
