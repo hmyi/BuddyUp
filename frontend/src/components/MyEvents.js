@@ -96,10 +96,6 @@ const fetchEvents = async () => {
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, [selectedType]);
-
   if (accessToken === null) {
     return <div>Loading events...</div>;
   }

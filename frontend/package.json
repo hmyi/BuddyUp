@@ -33,6 +33,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -72,9 +73,21 @@
     "jest-fetch-mock": "^3.0.3",
     "jest-watch-typeahead": "^1.1.0",
     "jest-watcher": "^27.5.1",
-    "msw": "^2.7.0"
+    "msw": "^2.7.3"
   },
   "jest": {
+    "coverageReporters": ["text", "lcov", "html"],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/index.{js,jsx,ts,tsx}",
+      "!src/**/reportWebVitals.{js,jsx,ts,tsx}",
+      "!src/**/test-utils.{js,jsx,ts,tsx}",
+      "!src/**/__dummyData__/**"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/src/__dummyData__/"
+    ],
     "transform": {
       "^.+\\.[tj]sx?$": "babel-jest"
     },

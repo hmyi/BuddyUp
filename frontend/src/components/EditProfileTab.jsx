@@ -158,10 +158,18 @@ export default function EditProfileTab({ userProfile, accessToken, openSnackBar,
             }
             style={{ width: 80, height: 80, objectFit: "cover", borderRadius: "50%" }}
           />
-          <Button variant={"contained"} component={"label"}>
-            Choose File
-            <input type={"file"} hidden accept={"image/*"} onChange={handleImageChange} />
-          </Button>
+          <Button variant="contained" component="label">
+  Choose File
+  <input
+  type="file"
+  hidden
+  accept="image/*"
+  onChange={handleImageChange}
+  data-testid="file-input"
+/>
+
+</Button>
+
           {profileImage && (
             <Button variant={"outlined"} onClick={handleUploadImage}>
               Upload
