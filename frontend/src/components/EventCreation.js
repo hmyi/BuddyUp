@@ -52,7 +52,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   const [eventDescription, setEventDescription] = React.useState("");
   const [file, setFile] = React.useState(null);
 
-  // Validation errors
   const [eventNameError, setEventNameError] = React.useState("");
   const [locationError, setLocationError] = React.useState("");
   const [timeError, setTimeError] = React.useState("");
@@ -79,6 +78,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   }
 
   function handleNext() {
+
     if (step === 0 && eventName.trim() === "") {
       setEventNameError("Event name cannot be empty");
       return;
@@ -112,9 +112,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setEventName(value);
   }
 
-  // Because location will be updated inside CityLocationAutocomplete, we don't do too much here,
-  // but if you still want to handle manual changes, you could keep this function. 
-  // For now, we only keep it for validation usage if desired.
+
   function handleLocationChange(e) {
     const value = e.target.value;
     if (!value) {
@@ -127,7 +125,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
     setLocation(value);
   }
 
-  // Times
   function handleStartTimeChange(time) {
     setStartTime(time);
     const today = dayjs().endOf("day");
@@ -177,7 +174,7 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       .catch((err) => console.log("Error improving description:", err));
   }
 
-  // Submit (create) event logic
+
   async function handleSubmit(e) {
     e.preventDefault();
     dayjs.extend(utc);
@@ -218,6 +215,9 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
       console.log("Event created successfully:", response.data);
       setOpenSnackBar({ open: true, msg: "Event created successfully!" });
 
+
+
+
       handleCleanUp();
       handleClose();
     } catch (error) {
@@ -242,14 +242,12 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
         </Toolbar>
       </AppBar>
 
-      {/* Step indicator */}
       <Box sx={{ mt: 10 }}>
         <HorizontalLinearAlternativeLabelStepper step={step} />
       </Box>
 
       <form onSubmit={handleSubmit}>
         <Box>
-          {/* STEP 0: Basic Info */}
           {step === 0 && (
             <Stack
               direction="row"
@@ -275,7 +273,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
             </Stack>
           )}
 
-          {/* STEP 1: Location, times, capacity */}
           {step === 1 && (
             <Stack
               direction="column"
@@ -286,13 +283,13 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
                 marginTop: "5rem",
               }}
             >
-              {/* Replace your TextField for location with the new CityLocationAutocomplete */}
               <CityLocationAutocomplete
                 city={city}
                 location={location}
                 setLocation={setLocation}
                 locationError={locationError}
                 setLocationError={setLocationError}
+
               />
 
               <StartEndDateTimePicker
@@ -309,7 +306,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
             </Stack>
           )}
 
-          {/* STEP 2: Description, file upload */}
           {step === 2 && (
             <Stack
               direction="column"
@@ -343,7 +339,6 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
           )}
         </Box>
 
-        {/* Buttons: Previous / Next or Submit */}
         <Stack
           direction="row"
           spacing={10}
@@ -384,8 +379,10 @@ export default function EventCreation({ open, onClose, setOpenSnackBar }) {
   );
 }
 
+
 function HorizontalLinearAlternativeLabelStepper({ step }) {
   const steps = ["Basic Information", "Event Details", "Additional Information"];
+
   return (
     <Box sx={{ width: "100%" }}>
       <Stepper activeStep={step} alternativeLabel>
@@ -398,6 +395,7 @@ function HorizontalLinearAlternativeLabelStepper({ step }) {
     </Box>
   );
 }
+
 
 function CapacitySlider({ capacity, handleCapacityChange }) {
   const marks = [
@@ -426,9 +424,9 @@ function CapacitySlider({ capacity, handleCapacityChange }) {
   );
 }
 
-// City dropdown
 function CitySelect({ city, setCity }) {
   const cities = ["Waterloo", "Kitchener", "Toronto"];
+
   return (
     <FormControl sx={{ width: 150 }}>
       <InputLabel>City</InputLabel>
@@ -443,9 +441,9 @@ function CitySelect({ city, setCity }) {
   );
 }
 
-// Category dropdown
 function CategorySelect({ category, setCategory }) {
   const categories = ["Social", "Entertainment", "Sports", "Food", "Outdoor", "Gaming", "Carpool"];
+
   return (
     <Box sx={{ minWidth: 100, margin: "auto" }}>
       <FormControl sx={{ width: 150 }}>
@@ -462,7 +460,6 @@ function CategorySelect({ category, setCategory }) {
   );
 }
 
-// Start/End time pickers
 function StartEndDateTimePicker({
   startTime,
   setStartTime,
@@ -498,7 +495,6 @@ function StartEndDateTimePicker({
   );
 }
 
-// File upload
 function FileUpload({ file, setFile }) {
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
