@@ -6,10 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 
 BASE_URL = "https://d3738x78wtlrph.cloudfront.net/"
 
+sleep_time = 2
+
 def test_homepage_title(browser):
     """Test that the homepage title is displayed correctly."""
     browser.get(BASE_URL)
-    time.sleep(3)  # Wait for the page to load
+    time.sleep(sleep_time)  # Wait for the page to load
     
     title_element = WebDriverWait(browser, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "css-12eqb6k"))
@@ -19,7 +21,7 @@ def test_homepage_title(browser):
 def test_view_all_events_button(browser):
     """Test that the 'View All Events' button is present and clickable."""
     browser.get(BASE_URL)
-    time.sleep(3)
+    time.sleep(sleep_time)
 
     button_element = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'View All Events')]"))
@@ -29,7 +31,7 @@ def test_view_all_events_button(browser):
 def test_event_image_exists(browser):
     """Test that an event image is present on the homepage."""
     browser.get(BASE_URL)
-    time.sleep(3)
+    time.sleep(sleep_time)
 
     image_element = WebDriverWait(browser, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "MuiCardMedia-img"))
@@ -39,7 +41,7 @@ def test_event_image_exists(browser):
 def test_footer_link(browser):
     """Test that the footer contains the 'Terms of Service' link."""
     browser.get(BASE_URL)
-    time.sleep(3)
+    time.sleep(sleep_time)
 
     footer_link = WebDriverWait(browser, 10).until(
         EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Terms of Service')]"))
@@ -49,7 +51,7 @@ def test_footer_link(browser):
 def test_search_box(browser):
     """Test that the search box is present and accepts input."""
     browser.get(BASE_URL)
-    time.sleep(3)
+    time.sleep(sleep_time)
 
     search_input = WebDriverWait(browser, 10).until(
         EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Search for groups or events']"))
