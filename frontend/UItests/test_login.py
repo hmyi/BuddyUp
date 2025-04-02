@@ -38,13 +38,13 @@ def test_facebook_login(browser):
 
     # Enter Facebook login credentials
     WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.ID, "email"))).send_keys(FB_EMAIL)
-    time.sleep(6)
+    time.sleep(8)
     WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.ID, "pass"))).send_keys(FB_PASSWORD)
-    time.sleep(3)
+    time.sleep(5)
 
     # Click the Facebook login button
     WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.ID, "loginbutton"))).click()
-    time.sleep(5)  # Allow login process
+    time.sleep(10)  # Allow login process
 
     # Wait for "Continue as [Your Name]" button
     continue_button = WebDriverWait(browser, 10).until(
@@ -52,7 +52,7 @@ def test_facebook_login(browser):
     )
     continue_button.click()
 
-    time.sleep(2)
+    time.sleep(5)
 
     # Switch back to main window
     browser.switch_to.window(main_window)
