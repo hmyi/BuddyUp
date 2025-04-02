@@ -9,7 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 def browser():
     # Setup Chrome WebDriver
     options = Options()
-    # options.add_argument("--headless")  # Run in headless mode for CI
+    options.add_argument("--headless")  # Run in headless mode for CI
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--ignore-certificate-errors")  # Bypass SSL issues

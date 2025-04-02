@@ -14,21 +14,21 @@ BASE_URL = "https://d3738x78wtlrph.cloudfront.net"
 def test_facebook_login(browser):
     """Test Facebook login via OAuth and verify login success."""
     browser.get(BASE_URL)
-    time.sleep(3)  # Allow page to load
+    time.sleep(2)  # Allow page to load
 
     # Click 'Login' button
     login_button = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Login')]"))
     )
     login_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Click 'Sign in with Facebook' button
     facebook_signin_button = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Sign In with Facebook')]"))
     )
     facebook_signin_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Switch to Facebook login popup
     main_window = browser.current_window_handle
@@ -38,13 +38,13 @@ def test_facebook_login(browser):
 
     # Enter Facebook login credentials
     WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.ID, "email"))).send_keys(FB_EMAIL)
-    time.sleep(5)
+    time.sleep(6)
     WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.ID, "pass"))).send_keys(FB_PASSWORD)
-    time.sleep(5)
+    time.sleep(3)
 
     # Click the Facebook login button
     WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.ID, "loginbutton"))).click()
-    time.sleep(10)  # Allow login process
+    time.sleep(5)  # Allow login process
 
     # Wait for "Continue as [Your Name]" button
     continue_button = WebDriverWait(browser, 10).until(
@@ -52,7 +52,7 @@ def test_facebook_login(browser):
     )
     continue_button.click()
 
-    time.sleep(5)
+    time.sleep(2)
 
     # Switch back to main window
     browser.switch_to.window(main_window)
