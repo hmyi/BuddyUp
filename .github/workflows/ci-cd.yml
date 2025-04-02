@@ -58,6 +58,23 @@ jobs:
           cd frontend
           npm test -- --watchAll=false
 
+      # UI Testing with Selenium
+      - name: Install UI Test Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y wget unzip xvfb
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
+          pip install selenium pytest webdriver-manager chromedriver-autoinstaller
+
+      - name: Run Selenium Tests (Headless Mode)
+        env:
+          FB_EMAIL: ${{ secrets.FB_EMAIL }}
+          FB_PASSWORD: ${{ secrets.FB_PASSWORD }}
+        run: |
+          cd frontend
+          pytest UItests
+
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
