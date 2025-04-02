@@ -62,7 +62,7 @@ def test_event_attending(browser):
         EC.element_to_be_clickable((By.XPATH, "//h6[contains(text(), 'Volleyball Tournament')]/ancestor::div[contains(@class, 'MuiCard-root')]"))
     )
     event_card.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Verify event page is loaded
     event_title = WebDriverWait(browser, 10).until(
@@ -82,21 +82,21 @@ def test_event_attending(browser):
         EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Attend')]"))
     )
     attend_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Navigate to profile
     profile_avatar = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'MuiAvatar-root')]//img"))
     )
     profile_avatar.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Click 'My Events'
     my_events_button = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//li[contains(text(), 'My events')]"))
     )
     my_events_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Verify event appears in 'My Events'
     attending_event = WebDriverWait(browser, 10).until(
@@ -106,28 +106,28 @@ def test_event_attending(browser):
     assert attending_event.is_displayed(), "Event not found, attending event may have failed!"
 
     attending_event.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Click the 'Leave' button
     leave_button = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Leave')]"))
     )
     leave_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Navigate to profile again
     profile_avatar = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'MuiAvatar-root')]//img"))
     )
     profile_avatar.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Click 'My Events' again
     my_events_button = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//li[contains(text(), 'My events')]"))
     )
     my_events_button.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # Verify event is no longer in 'My Events'
     events_list = browser.find_elements(By.XPATH, "//h6[contains(text(), 'Volleyball Tournament')]")
