@@ -111,7 +111,11 @@ function Header({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Button
                 variant="contained"
-                onClick={() => setShowEventCreation(true)}
+                onClick={() => {setShowEventCreation(true);
+                  console.log("create event clicked")
+                  console.log(showEventCreation);
+                }
+              }
                 sx={{
                   borderRadius: 2,
                   px: 2,
