@@ -36,7 +36,7 @@ function EventCard({ event, hostName }) {
     <Card
       onClick={goToDetails}
       sx={{
-        width: 280,
+        width: 380,
         boxShadow: 3,
         cursor: "pointer",
         position: "relative",
