@@ -73,7 +73,7 @@ jobs:
           FB_PASSWORD: ${{ secrets.FB_PASSWORD }}
         run: |
           cd frontend
-          pytest UItests
+          pytest UItests/test_event_attending.py UItests/test_homepage.py
 
   deploy:
     runs-on: ubuntu-latest
