@@ -122,7 +122,7 @@ function SearchEventCard({ event }) {
           <Box
             sx={{
               position: "absolute",
-              bottom: 12,
+              top: 12,
               left: -30,
               width: 120,
               backgroundColor: "orange",
