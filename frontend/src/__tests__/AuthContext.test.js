@@ -31,11 +31,11 @@ test("AuthProvider calls decodeToken and sets userProfile", async () => {
 
   await waitFor(() => {
     expect(contextValue.isSignedIn).toBe(true);
-    expect(contextValue.userProfile).toEqual({
-      userID: 1,
-      name: "Farhan Hossein",
-      email: "farhan.hossein@gmail.com",
-      picture: { data: { url: "/avatar.png" } },
-    });
+    + expect(contextValue.userProfile).toEqual({
+         userID: 1,
+         name: "Farhan Hossein",
+         email: "farhan.hossein@gmail.com",
+         picture: { data: { url: "/avatar.png" } }
+      });
   });
 });

@@ -43,8 +43,14 @@ function FilterMenu({ city, setCity, category, setCategory }) {
         </Typography>
 
         <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>City</InputLabel>
-          <Select value={city} label="City" onChange={handleCityChange}>
+        <InputLabel id="city-label">City</InputLabel>
+  <Select
+    labelId="city-label"
+    id="city-select"
+    label="City"
+    value={city}
+    onChange={handleCityChange}
+  >
             <MenuItem value="Waterloo">Waterloo</MenuItem>
             <MenuItem value="Toronto">Toronto</MenuItem>
             <MenuItem value="Kitchener">Kitchener</MenuItem>
@@ -52,11 +58,17 @@ function FilterMenu({ city, setCity, category, setCategory }) {
         </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>Category</InputLabel>
-          <Select value={category} label="Category" onChange={handleCategoryChange}>
+        <InputLabel id="category-label">Category</InputLabel>
+  <Select
+    labelId="category-label"
+    id="category-select"
+    label="Category"
+    value={category}
+    onChange={handleCategoryChange}
+  >
             <MenuItem value="">All</MenuItem>
             {categories.map((cat) => (
-              <MenuItem key={cat} value={cat.toLowerCase()}>
+              <MenuItem key={cat} value={cat}>
                 {cat}
               </MenuItem>
             ))}
