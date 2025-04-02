@@ -3,7 +3,13 @@ import decodeToken from "../utils/decodeToken";
 
 export const handleGoogleSuccess = (
     response,
-    { setIsSignedIn, setAccessToken, setUserProfile, setOpenLoginDialog, navigate } = {}
+    {
+      setIsSignedIn = () => {},
+      setAccessToken = () => {},
+      setUserProfile = () => {},
+      navigate = () => {},
+      setOpenLoginDialog = () => {},
+    } = {}
   ) => {
     console.log("Google Auth Success:", response);
     fetch("https://18.226.163.235:8000/api/auth/google/", {
@@ -19,8 +25,7 @@ export const handleGoogleSuccess = (
         }
         localStorage.setItem("accessToken", data.access);
         if (setIsSignedIn) setIsSignedIn(true);
-        if (setOpenLoginDialog) setOpenLoginDialog(false);
-  
+        setAccessToken(data.access);  
         try {
           const decodedToken = decodeToken(data.access);
           const profile = {
@@ -38,10 +43,12 @@ export const handleGoogleSuccess = (
         } catch (err) {
           console.error("Error decoding token:", err);
         }
-  
-        if (navigate) navigate("/");
-      })
+        if (window.location.pathname.startsWith("/events/")) {
+          navigate(window.location.pathname, { replace: true });
+        }
+        })
       .catch((error) => console.error("Error during Google login:", error));
+      setOpenLoginDialog(false);
   };
   
   export const handleGoogleFailure = (error) => {
